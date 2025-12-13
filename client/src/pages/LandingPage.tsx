@@ -28,6 +28,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import type { Product, Testimonial } from "@shared/schema";
+import { useLanguage } from "@/lib/i18n";
 
 import heroImage from "@assets/generated_images/premium_bird's_nest_hero_image.png";
 import processImage from "@assets/generated_images/bird's_nest_preparation_process.png";
@@ -68,66 +69,6 @@ const slideInRight = {
   visible: { opacity: 1, x: 0 }
 };
 
-const innovationPillars = [
-  {
-    icon: Beaker,
-    title: "科学配比",
-    subtitle: "Lab-Tested",
-    description: "每份含量经过精确计算，营养成分最优配比",
-    stat: "98%",
-    statLabel: "营养保留率"
-  },
-  {
-    icon: Snowflake,
-    title: "冷链锁鲜",
-    subtitle: "Cold Chain",
-    description: "从炖煮到送达全程4°C冷链，锁住新鲜",
-    stat: "4°C",
-    statLabel: "全程恒温"
-  },
-  {
-    icon: Timer,
-    title: "当日鲜炖",
-    subtitle: "Fresh Daily",
-    description: "坚持每日现炖，绝不隔夜，新鲜看得见",
-    stat: "24h",
-    statLabel: "炖煮周期"
-  },
-  {
-    icon: Zap,
-    title: "足量实在",
-    subtitle: "Full Portion",
-    description: "拒绝缩水，每罐都是满满的真材实料",
-    stat: "120g",
-    statLabel: "净含量"
-  }
-];
-
-const orderSteps = [
-  {
-    icon: MessageCircle,
-    title: "WhatsApp咨询",
-    description: "一键联系，专属顾问在线解答",
-    color: "from-emerald-400 to-teal-500"
-  },
-  {
-    icon: ShoppingBag,
-    title: "选择口味",
-    description: "8款经典口味任你挑选",
-    color: "from-amber-400 to-orange-500"
-  },
-  {
-    icon: Truck,
-    title: "冷链配送",
-    description: "专业冷链，新鲜到家",
-    color: "from-cyan-400 to-blue-500"
-  }
-];
-
-const flavorTags = [
-  "原味燕窝", "红枣枸杞", "冰糖雪梨", "桃胶银耳", 
-  "椰汁燕窝", "芒果燕窝", "花胶原味", "花胶红枣"
-];
 
 function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: string }) {
   const count = useMotionValue(0);
@@ -147,6 +88,7 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
 }
 
 function FreshnessTimer() {
+  const { t } = useLanguage();
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -182,13 +124,19 @@ function FreshnessTimer() {
   return (
     <div className="fresh-badge px-4 py-2 rounded-full inline-flex items-center gap-3 text-white font-medium" data-testid="badge-freshness-timer">
       <Timer className="w-5 h-5" />
-      <span className="text-sm">下一批鲜炖</span>
+      <span className="text-sm">{t("hero.nextBatch")}</span>
       <span className="font-bold text-lg tabular-nums">{hours}h {minutes}m {seconds}s</span>
     </div>
   );
 }
 
 function FlavorTicker() {
+  const { t } = useLanguage();
+  const flavorTags = [
+    t("flavors.original"), t("flavors.redDate"), t("flavors.snowPear"), t("flavors.peachGum"),
+    t("flavors.coconut"), t("flavors.mango"), t("flavors.fishMawOriginal"), t("flavors.fishMawRedDate")
+  ];
+  
   return (
     <div className="overflow-hidden py-4 bg-gradient-to-r from-transparent via-card to-transparent">
       <div className="flavor-ticker flex gap-6 whitespace-nowrap">
@@ -206,6 +154,7 @@ function FlavorTicker() {
 }
 
 export default function LandingPage() {
+  const { t } = useLanguage();
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products/featured"],
   });
@@ -219,6 +168,62 @@ export default function LandingPage() {
   };
 
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const innovationPillars = [
+    {
+      icon: Beaker,
+      title: t("innovation.science"),
+      subtitle: t("innovation.scienceSub"),
+      description: t("innovation.scienceDesc"),
+      stat: "98%",
+      statLabel: t("innovation.scienceStat")
+    },
+    {
+      icon: Snowflake,
+      title: t("innovation.coldChain"),
+      subtitle: t("innovation.coldChainSub"),
+      description: t("innovation.coldChainDesc"),
+      stat: "4°C",
+      statLabel: t("innovation.coldChainStat")
+    },
+    {
+      icon: Timer,
+      title: t("innovation.freshDaily"),
+      subtitle: t("innovation.freshDailySub"),
+      description: t("innovation.freshDailyDesc"),
+      stat: "24h",
+      statLabel: t("innovation.freshDailyStat")
+    },
+    {
+      icon: Zap,
+      title: t("innovation.fullPortion"),
+      subtitle: t("innovation.fullPortionSub"),
+      description: t("innovation.fullPortionDesc"),
+      stat: "120g",
+      statLabel: t("innovation.fullPortionStat")
+    }
+  ];
+
+  const orderSteps = [
+    {
+      icon: MessageCircle,
+      title: t("order.step1"),
+      description: t("order.step1Desc"),
+      color: "from-emerald-400 to-teal-500"
+    },
+    {
+      icon: ShoppingBag,
+      title: t("order.step2"),
+      description: t("order.step2Desc"),
+      color: "from-amber-400 to-orange-500"
+    },
+    {
+      icon: Truck,
+      title: t("order.step3"),
+      description: t("order.step3Desc"),
+      color: "from-cyan-400 to-blue-500"
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -258,8 +263,8 @@ export default function LandingPage() {
                 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] mb-6 tracking-tight"
                 data-testid="text-hero-title"
               >
-                <span className="block">新鲜</span>
-                <span className="block neon-text">不将就</span>
+                <span className="block">{t("hero.fresh")}</span>
+                <span className="block neon-text">{t("hero.noCompromise")}</span>
               </motion.h1>
 
               <motion.p
@@ -268,15 +273,14 @@ export default function LandingPage() {
                 className="text-xl md:text-2xl text-white/90 mb-4 font-medium"
                 data-testid="text-hero-subtitle"
               >
-                LOVEYOUNG 燕窝花胶 · 每日鲜炖
+                {t("hero.subtitle")}
               </motion.p>
 
               <motion.p
                 variants={fadeInUp}
                 className="text-base md:text-lg text-white/70 mb-8 leading-relaxed max-w-lg"
               >
-                拒绝防腐剂，拒绝隔夜货。我们坚持当日炖煮、冷链直达，
-                只为给你最新鲜的滋补体验。
+                {t("hero.description")}
               </motion.p>
 
               <motion.div 
@@ -289,7 +293,7 @@ export default function LandingPage() {
                   onClick={() => window.open(WHATSAPP_LINK, "_blank")}
                   data-testid="button-hero-order"
                 >
-                  立即订购
+                  {t("hero.orderNow")}
                   <ArrowRight className="w-5 h-5" />
                 </Button>
                 <Button
@@ -303,7 +307,7 @@ export default function LandingPage() {
                   data-testid="button-hero-browse"
                 >
                   <Play className="w-4 h-4" />
-                  探索口味
+                  {t("hero.exploreFlavors")}
                 </Button>
               </motion.div>
 
@@ -323,7 +327,7 @@ export default function LandingPage() {
                     ))}
                   </div>
                   <span className="text-white/80 text-sm">
-                    <span className="font-bold text-white">2,000+</span> 回头客
+                    <span className="font-bold text-white">2,000+</span> {t("hero.repeatCustomers")}
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -346,31 +350,31 @@ export default function LandingPage() {
                 <Card className="relative p-6 bg-white/10 backdrop-blur-xl border-white/20" data-testid="card-hero-product">
                   <div className="text-center mb-6">
                     <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 mb-3" data-testid="badge-hero-bestseller">
-                      本月热卖
+                      {t("hero.bestseller")}
                     </Badge>
-                    <h3 className="text-2xl font-bold text-white mb-2" data-testid="text-hero-product-title">燕窝花胶礼盒</h3>
-                    <p className="text-white/70" data-testid="text-hero-product-description">6罐装 · 每罐120g</p>
+                    <h3 className="text-2xl font-bold text-white mb-2" data-testid="text-hero-product-title">{t("hero.giftBox")}</h3>
+                    <p className="text-white/70" data-testid="text-hero-product-description">{t("hero.giftBoxDesc")}</p>
                   </div>
                   <div className="space-y-4 mb-6">
                     <div className="flex items-center justify-between text-white/80">
-                      <span>原味燕窝 x2</span>
+                      <span>{t("hero.original")}</span>
                       <span className="font-medium text-white">RM226</span>
                     </div>
                     <div className="flex items-center justify-between text-white/80">
-                      <span>红枣枸杞 x2</span>
+                      <span>{t("hero.redDate")}</span>
                       <span className="font-medium text-white">RM226</span>
                     </div>
                     <div className="flex items-center justify-between text-white/80">
-                      <span>花胶原味 x2</span>
+                      <span>{t("hero.fishMaw")}</span>
                       <span className="font-medium text-white">RM226</span>
                     </div>
                   </div>
                   <div className="border-t border-white/20 pt-4 mb-4">
                     <div className="flex items-end justify-between">
-                      <span className="text-white/70">礼盒价</span>
+                      <span className="text-white/70">{t("hero.giftPrice")}</span>
                       <div data-testid="text-hero-product-price">
                         <span className="text-3xl font-black text-white">RM226</span>
-                        <span className="text-white/50 text-sm">/盒</span>
+                        <span className="text-white/50 text-sm">{t("hero.perBox")}</span>
                       </div>
                     </div>
                   </div>
@@ -380,7 +384,7 @@ export default function LandingPage() {
                     data-testid="button-hero-card-order"
                   >
                     <SiWhatsapp className="w-4 h-4" />
-                    WhatsApp下单
+                    {t("hero.whatsappOrder")}
                   </Button>
                 </Card>
               </div>
@@ -418,10 +422,10 @@ export default function LandingPage() {
             variants={staggerContainer}
           >
             {[
-              { value: 2000, suffix: "+", label: "满意客户" },
-              { value: 8, suffix: "款", label: "口味选择" },
-              { value: 24, suffix: "h", label: "新鲜周期" },
-              { value: 98, suffix: "%", label: "好评率" }
+              { value: 2000, suffix: "+", label: t("stats.customers") },
+              { value: 8, suffix: "", label: t("stats.flavors") },
+              { value: 24, suffix: "h", label: t("stats.freshCycle") },
+              { value: 98, suffix: "%", label: t("stats.rating") }
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -455,7 +459,7 @@ export default function LandingPage() {
               <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-1 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full" />
                 <span className="text-sm font-bold tracking-wider text-muted-foreground uppercase">
-                  Flavor Discovery
+                  {t("products.discovery")}
                 </span>
               </motion.div>
               <motion.h2
@@ -463,7 +467,7 @@ export default function LandingPage() {
                 className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground leading-tight"
                 data-testid="text-products-title"
               >
-                探索<span className="gradient-text">8款口味</span>
+                {t("products.explore")}<span className="gradient-text">{t("products.flavors")}</span>
               </motion.h2>
             </div>
             <motion.div variants={fadeInUp}>
@@ -474,7 +478,7 @@ export default function LandingPage() {
                 onClick={() => window.open(META_SHOP_LINK, "_blank")}
                 data-testid="button-view-all-products"
               >
-                查看全部
+                {t("products.viewAll")}
                 <ChevronRight className="w-5 h-5" />
               </Button>
             </motion.div>
@@ -532,7 +536,7 @@ export default function LandingPage() {
             <motion.div variants={fadeInUp} className="flex items-center justify-center gap-3 mb-4">
               <div className="w-8 h-1 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full" />
               <span className="text-sm font-bold tracking-wider text-muted-foreground uppercase">
-                Why Different
+                {t("innovation.whyDifferent")}
               </span>
               <div className="w-8 h-1 bg-gradient-to-r from-teal-500 to-amber-400 rounded-full" />
             </motion.div>
@@ -541,13 +545,13 @@ export default function LandingPage() {
               className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground mb-4"
               data-testid="text-innovation-title"
             >
-              创新<span className="gradient-text">不止于此</span>
+              {t("innovation.title")}<span className="gradient-text">{t("innovation.subtitle")}</span>
             </motion.h2>
             <motion.p 
               variants={fadeInUp}
               className="text-lg text-muted-foreground max-w-2xl mx-auto"
             >
-              我们重新定义鲜炖燕窝，用科技守护新鲜，用匠心成就品质
+              {t("innovation.description")}
             </motion.p>
           </motion.div>
 
@@ -611,7 +615,7 @@ export default function LandingPage() {
               className="text-3xl md:text-4xl font-black text-foreground mb-4"
               data-testid="text-order-title"
             >
-              三步下单，<span className="gradient-text">新鲜到家</span>
+              {t("order.title")}<span className="gradient-text">{t("order.subtitle")}</span>
             </motion.h2>
           </motion.div>
 
@@ -664,7 +668,7 @@ export default function LandingPage() {
               data-testid="button-order-whatsapp"
             >
               <SiWhatsapp className="w-5 h-5" />
-              WhatsApp下单
+              {t("order.whatsappOrder")}
             </Button>
             <Button
               variant="outline"
@@ -674,7 +678,7 @@ export default function LandingPage() {
               data-testid="button-order-meta"
             >
               <ShoppingBag className="w-5 h-5" />
-              Meta店铺购买
+              {t("order.metaShop")}
             </Button>
           </motion.div>
         </div>
@@ -699,7 +703,7 @@ export default function LandingPage() {
               <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-4">
                 <Heart className="w-5 h-5 text-rose-500" />
                 <span className="text-sm font-bold tracking-wider text-muted-foreground uppercase">
-                  Real Reviews
+                  {t("testimonials.realReviews")}
                 </span>
               </motion.div>
               <motion.h2
@@ -707,7 +711,7 @@ export default function LandingPage() {
                 className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground"
                 data-testid="text-testimonials-title"
               >
-                客户<span className="gradient-text">真心话</span>
+                {t("testimonials.title")}<span className="gradient-text">{t("testimonials.subtitle")}</span>
               </motion.h2>
             </div>
             <motion.div variants={fadeInUp} className="flex items-center gap-4">
@@ -718,7 +722,7 @@ export default function LandingPage() {
               </div>
               <div>
                 <span className="font-bold text-foreground">4.9</span>
-                <span className="text-muted-foreground text-sm"> / 5 评分</span>
+                <span className="text-muted-foreground text-sm"> / 5 {t("testimonials.rating")}</span>
               </div>
             </motion.div>
           </motion.div>
@@ -754,7 +758,7 @@ export default function LandingPage() {
                           </Badge>
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
                             <TrendingUp className="w-3 h-3" />
-                            回购客户
+                            {t("testimonials.repeatCustomer")}
                           </span>
                         </div>
                       </div>
@@ -805,14 +809,14 @@ export default function LandingPage() {
               className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-6 leading-tight"
               data-testid="text-cta-title"
             >
-              开启你的<br />
-              <span className="neon-text">新鲜之旅</span>
+              {t("cta.title")}<br />
+              <span className="neon-text">{t("cta.subtitle")}</span>
             </motion.h2>
             <motion.p 
               variants={fadeInUp}
               className="text-white/80 text-lg mb-8 leading-relaxed"
             >
-              现在下单，享受专属新客优惠。每日限量鲜炖，先到先得！
+              {t("cta.description")}
             </motion.p>
 
             <motion.div 
@@ -826,7 +830,7 @@ export default function LandingPage() {
                 data-testid="button-cta-whatsapp"
               >
                 <SiWhatsapp className="w-5 h-5" />
-                WhatsApp立即下单
+                {t("cta.whatsappOrder")}
               </Button>
               <Button
                 variant="outline"
@@ -836,7 +840,7 @@ export default function LandingPage() {
                 data-testid="button-cta-meta"
               >
                 <ShoppingBag className="w-5 h-5" />
-                前往Meta店铺
+                {t("cta.metaShop")}
               </Button>
             </motion.div>
 
@@ -844,9 +848,9 @@ export default function LandingPage() {
               variants={fadeInUp}
               className="mt-8 flex items-center gap-6 text-white/60 text-sm"
             >
-              <span>营业时间: 9:00-21:00</span>
+              <span>{t("cta.hours")}</span>
               <span className="glass px-3 py-1 rounded-full text-xs">
-                24h内回复
+                {t("cta.reply")}
               </span>
             </motion.div>
           </div>
