@@ -315,32 +315,6 @@ export default function LandingPage() {
                 </Button>
               </motion.div>
 
-              <motion.div 
-                variants={fadeInUp}
-                className="flex items-center gap-6 flex-wrap"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    {[1,2,3,4].map((i) => (
-                      <div 
-                        key={i}
-                        className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-300 to-orange-400 border-2 border-white/20 flex items-center justify-center text-xs font-bold text-white"
-                      >
-                        {String.fromCharCode(64 + i)}
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-white/80 text-sm">
-                    <span className="font-bold text-white">2,000+</span> {t("hero.repeatCustomers")}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {[1,2,3,4,5].map((i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  ))}
-                  <span className="text-white/80 text-sm ml-1">4.9/5</span>
-                </div>
-              </motion.div>
             </motion.div>
 
             <motion.div
@@ -632,35 +606,6 @@ export default function LandingPage() {
               </Card>
             </motion.div>
           </motion.div>
-
-          {productsLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          ) : (
-            <motion.div 
-              ref={scrollRef}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
-              variants={staggerContainer}
-            >
-              {products.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  variants={scaleIn}
-                  transition={{ duration: 0.5, delay: index * 0.08 }}
-                  className="flavor-card"
-                >
-                  <ProductCard
-                    product={product}
-                    onViewDetails={handleViewProduct}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
         </div>
       </section>
 
