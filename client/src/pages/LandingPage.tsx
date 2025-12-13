@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ProductCard } from "@/components/ProductCard";
 import { TestimonialCard } from "@/components/TestimonialCard";
+import { ChristmasPromoPopup } from "@/components/ChristmasPromoPopup";
 import { ShoppingBag, Truck, MessageCircle, Leaf, Clock, Award, ChevronRight, Loader2 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { useQuery } from "@tanstack/react-query";
@@ -414,6 +415,7 @@ export default function LandingPage() {
 
       <Footer whatsappLink={WHATSAPP_LINK} metaShopLink={META_SHOP_LINK} />
       <WhatsAppButton whatsappLink={WHATSAPP_LINK} />
+      <ChristmasPromoPopup whatsappLink={WHATSAPP_LINK} metaShopLink={META_SHOP_LINK} />
     </div>
   );
 }
