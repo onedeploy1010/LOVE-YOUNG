@@ -10,7 +10,7 @@ export function WhatsAppButton({ whatsappLink }: WhatsAppButtonProps) {
       href={whatsappLink}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-whatsapp text-white rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
+      className="fixed bottom-6 right-6 z-50 hidden md:flex items-center justify-center w-16 h-16 bg-whatsapp text-white rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
       data-testid="button-floating-whatsapp"
       aria-label="WhatsApp咨询"
     >

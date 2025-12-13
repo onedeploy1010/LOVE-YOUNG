@@ -495,31 +495,32 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
                     </Button>
                   )}
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="customerName">{t("order.customerName")} *</Label>
-                    <Input
-                      id="customerName"
-                      value={deliveryInfo.customerName}
-                      onChange={(e) => handleDeliveryInfoChange("customerName", e.target.value)}
-                      placeholder={t("order.customerName")}
-                      data-testid="input-customer-name"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="customerName" className="text-sm">{t("order.customerName")} *</Label>
+                      <Input
+                        id="customerName"
+                        value={deliveryInfo.customerName}
+                        onChange={(e) => handleDeliveryInfoChange("customerName", e.target.value)}
+                        placeholder={t("order.customerName")}
+                        data-testid="input-customer-name"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="phone" className="text-sm">{t("order.phone")} *</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={deliveryInfo.phone}
+                        onChange={(e) => handleDeliveryInfoChange("phone", e.target.value)}
+                        placeholder="012-3456789"
+                        data-testid="input-phone"
+                      />
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">{t("order.phone")} *</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={deliveryInfo.phone}
-                      onChange={(e) => handleDeliveryInfoChange("phone", e.target.value)}
-                      placeholder="012-3456789"
-                      data-testid="input-phone"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="address">{t("order.address")} *</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="address" className="text-sm">{t("order.address")} *</Label>
                     <Input
                       id="address"
                       value={deliveryInfo.address}
@@ -529,20 +530,9 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">{t("order.city")} *</Label>
-                      <Input
-                        id="city"
-                        value={deliveryInfo.city}
-                        onChange={(e) => handleDeliveryInfoChange("city", e.target.value)}
-                        placeholder={t("order.city")}
-                        data-testid="input-city"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="postcode">{t("order.postcode")} *</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="postcode" className="text-sm">{t("order.postcode")} *</Label>
                       <Input
                         id="postcode"
                         value={deliveryInfo.postcode}
@@ -551,29 +541,38 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
                         data-testid="input-postcode"
                       />
                     </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="city" className="text-sm">{t("order.city")} *</Label>
+                      <Input
+                        id="city"
+                        value={deliveryInfo.city}
+                        onChange={(e) => handleDeliveryInfoChange("city", e.target.value)}
+                        placeholder={t("order.city")}
+                        data-testid="input-city"
+                      />
+                    </div>
+                    <div className="space-y-1.5 col-span-2 sm:col-span-1">
+                      <Label htmlFor="state" className="text-sm">{t("order.state")} *</Label>
+                      <Select
+                        value={deliveryInfo.state}
+                        onValueChange={(value) => handleDeliveryInfoChange("state", value)}
+                      >
+                        <SelectTrigger data-testid="select-state">
+                          <SelectValue placeholder={t("order.selectState")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {malaysiaStates.map((state) => (
+                            <SelectItem key={state} value={state} data-testid={`option-state-${state}`}>
+                              {t(`states.${state}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="state">{t("order.state")} *</Label>
-                    <Select
-                      value={deliveryInfo.state}
-                      onValueChange={(value) => handleDeliveryInfoChange("state", value)}
-                    >
-                      <SelectTrigger data-testid="select-state">
-                        <SelectValue placeholder={t("order.selectState")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {malaysiaStates.map((state) => (
-                          <SelectItem key={state} value={state} data-testid={`option-state-${state}`}>
-                            {t(`states.${state}`)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="deliveryDate">{t("order.deliveryDate")}</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="deliveryDate" className="text-sm text-muted-foreground">{t("order.deliveryDate")}</Label>
                     <Input
                       id="deliveryDate"
                       type="date"
