@@ -7,6 +7,7 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ProductCard } from "@/components/ProductCard";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import { ChristmasPromoPopup } from "@/components/ChristmasPromoPopup";
+import { FlavorModal } from "@/components/FlavorModal";
 import { 
   ShoppingBag, 
   Truck, 
@@ -21,7 +22,9 @@ import {
   Heart,
   Star,
   ArrowRight,
-  Play
+  Play,
+  Package,
+  Info
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { useQuery } from "@tanstack/react-query";
@@ -167,6 +170,7 @@ export default function LandingPage() {
     window.open(WHATSAPP_LINK, "_blank");
   };
 
+  const [flavorModalOpen, setFlavorModalOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const innovationPillars = [
@@ -481,6 +485,106 @@ export default function LandingPage() {
                 {t("products.viewAll")}
                 <ChevronRight className="w-5 h-5" />
               </Button>
+            </motion.div>
+          </motion.div>
+
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+          >
+            <motion.div variants={scaleIn}>
+              <Card className="p-6 relative h-full" data-testid="card-package-one">
+                <Badge className="absolute top-4 right-4 bg-primary/10 text-primary border-primary/20" data-testid="badge-popular">
+                  {t("packages.popular")}
+                </Badge>
+                <div className="w-14 h-14 mb-4 flex items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400/20 to-orange-500/10">
+                  <Package className="w-7 h-7 text-amber-500" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2" data-testid="text-package-one-title">
+                  {t("packages.oneBox")}
+                </h3>
+                <p className="text-muted-foreground mb-1" data-testid="text-package-one-desc">
+                  {t("packages.oneBoxDesc")}
+                </p>
+                <p className="text-sm text-muted-foreground mb-4" data-testid="text-package-one-info">
+                  {t("packages.oneBoxInfo")}
+                </p>
+                <div className="mb-6">
+                  <span className="text-3xl font-black gradient-text" data-testid="text-package-one-price">
+                    {t("packages.oneBoxPrice")}
+                  </span>
+                  <span className="text-muted-foreground text-sm ml-1">{t("packages.perJar")}</span>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2"
+                    onClick={() => setFlavorModalOpen(true)}
+                    data-testid="button-package-one-flavor"
+                  >
+                    <Info className="w-4 h-4" />
+                    {t("packages.chooseFlavor")}
+                  </Button>
+                  <Button
+                    className="w-full gap-2 electric-gradient border-0 text-white font-bold"
+                    onClick={() => window.open(WHATSAPP_LINK, "_blank")}
+                    data-testid="button-package-one-order"
+                  >
+                    <SiWhatsapp className="w-4 h-4" />
+                    {t("packages.preOrder")}
+                  </Button>
+                </div>
+              </Card>
+            </motion.div>
+
+            <motion.div variants={scaleIn}>
+              <Card className="p-6 relative h-full border-primary/30" data-testid="card-package-two">
+                <Badge className="absolute top-4 right-4 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" data-testid="badge-best-value">
+                  {t("packages.bestValue")}
+                </Badge>
+                <div className="w-14 h-14 mb-4 flex items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400/20 to-teal-500/10">
+                  <Package className="w-7 h-7 text-emerald-500" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2" data-testid="text-package-two-title">
+                  {t("packages.twoBox")}
+                </h3>
+                <p className="text-muted-foreground mb-1" data-testid="text-package-two-desc">
+                  {t("packages.twoBoxDesc")}
+                </p>
+                <p className="text-sm text-muted-foreground mb-4" data-testid="text-package-two-info">
+                  {t("packages.twoBoxInfo")}
+                </p>
+                <div className="mb-6 flex items-baseline gap-2">
+                  <span className="text-3xl font-black gradient-text" data-testid="text-package-two-price">
+                    {t("packages.twoBoxPrice")}
+                  </span>
+                  <Badge variant="secondary" className="text-xs" data-testid="badge-save">
+                    {t("packages.twoBoxSave")}
+                  </Badge>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2"
+                    onClick={() => setFlavorModalOpen(true)}
+                    data-testid="button-package-two-flavor"
+                  >
+                    <Info className="w-4 h-4" />
+                    {t("packages.chooseFlavor")}
+                  </Button>
+                  <Button
+                    className="w-full gap-2 electric-gradient border-0 text-white font-bold"
+                    onClick={() => window.open(WHATSAPP_LINK, "_blank")}
+                    data-testid="button-package-two-order"
+                  >
+                    <SiWhatsapp className="w-4 h-4" />
+                    {t("packages.preOrder")}
+                  </Button>
+                </div>
+              </Card>
             </motion.div>
           </motion.div>
 
@@ -860,6 +964,7 @@ export default function LandingPage() {
       <Footer whatsappLink={WHATSAPP_LINK} metaShopLink={META_SHOP_LINK} />
       <WhatsAppButton whatsappLink={WHATSAPP_LINK} />
       <ChristmasPromoPopup whatsappLink={WHATSAPP_LINK} metaShopLink={META_SHOP_LINK} />
+      <FlavorModal open={flavorModalOpen} onOpenChange={setFlavorModalOpen} />
     </div>
   );
 }
