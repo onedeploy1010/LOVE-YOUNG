@@ -163,7 +163,7 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
           </div>
 
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild className="lg:hidden">
+            <SheetTrigger asChild className="md:hidden">
               <Button
                 variant="ghost"
                 size="icon"
