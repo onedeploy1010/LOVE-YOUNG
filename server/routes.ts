@@ -172,7 +172,20 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Invalid order data", details: result.error.issues });
       }
       
-      const order = await storage.createOrder(result.data);
+      // Generate order number: LY + YYYYMMDD + 3-digit sequence
+      const today = new Date();
+      const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+      const existingOrders = await storage.getOrders();
+      const todayOrders = existingOrders.filter(o => o.orderNumber?.startsWith(`LY${dateStr}`));
+      const sequence = String(todayOrders.length + 1).padStart(3, '0');
+      const orderNumber = `LY${dateStr}${sequence}`;
+      
+      const orderData = {
+        ...result.data,
+        orderNumber,
+      };
+      
+      const order = await storage.createOrder(orderData);
       res.status(201).json(order);
     } catch (error) {
       res.status(500).json({ error: "Failed to create order" });
