@@ -40,7 +40,6 @@ function ProfileTab({ member, onUpdate }: { member: Member | null; onUpdate: () 
   const [isEditing, setIsEditing] = useState(!member);
   const [formData, setFormData] = useState({
     name: member?.name || "",
-    phone: member?.phone || "",
     email: member?.email || "",
   });
 
@@ -104,15 +103,6 @@ function ProfileTab({ member, onUpdate }: { member: Member | null; onUpdate: () 
               />
             </div>
             <div className="space-y-2">
-              <Label>{t("member.phone")}</Label>
-              <Input
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                required
-                data-testid="input-profile-phone"
-              />
-            </div>
-            <div className="space-y-2">
               <Label>{t("member.email")}</Label>
               <Input
                 type="email"
@@ -138,10 +128,6 @@ function ProfileTab({ member, onUpdate }: { member: Member | null; onUpdate: () 
             <div>
               <Label className="text-muted-foreground">{t("member.name")}</Label>
               <p className="text-lg" data-testid="text-profile-name">{member?.name}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">{t("member.phone")}</Label>
-              <p className="text-lg" data-testid="text-profile-phone">{member?.phone}</p>
             </div>
             <div>
               <Label className="text-muted-foreground">{t("member.email")}</Label>
