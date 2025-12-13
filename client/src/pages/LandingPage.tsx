@@ -7,6 +7,7 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ProductCard } from "@/components/ProductCard";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import { FlavorModal } from "@/components/FlavorModal";
+import { OrderModal } from "@/components/OrderModal";
 import { 
   ShoppingBag, 
   Truck, 
