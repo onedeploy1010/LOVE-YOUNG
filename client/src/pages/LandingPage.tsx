@@ -201,6 +201,7 @@ export default function LandingPage() {
   };
 
   const [flavorModalOpen, setFlavorModalOpen] = useState(false);
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const innovationPillars = [
@@ -324,7 +325,7 @@ export default function LandingPage() {
                 <Button
                   size="lg"
                   className="gap-2 text-base electric-gradient border-0 text-white font-bold"
-                  onClick={() => window.open(WHATSAPP_LINK, "_blank")}
+                  onClick={() => setOrderModalOpen(true)}
                   data-testid="button-hero-order"
                 >
                   {t("hero.orderNow")}
@@ -388,11 +389,11 @@ export default function LandingPage() {
                   </div>
                   <Button 
                     className="w-full gap-2 electric-gradient border-0 text-white font-bold"
-                    onClick={() => window.open(WHATSAPP_LINK, "_blank")}
+                    onClick={() => setOrderModalOpen(true)}
                     data-testid="button-hero-card-order"
                   >
-                    <SiWhatsapp className="w-4 h-4" />
-                    {t("hero.whatsappOrder")}
+                    <ShoppingBag className="w-4 h-4" />
+                    {t("hero.orderNow")}
                   </Button>
                 </Card>
               </div>
@@ -566,11 +567,11 @@ export default function LandingPage() {
                   </Button>
                   <Button
                     className="w-full gap-2 electric-gradient border-0 text-white font-bold"
-                    onClick={() => window.open(WHATSAPP_LINK, "_blank")}
+                    onClick={() => setOrderModalOpen(true)}
                     data-testid="button-package-one-order"
                   >
-                    <SiWhatsapp className="w-4 h-4" />
-                    {t("packages.preOrder")}
+                    <ShoppingBag className="w-4 h-4" />
+                    {t("hero.orderNow")}
                   </Button>
                 </div>
               </Card>
@@ -613,11 +614,11 @@ export default function LandingPage() {
                   </Button>
                   <Button
                     className="w-full gap-2 electric-gradient border-0 text-white font-bold"
-                    onClick={() => window.open(WHATSAPP_LINK, "_blank")}
+                    onClick={() => setOrderModalOpen(true)}
                     data-testid="button-package-two-order"
                   >
-                    <SiWhatsapp className="w-4 h-4" />
-                    {t("packages.preOrder")}
+                    <ShoppingBag className="w-4 h-4" />
+                    {t("hero.orderNow")}
                   </Button>
                 </div>
               </Card>
@@ -938,21 +939,21 @@ export default function LandingPage() {
               <Button
                 size="lg"
                 className="gap-2 text-base electric-gradient border-0 text-white font-bold"
-                onClick={() => window.open(WHATSAPP_LINK, "_blank")}
-                data-testid="button-cta-whatsapp"
+                onClick={() => setOrderModalOpen(true)}
+                data-testid="button-cta-order"
               >
-                <SiWhatsapp className="w-5 h-5" />
-                {t("cta.whatsappOrder")}
+                <ShoppingBag className="w-5 h-5" />
+                {t("hero.orderNow")}
               </Button>
               <Button
                 variant="outline"
                 size="lg"
                 className="gap-2 text-base glass border-white/30 text-white"
-                onClick={() => window.open(META_SHOP_LINK, "_blank")}
-                data-testid="button-cta-meta"
+                onClick={() => window.open(WHATSAPP_LINK, "_blank")}
+                data-testid="button-cta-whatsapp"
               >
-                <ShoppingBag className="w-5 h-5" />
-                {t("cta.metaShop")}
+                <SiWhatsapp className="w-5 h-5" />
+                {t("cta.whatsappOrder")}
               </Button>
             </motion.div>
 
@@ -973,6 +974,12 @@ export default function LandingPage() {
       <WhatsAppButton whatsappLink={WHATSAPP_LINK} />
       <ChristmasFloatingButton />
       <FlavorModal open={flavorModalOpen} onOpenChange={setFlavorModalOpen} />
+      <OrderModal 
+        open={orderModalOpen} 
+        onOpenChange={setOrderModalOpen} 
+        whatsappLink={WHATSAPP_LINK}
+        metaShopLink={META_SHOP_LINK}
+      />
     </div>
   );
 }

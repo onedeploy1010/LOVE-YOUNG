@@ -37,8 +37,8 @@ const fishMawFlavors = [
 ];
 
 const packages = [
-  { key: "oneBox", jars: 7, priceKey: "packages.oneBoxPrice", descKey: "packages.oneBoxDesc" },
-  { key: "twoBox", jars: 14, priceKey: "packages.twoBoxPrice", descKey: "packages.twoBoxDesc" },
+  { key: "oneBox", jars: 6, priceKey: "packages.oneBoxPrice", descKey: "packages.oneBoxDesc" },
+  { key: "twoBox", jars: 12, priceKey: "packages.twoBoxPrice", descKey: "packages.twoBoxDesc" },
 ];
 
 export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: OrderModalProps) {
