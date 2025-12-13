@@ -413,74 +413,79 @@ export default function LandingPage() {
 
       <FlavorTicker />
 
-      <section className="py-12 md:py-20 bg-gradient-to-br from-background via-card to-background relative overflow-hidden" data-testid="section-stats">
-        <div className="absolute inset-0 opacity-40">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_left,_hsl(var(--accent-jade)/0.15),_transparent_50%)]" />
-          <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_right,_hsl(var(--secondary)/0.15),_transparent_50%)]" />
-        </div>
+      <section className="py-16 md:py-24 stats-section-creative relative overflow-hidden" data-testid="section-stats">
+        <div className="stats-bg-pattern" />
+        <div className="stats-floating-orb stats-orb-1" />
+        <div className="stats-floating-orb stats-orb-2" />
+        <div className="stats-floating-orb stats-orb-3" />
         
         <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
           <motion.div 
-            className="text-center mb-10"
+            className="text-center mb-12 md:mb-16"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={fadeInUp}
           >
-            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-gradient-to-r from-emerald-500/10 to-amber-500/10 text-muted-foreground border border-emerald-500/20 mb-4">
+            <h2 className="stats-title-mega" data-testid="text-stats-title">
               {t("stats.whyTrust")}
-            </span>
+            </h2>
+            <div className="stats-title-underline" />
           </motion.div>
 
           <motion.div 
-            className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-5 md:gap-8"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={staggerContainer}
           >
-            <motion.div variants={scaleIn} className="stats-card-premium group">
-              <div className="stats-icon-wrap bg-gradient-to-br from-rose-500/20 to-pink-500/10">
-                <Heart className="w-6 h-6 text-rose-500" />
+            <motion.div variants={scaleIn} className="stats-card-creative group">
+              <div className="stats-card-glow stats-glow-rose" />
+              <div className="stats-icon-creative bg-gradient-to-br from-rose-500 to-pink-600">
+                <Heart className="w-7 h-7 text-white" />
               </div>
-              <div className="stats-number-mega">
+              <div className="stats-number-creative">
                 <AnimatedCounter value={2000} suffix="+" />
               </div>
-              <div className="stats-label">{t("stats.customersLabel")}</div>
-              <div className="stats-sublabel">{t("stats.customersSub")}</div>
+              <div className="stats-label-creative">{t("stats.customersLabel")}</div>
+              <div className="stats-sublabel-creative">{t("stats.customersSub")}</div>
             </motion.div>
 
-            <motion.div variants={scaleIn} className="stats-card-premium group">
-              <div className="stats-icon-wrap bg-gradient-to-br from-violet-500/20 to-purple-500/10">
-                <Beaker className="w-6 h-6 text-violet-500" />
+            <motion.div variants={scaleIn} className="stats-card-creative group">
+              <div className="stats-card-glow stats-glow-violet" />
+              <div className="stats-icon-creative bg-gradient-to-br from-violet-500 to-purple-600">
+                <Beaker className="w-7 h-7 text-white" />
               </div>
-              <div className="stats-number-mega">
+              <div className="stats-number-creative">
                 <AnimatedCounter value={8} suffix="" />
               </div>
-              <div className="stats-label">{t("stats.flavorsLabel")}</div>
-              <div className="stats-sublabel">{t("stats.flavorsSub")}</div>
+              <div className="stats-label-creative">{t("stats.flavorsLabel")}</div>
+              <div className="stats-sublabel-creative">{t("stats.flavorsSub")}</div>
             </motion.div>
 
-            <motion.div variants={scaleIn} className="stats-card-premium group">
-              <div className="stats-icon-wrap bg-gradient-to-br from-cyan-500/20 to-teal-500/10">
-                <Snowflake className="w-6 h-6 text-cyan-500" />
+            <motion.div variants={scaleIn} className="stats-card-creative group">
+              <div className="stats-card-glow stats-glow-cyan" />
+              <div className="stats-icon-creative bg-gradient-to-br from-cyan-500 to-teal-600">
+                <Snowflake className="w-7 h-7 text-white" />
               </div>
-              <div className="stats-number-mega">
+              <div className="stats-number-creative">
                 <AnimatedCounter value={24} suffix="h" />
               </div>
-              <div className="stats-label">{t("stats.freshLabel")}</div>
-              <div className="stats-sublabel">{t("stats.freshSub")}</div>
+              <div className="stats-label-creative">{t("stats.freshLabel")}</div>
+              <div className="stats-sublabel-creative">{t("stats.freshSub")}</div>
             </motion.div>
 
-            <motion.div variants={scaleIn} className="stats-card-premium group">
-              <div className="stats-icon-wrap bg-gradient-to-br from-amber-500/20 to-orange-500/10">
-                <TrendingUp className="w-6 h-6 text-amber-500" />
+            <motion.div variants={scaleIn} className="stats-card-creative group">
+              <div className="stats-card-glow stats-glow-amber" />
+              <div className="stats-icon-creative bg-gradient-to-br from-amber-500 to-orange-600">
+                <TrendingUp className="w-7 h-7 text-white" />
               </div>
-              <div className="stats-number-mega">
+              <div className="stats-number-creative">
                 <AnimatedCounter value={98} suffix="%" />
               </div>
-              <div className="stats-label">{t("stats.ratingLabel")}</div>
-              <div className="stats-sublabel">{t("stats.ratingSub")}</div>
+              <div className="stats-label-creative">{t("stats.ratingLabel")}</div>
+              <div className="stats-sublabel-creative">{t("stats.ratingSub")}</div>
             </motion.div>
           </motion.div>
         </div>
