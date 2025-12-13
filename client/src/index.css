@@ -987,17 +987,63 @@
     0 0 40px hsl(var(--accent-jade) / 0.3);
 }
 
-/* Mobile Hero Optimizations */
+/* Hero Subtitle & Description */
+.hero-subtitle-mobile {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.hero-desc-mobile {
+  font-size: 0.95rem;
+}
+
+/* Mobile Hero Optimizations - iPhone */
 @media (max-width: 640px) {
   .hero-title-mega {
-    font-size: 2.2rem;
-    line-height: 1.1;
-    letter-spacing: -0.01em;
-    margin-bottom: 1rem;
+    font-size: 2.8rem;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+    text-shadow: 
+      0 2px 15px rgba(0,0,0,0.5),
+      0 0 30px hsl(var(--accent-jade) / 0.4);
+  }
+  
+  .hero-title-mega span:first-child {
+    font-size: 2.5rem;
   }
   
   .hero-title-gradient {
-    font-size: 2rem;
+    font-size: 2.6rem;
+    background-size: 200% 200%;
+  }
+  
+  .hero-subtitle-mobile {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #fff 0%, #d4af37 50%, #fff 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: logoShimmer 4s ease-in-out infinite;
+  }
+  
+  .hero-desc-mobile {
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  
+  .countdown-badge-mega {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+  
+  .countdown-number {
+    font-size: 0.9rem;
   }
 }
 

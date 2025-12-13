@@ -274,7 +274,7 @@ export default function LandingPage() {
               <motion.p
                 variants={fadeInUp}
                 transition={{ duration: 0.7 }}
-                className="text-xl md:text-2xl text-white/90 mb-4 font-medium"
+                className="hero-subtitle-mobile text-white/95 mb-3 font-bold"
                 data-testid="text-hero-subtitle"
               >
                 {t("hero.subtitle")}
@@ -282,7 +282,7 @@ export default function LandingPage() {
 
               <motion.p
                 variants={fadeInUp}
-                className="text-base md:text-lg text-white/70 mb-8 leading-relaxed max-w-lg"
+                className="hero-desc-mobile text-white/80 mb-6 leading-relaxed max-w-lg"
               >
                 {t("hero.description")}
               </motion.p>
@@ -370,19 +370,6 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <motion.div 
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1, y: [0, 10, 0] }}
-          transition={{ 
-            opacity: { delay: 2, duration: 0.5 },
-            y: { repeat: Infinity, duration: 2, ease: "easeInOut" }
-          }}
-        >
-          <div className="w-6 h-10 border-2 border-white/40 rounded-full flex items-start justify-center p-2">
-            <div className="w-1.5 h-3 bg-white/60 rounded-full" />
-          </div>
-        </motion.div>
       </section>
 
       <FlavorTicker />
