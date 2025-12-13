@@ -50,6 +50,10 @@
   --brand-green: 156 38% 28%;
   --brand-gold: 43 72% 50%;
   --brand-cream: 45 30% 95%;
+  --accent-jade: 158 85% 55%;
+  --accent-coral: 12 85% 65%;
+  --accent-mint: 165 60% 75%;
+  --neon-glow: 158 100% 60%;
   --radius: .5rem;
   --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
@@ -479,4 +483,164 @@
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+/* YOUTHFUL CREATIVE STYLES */
+
+/* Neon glow text for hero */
+.neon-text {
+  text-shadow: 
+    0 0 10px hsl(var(--accent-jade) / 0.5),
+    0 0 30px hsl(var(--accent-jade) / 0.3),
+    0 0 60px hsl(var(--accent-jade) / 0.2);
+}
+
+/* Electric gradient for buttons */
+.electric-gradient {
+  background: linear-gradient(135deg, hsl(var(--accent-jade)) 0%, hsl(var(--primary)) 50%, hsl(var(--accent-coral)) 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Fresh badge with pulse */
+.fresh-badge {
+  background: linear-gradient(135deg, hsl(var(--accent-jade)) 0%, hsl(var(--accent-mint)) 100%);
+  box-shadow: 0 0 20px hsl(var(--accent-jade) / 0.4);
+  animation: freshPulse 2s ease-in-out infinite;
+}
+
+@keyframes freshPulse {
+  0%, 100% { 
+    box-shadow: 0 0 20px hsl(var(--accent-jade) / 0.4);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 35px hsl(var(--accent-jade) / 0.6);
+    transform: scale(1.02);
+  }
+}
+
+/* Flavor card with gradient border */
+.flavor-card {
+  position: relative;
+  background: hsl(var(--card));
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.flavor-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, hsl(var(--accent-jade)), hsl(var(--accent-coral)));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.flavor-card:hover::before {
+  opacity: 1;
+}
+
+/* Ticker animation for flavors */
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.flavor-ticker {
+  animation: ticker 20s linear infinite;
+}
+
+/* Bold stat counter */
+.stat-number {
+  font-weight: 800;
+  background: linear-gradient(180deg, hsl(var(--foreground)) 0%, hsl(var(--muted-foreground)) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Innovation pillar card */
+.innovation-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.innovation-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(from 0deg, transparent, hsl(var(--accent-jade) / 0.1), transparent 30%);
+  animation: rotate 4s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.innovation-card:hover::after {
+  opacity: 1;
+}
+
+@keyframes rotate {
+  100% { transform: rotate(360deg); }
+}
+
+/* Youthful tag pill */
+.tag-pill {
+  background: linear-gradient(135deg, hsl(var(--accent-jade) / 0.15) 0%, hsl(var(--accent-coral) / 0.15) 100%);
+  border: 1px solid hsl(var(--accent-jade) / 0.3);
+  transition: all 0.2s ease;
+}
+
+.tag-pill:hover {
+  background: linear-gradient(135deg, hsl(var(--accent-jade) / 0.25) 0%, hsl(var(--accent-coral) / 0.25) 100%);
+  border-color: hsl(var(--accent-jade) / 0.5);
+  transform: translateY(-2px);
+}
+
+/* Floating WhatsApp button with glow */
+.whatsapp-float {
+  background: linear-gradient(135deg, hsl(142 70% 45%) 0%, hsl(142 60% 35%) 100%);
+  box-shadow: 
+    0 4px 15px hsl(142 70% 45% / 0.4),
+    0 0 30px hsl(142 70% 45% / 0.2);
+  animation: whatsappBounce 2s ease-in-out infinite;
+}
+
+@keyframes whatsappBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Count up animation helper */
+.count-up {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Creative section divider */
+.creative-divider {
+  height: 4px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    hsl(var(--accent-jade)) 20%, 
+    hsl(var(--accent-coral)) 50%, 
+    hsl(var(--accent-jade)) 80%, 
+    transparent 100%
+  );
+  border-radius: 2px;
 }
