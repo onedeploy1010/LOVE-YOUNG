@@ -66,3 +66,33 @@ export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
 
 export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
 export type Testimonial = typeof testimonials.$inferSelect;
+
+export const orders = pgTable("orders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  orderNumber: text("order_number").notNull().unique(),
+  customerName: text("customer_name").notNull(),
+  customerPhone: text("customer_phone").notNull(),
+  customerEmail: text("customer_email"),
+  status: text("status").notNull().default("pending"),
+  totalAmount: integer("total_amount").notNull(),
+  items: text("items").notNull(),
+  shippingAddress: text("shipping_address"),
+  trackingNumber: text("tracking_number"),
+  notes: text("notes"),
+  source: text("source").default("meta"),
+  erpnextId: text("erpnext_id"),
+  createdAt: text("created_at").default(sql`now()`),
+  updatedAt: text("updated_at").default(sql`now()`),
+});
+
+export const insertOrderSchema = createInsertSchema(orders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type Order = typeof orders.$inferSelect;
+
+export const orderStatusEnum = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"] as const;
+export type OrderStatus = typeof orderStatusEnum[number];

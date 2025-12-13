@@ -1,12 +1,13 @@
 import { 
-  users, products, testimonials, contactMessages,
+  users, products, testimonials, contactMessages, orders,
   type User, type InsertUser, 
   type Product, type InsertProduct, 
   type Testimonial, type InsertTestimonial, 
-  type ContactMessage, type InsertContactMessage 
+  type ContactMessage, type InsertContactMessage,
+  type Order, type InsertOrder
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -17,12 +18,21 @@ export interface IStorage {
   getProduct(id: string): Promise<Product | undefined>;
   getFeaturedProducts(): Promise<Product[]>;
   createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product | undefined>;
   
   getTestimonials(): Promise<Testimonial[]>;
   createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
   
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
   getContactMessages(): Promise<ContactMessage[]>;
+  
+  getOrders(): Promise<Order[]>;
+  getOrder(id: string): Promise<Order | undefined>;
+  getOrderByNumber(orderNumber: string): Promise<Order | undefined>;
+  getOrderByPhone(phone: string): Promise<Order[]>;
+  findOrder(query: string): Promise<Order | undefined>;
+  createOrder(order: InsertOrder): Promise<Order>;
+  updateOrder(id: string, order: Partial<InsertOrder>): Promise<Order | undefined>;
   
   seedDefaultData(): Promise<void>;
 }
@@ -61,6 +71,11 @@ export class DatabaseStorage implements IStorage {
     return product;
   }
 
+  async updateProduct(id: string, updateData: Partial<InsertProduct>): Promise<Product | undefined> {
+    const [product] = await db.update(products).set(updateData).where(eq(products.id, id)).returning();
+    return product || undefined;
+  }
+
   async getTestimonials(): Promise<Testimonial[]> {
     return await db.select().from(testimonials);
   }
@@ -77,6 +92,44 @@ export class DatabaseStorage implements IStorage {
 
   async getContactMessages(): Promise<ContactMessage[]> {
     return await db.select().from(contactMessages);
+  }
+
+  async getOrders(): Promise<Order[]> {
+    return await db.select().from(orders);
+  }
+
+  async getOrder(id: string): Promise<Order | undefined> {
+    const [order] = await db.select().from(orders).where(eq(orders.id, id));
+    return order || undefined;
+  }
+
+  async getOrderByNumber(orderNumber: string): Promise<Order | undefined> {
+    const [order] = await db.select().from(orders).where(eq(orders.orderNumber, orderNumber));
+    return order || undefined;
+  }
+
+  async getOrderByPhone(phone: string): Promise<Order[]> {
+    return await db.select().from(orders).where(eq(orders.customerPhone, phone));
+  }
+
+  async findOrder(query: string): Promise<Order | undefined> {
+    const [order] = await db.select().from(orders).where(
+      or(eq(orders.orderNumber, query), eq(orders.customerPhone, query))
+    );
+    return order || undefined;
+  }
+
+  async createOrder(insertOrder: InsertOrder): Promise<Order> {
+    const [order] = await db.insert(orders).values(insertOrder).returning();
+    return order;
+  }
+
+  async updateOrder(id: string, updateData: Partial<InsertOrder>): Promise<Order | undefined> {
+    const [order] = await db.update(orders).set({
+      ...updateData,
+      updatedAt: new Date().toISOString(),
+    }).where(eq(orders.id, id)).returning();
+    return order || undefined;
   }
 
   async seedDefaultData(): Promise<void> {
@@ -142,6 +195,43 @@ export class DatabaseStorage implements IStorage {
 
       for (const testimonial of defaultTestimonials) {
         await this.createTestimonial(testimonial);
+      }
+    }
+
+    const existingOrders = await this.getOrders();
+    if (existingOrders.length === 0) {
+      const sampleOrders: InsertOrder[] = [
+        {
+          orderNumber: "LY20241201001",
+          customerName: "林小姐",
+          customerPhone: "60123456789",
+          status: "delivered",
+          totalAmount: 336,
+          items: JSON.stringify([
+            { name: "即食冰糖燕窝", quantity: 2, price: 168 }
+          ]),
+          shippingAddress: "吉隆坡市中心某地址",
+          trackingNumber: "MY123456789",
+          source: "meta",
+        },
+        {
+          orderNumber: "LY20241205002",
+          customerName: "张先生",
+          customerPhone: "60198765432",
+          status: "shipped",
+          totalAmount: 486,
+          items: JSON.stringify([
+            { name: "鲜炖花胶", quantity: 1, price: 198 },
+            { name: "燕窝甜品套餐", quantity: 1, price: 288 }
+          ]),
+          shippingAddress: "槟城乔治市某地址",
+          trackingNumber: "MY987654321",
+          source: "whatsapp",
+        },
+      ];
+
+      for (const order of sampleOrders) {
+        await this.createOrder(order);
       }
     }
   }
