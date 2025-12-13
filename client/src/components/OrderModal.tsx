@@ -6,12 +6,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ShoppingBag, Plus, Minus, Check, CheckCircle, Loader2, User, MapPin } from "lucide-react";
 import { SiWhatsapp, SiFacebook } from "react-icons/si";
 import { useLanguage } from "@/lib/i18n";
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import type { Member, MemberAddress } from "@shared/schema";
 
@@ -74,6 +75,7 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [useGuestCheckout, setUseGuestCheckout] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [saveNewAddress, setSaveNewAddress] = useState(false);
   const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>({
     customerName: "",
     phone: "",
@@ -110,6 +112,16 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
     onSuccess: (data) => {
       setOrderNumber(data.orderNumber);
       setStep("success");
+    },
+  });
+
+  const saveAddressMutation = useMutation({
+    mutationFn: async (addressData: any) => {
+      const response = await apiRequest("POST", "/api/members/me/addresses", addressData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/members/me/addresses"] });
     },
   });
 
@@ -176,6 +188,19 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
     };
 
     createOrderMutation.mutate(orderData);
+
+    if (saveNewAddress && isAuthenticated && !selectedAddressId) {
+      saveAddressMutation.mutate({
+        recipientName: deliveryInfo.customerName,
+        phone: deliveryInfo.phone,
+        addressLine1: deliveryInfo.address,
+        addressLine2: "",
+        city: deliveryInfo.city,
+        state: deliveryInfo.state,
+        postcode: deliveryInfo.postcode,
+        isDefault: savedAddresses.length === 0,
+      });
+    }
   };
 
   const resetOrder = () => {
@@ -194,6 +219,7 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
     setOrderNumber("");
     setUseGuestCheckout(false);
     setSelectedAddressId(null);
+    setSaveNewAddress(false);
   };
 
   const handleSelectSavedAddress = (address: MemberAddress) => {
@@ -582,6 +608,20 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
                       data-testid="input-delivery-date"
                     />
                   </div>
+
+                  {isAuthenticated && !selectedAddressId && (
+                    <div className="flex items-center gap-2 pt-2">
+                      <Checkbox
+                        id="saveAddress"
+                        checked={saveNewAddress}
+                        onCheckedChange={(checked) => setSaveNewAddress(checked === true)}
+                        data-testid="checkbox-save-address"
+                      />
+                      <Label htmlFor="saveAddress" className="text-sm cursor-pointer">
+                        {t("order.saveAddressToProfile")}
+                      </Label>
+                    </div>
+                  )}
                 </>
               )}
             </div>
