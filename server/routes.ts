@@ -9,6 +9,12 @@ import {
   createOrderInErpnext,
   isErpnextConfigured,
 } from "./services/erpnext";
+import {
+  processWhatsAppMessage,
+  sendWhatsAppMessage,
+  isWhatsAppConfigured,
+  isTextMessage,
+} from "./services/whatsapp";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -82,7 +88,18 @@ export async function registerRoutes(
           if (change.field === "messages") {
             const messages = change.value?.messages || [];
             for (const message of messages) {
-              console.log("Received WhatsApp message:", message);
+              if (!isTextMessage(message)) {
+                console.log("Skipping non-text WhatsApp message:", message.type);
+                continue;
+              }
+              
+              console.log("Received WhatsApp text message:", message);
+              
+              const reply = await processWhatsAppMessage(message);
+              if (reply && isWhatsAppConfigured()) {
+                await sendWhatsAppMessage(message.from, reply);
+                console.log("Sent auto-reply to:", message.from);
+              }
             }
           }
         }
@@ -181,6 +198,12 @@ export async function registerRoutes(
         message: isErpnextConfigured() 
           ? "ERPNext is configured and ready" 
           : "ERPNext credentials not configured (ERPNEXT_URL, ERPNEXT_API_KEY, ERPNEXT_API_SECRET)",
+      },
+      whatsapp: {
+        configured: isWhatsAppConfigured(),
+        message: isWhatsAppConfigured()
+          ? "WhatsApp Bot is configured and ready for auto-replies"
+          : "WhatsApp credentials not configured (WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID)",
       },
     });
   });
