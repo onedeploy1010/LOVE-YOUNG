@@ -1471,3 +1471,181 @@
     height: 3.5rem;
   }
 }
+
+/* ============================================
+   BRAND LOGO STYLES - Premium LOVEYOUNG Design
+   ============================================ */
+
+.brand-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.brand-logo-main {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.brand-logo-english {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: linear-gradient(135deg, 
+    hsl(43 72% 45%) 0%, 
+    hsl(43 85% 55%) 30%, 
+    hsl(40 90% 65%) 50%, 
+    hsl(43 85% 55%) 70%, 
+    hsl(43 72% 45%) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: brandShimmer 4s ease-in-out infinite;
+  text-shadow: none;
+}
+
+.brand-logo-chinese {
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  color: hsl(var(--brand-green));
+  margin-top: 1px;
+  text-transform: uppercase;
+}
+
+.brand-logo-divider {
+  width: 2px;
+  height: 28px;
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    hsl(43 72% 50%) 20%, 
+    hsl(43 72% 50%) 80%, 
+    transparent 100%);
+  margin: 0 0.25rem;
+}
+
+.brand-logo-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, hsl(156 38% 28%) 0%, hsl(156 45% 35%) 100%);
+  border-radius: 8px;
+  box-shadow: 
+    0 2px 8px hsl(156 38% 28% / 0.3),
+    inset 0 1px 2px hsl(45 30% 95% / 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-logo-icon::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: linear-gradient(135deg, 
+    hsl(43 72% 55% / 0.8) 0%, 
+    hsl(43 72% 45% / 0.6) 100%);
+  border-radius: 6px;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E");
+}
+
+.brand-logo-icon-inner {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: hsl(43 72% 55%);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+@keyframes brandShimmer {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 200% center; }
+}
+
+/* Header scrolled state - enhance contrast */
+.header-scrolled .brand-logo-english {
+  background: linear-gradient(135deg, 
+    hsl(156 38% 25%) 0%, 
+    hsl(43 72% 50%) 50%, 
+    hsl(156 38% 25%) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Mobile brand logo */
+@media (max-width: 768px) {
+  .brand-logo-english {
+    font-size: 1.25rem;
+    letter-spacing: 0.05em;
+  }
+  .brand-logo-chinese {
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+  }
+  .brand-logo-divider {
+    height: 24px;
+  }
+  .brand-logo-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+  }
+}
+
+/* Desktop large logo */
+@media (min-width: 1024px) {
+  .brand-logo-english {
+    font-size: 1.75rem;
+  }
+  .brand-logo-chinese {
+    font-size: 0.7rem;
+    letter-spacing: 0.35em;
+  }
+  .brand-logo-icon {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Mobile menu brand styling */
+.mobile-brand-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.mobile-brand-english {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, hsl(43 72% 50%) 0%, hsl(43 85% 60%) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.mobile-brand-chinese {
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: hsl(var(--brand-green));
+}
+
+.mobile-brand-tagline {
+  font-size: 0.7rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+  margin-top: 0.25rem;
+}

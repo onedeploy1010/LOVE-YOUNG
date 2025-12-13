@@ -43,7 +43,7 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-background/95 backdrop-blur-md shadow-sm border-b border-border"
+          ? "bg-background/95 backdrop-blur-md shadow-sm border-b border-border header-scrolled"
           : "bg-transparent"
       }`}
       data-testid="header"
@@ -52,12 +52,16 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
         <div className="flex items-center justify-between h-16 md:h-20 gap-4">
           <a
             href="/"
-            className="flex items-center gap-2"
+            className="brand-logo-container"
             data-testid="link-logo"
           >
-            <span className="font-serif text-xl md:text-2xl font-semibold tracking-tight text-foreground">
-              LOVEYOUNG
-            </span>
+            <div className="brand-logo-icon">
+              <span className="brand-logo-icon-inner">L</span>
+            </div>
+            <div className="brand-logo-main">
+              <span className="brand-logo-english">LOVEYOUNG</span>
+              <span className="brand-logo-chinese">养乐鲜炖</span>
+            </div>
           </a>
 
           <nav className="hidden lg:flex items-center gap-8">
@@ -108,9 +112,11 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
             </SheetTrigger>
             <SheetContent side="right" className="w-72 p-6">
               <div className="flex flex-col gap-6 mt-8">
-                <span className="font-serif text-xl font-semibold">
-                  LOVEYOUNG
-                </span>
+                <div className="mobile-brand-logo">
+                  <span className="mobile-brand-english">LOVEYOUNG</span>
+                  <span className="mobile-brand-chinese">养乐鲜炖</span>
+                  <span className="mobile-brand-tagline">Premium Bird's Nest</span>
+                </div>
                 <nav className="flex flex-col gap-4">
                   {navLinks.map((link) => (
                     <button
