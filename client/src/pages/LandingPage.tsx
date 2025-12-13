@@ -6,7 +6,6 @@ import { Footer } from "@/components/Footer";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { ProductCard } from "@/components/ProductCard";
 import { TestimonialCard } from "@/components/TestimonialCard";
-import { ChristmasPromoPopup } from "@/components/ChristmasPromoPopup";
 import { FlavorModal } from "@/components/FlavorModal";
 import { 
   ShoppingBag, 
@@ -21,6 +20,7 @@ import {
   TrendingUp,
   Heart,
   Star,
+  Gift,
   ArrowRight,
   Play,
   Package,
@@ -161,14 +161,27 @@ function ChristmasFloatingButton() {
   const [, setLocation] = useLocation();
   
   return (
-    <Button
-      className="christmas-floating-button"
-      onClick={() => setLocation("/christmas")}
-      data-testid="button-christmas-promo"
+    <motion.div
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+      className="christmas-floating-entry"
     >
-      <Star className="w-4 h-4" />
-      <span>圣诞限定</span>
-    </Button>
+      <Button
+        className="christmas-entry-button"
+        onClick={() => setLocation("/christmas")}
+        data-testid="button-christmas-promo"
+      >
+        <span className="christmas-entry-icon">
+          <Gift className="w-5 h-5" />
+        </span>
+        <span className="christmas-entry-text">
+          <span className="christmas-entry-main">圣诞限定</span>
+          <span className="christmas-entry-sub">限量礼盒</span>
+        </span>
+        <Snowflake className="christmas-entry-snowflake" />
+      </Button>
+    </motion.div>
   );
 }
 
@@ -957,7 +970,6 @@ export default function LandingPage() {
 
       <Footer whatsappLink={WHATSAPP_LINK} metaShopLink={META_SHOP_LINK} />
       <WhatsAppButton whatsappLink={WHATSAPP_LINK} />
-      <ChristmasPromoPopup whatsappLink={WHATSAPP_LINK} metaShopLink={META_SHOP_LINK} />
       <ChristmasFloatingButton />
       <FlavorModal open={flavorModalOpen} onOpenChange={setFlavorModalOpen} />
     </div>

@@ -1850,34 +1850,101 @@
   100% { background-position: 0 200px; }
 }
 
-/* Christmas Holiday Button for Main Page */
-.christmas-floating-button {
+/* Christmas Entry Button - Mobile-first festive design */
+.christmas-floating-entry {
   position: fixed;
   bottom: 100px;
-  right: 20px;
+  right: 16px;
   z-index: 40;
-  background: linear-gradient(135deg, #c41e3a 0%, #8b0000 100%);
-  border: 2px solid #d4af37;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 50px;
-  font-weight: 700;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 
-    0 4px 20px rgba(196, 30, 58, 0.5),
-    0 0 40px rgba(212, 175, 55, 0.3);
-  animation: christmasPulse 2s ease-in-out infinite;
-  cursor: pointer;
-  transition: all 0.3s ease;
 }
 
+.christmas-entry-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px 10px 12px;
+  background: linear-gradient(135deg, #b91c3c 0%, #991b2b 50%, #7f1d1d 100%);
+  border: 2px solid rgba(212, 175, 55, 0.8);
+  border-radius: 24px;
+  color: white;
+  font-weight: 600;
+  box-shadow: 
+    0 4px 20px rgba(185, 28, 60, 0.5),
+    0 0 30px rgba(212, 175, 55, 0.25),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+  animation: christmasFloat 3s ease-in-out infinite;
+  overflow: visible;
+}
 
-@keyframes christmasPulse {
-  0%, 100% { box-shadow: 0 4px 20px rgba(196, 30, 58, 0.5), 0 0 40px rgba(212, 175, 55, 0.3); }
-  50% { box-shadow: 0 4px 25px rgba(196, 30, 58, 0.7), 0 0 60px rgba(212, 175, 55, 0.5); }
+.christmas-entry-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #d4af37 0%, #f4d03f 50%, #d4af37 100%);
+  border-radius: 50%;
+  color: #7f1d1d;
+  animation: iconBounce 2s ease-in-out infinite;
+}
+
+.christmas-entry-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+
+.christmas-entry-main {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.christmas-entry-sub {
+  font-size: 0.65rem;
+  font-weight: 500;
+  opacity: 0.85;
+  color: #fcd34d;
+}
+
+.christmas-entry-snowflake {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  color: #fff;
+  filter: drop-shadow(0 0 4px rgba(255,255,255,0.8));
+  animation: snowflakeSpin 4s linear infinite;
+}
+
+@keyframes christmasFloat {
+  0%, 100% { 
+    transform: translateY(0);
+    box-shadow: 
+      0 4px 20px rgba(185, 28, 60, 0.5),
+      0 0 30px rgba(212, 175, 55, 0.25),
+      inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  50% { 
+    transform: translateY(-4px);
+    box-shadow: 
+      0 8px 25px rgba(185, 28, 60, 0.6),
+      0 0 40px rgba(212, 175, 55, 0.35),
+      inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes snowflakeSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @media (max-width: 640px) {
@@ -1897,10 +1964,39 @@
     font-size: 0.65rem;
   }
   
-  .christmas-floating-button {
-    bottom: 80px;
-    right: 16px;
-    padding: 10px 16px;
+  .christmas-floating-entry {
+    bottom: 85px;
+    right: 12px;
+  }
+  
+  .christmas-entry-button {
+    padding: 8px 14px 8px 10px;
+    gap: 8px;
+    border-radius: 20px;
+  }
+  
+  .christmas-entry-icon {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .christmas-entry-icon svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .christmas-entry-main {
     font-size: 0.8rem;
+  }
+  
+  .christmas-entry-sub {
+    font-size: 0.6rem;
+  }
+  
+  .christmas-entry-snowflake {
+    width: 14px;
+    height: 14px;
+    top: -5px;
+    right: -3px;
   }
 }
