@@ -1161,3 +1161,68 @@
   background: hsl(var(--card) / 0.5);
   border: 1px solid hsl(var(--border) / 0.3);
 }
+
+/* ============================================
+   PREMIUM STATS CARDS - Creative Design
+   ============================================ */
+
+.stats-card-premium {
+  position: relative;
+  text-align: center;
+  padding: 1.5rem 1rem;
+  border-radius: 1.25rem;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.stats-card-premium:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px hsl(var(--foreground) / 0.06);
+  border-color: hsl(var(--accent-jade) / 0.3);
+}
+
+.stats-icon-wrap {
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.stats-card-premium:hover .stats-icon-wrap {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.stats-number-mega {
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, hsl(var(--foreground)) 0%, hsl(var(--accent-jade)) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@media (min-width: 768px) {
+  .stats-number-mega {
+    font-size: 3rem;
+  }
+}
+
+.stats-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  margin-bottom: 0.25rem;
+}
+
+.stats-sublabel {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}

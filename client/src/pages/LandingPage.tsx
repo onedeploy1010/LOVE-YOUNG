@@ -413,35 +413,75 @@ export default function LandingPage() {
 
       <FlavorTicker />
 
-      <section className="py-16 md:py-24 bg-background relative overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
+      <section className="py-12 md:py-20 bg-gradient-to-br from-background via-card to-background relative overflow-hidden" data-testid="section-stats">
+        <div className="absolute inset-0 opacity-40">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_left,_hsl(var(--accent-jade)/0.15),_transparent_50%)]" />
+          <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_right,_hsl(var(--secondary)/0.15),_transparent_50%)]" />
+        </div>
         
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
           <motion.div 
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
+            className="text-center mb-10"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={fadeInUp}
+          >
+            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-gradient-to-r from-emerald-500/10 to-amber-500/10 text-muted-foreground border border-emerald-500/20 mb-4">
+              {t("stats.whyTrust")}
+            </span>
+          </motion.div>
+
+          <motion.div 
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={staggerContainer}
           >
-            {[
-              { value: 2000, suffix: "+", label: t("stats.customers") },
-              { value: 8, suffix: "", label: t("stats.flavors") },
-              { value: 24, suffix: "h", label: t("stats.freshCycle") },
-              { value: 98, suffix: "%", label: t("stats.rating") }
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                variants={scaleIn}
-                className="text-center p-6"
-              >
-                <div className="text-4xl md:text-5xl font-black mb-2">
-                  <AnimatedCounter value={stat.value} suffix={stat.suffix} />
-                </div>
-                <p className="text-muted-foreground font-medium">{stat.label}</p>
-              </motion.div>
-            ))}
+            <motion.div variants={scaleIn} className="stats-card-premium group">
+              <div className="stats-icon-wrap bg-gradient-to-br from-rose-500/20 to-pink-500/10">
+                <Heart className="w-6 h-6 text-rose-500" />
+              </div>
+              <div className="stats-number-mega">
+                <AnimatedCounter value={2000} suffix="+" />
+              </div>
+              <div className="stats-label">{t("stats.customersLabel")}</div>
+              <div className="stats-sublabel">{t("stats.customersSub")}</div>
+            </motion.div>
+
+            <motion.div variants={scaleIn} className="stats-card-premium group">
+              <div className="stats-icon-wrap bg-gradient-to-br from-violet-500/20 to-purple-500/10">
+                <Beaker className="w-6 h-6 text-violet-500" />
+              </div>
+              <div className="stats-number-mega">
+                <AnimatedCounter value={8} suffix="" />
+              </div>
+              <div className="stats-label">{t("stats.flavorsLabel")}</div>
+              <div className="stats-sublabel">{t("stats.flavorsSub")}</div>
+            </motion.div>
+
+            <motion.div variants={scaleIn} className="stats-card-premium group">
+              <div className="stats-icon-wrap bg-gradient-to-br from-cyan-500/20 to-teal-500/10">
+                <Snowflake className="w-6 h-6 text-cyan-500" />
+              </div>
+              <div className="stats-number-mega">
+                <AnimatedCounter value={24} suffix="h" />
+              </div>
+              <div className="stats-label">{t("stats.freshLabel")}</div>
+              <div className="stats-sublabel">{t("stats.freshSub")}</div>
+            </motion.div>
+
+            <motion.div variants={scaleIn} className="stats-card-premium group">
+              <div className="stats-icon-wrap bg-gradient-to-br from-amber-500/20 to-orange-500/10">
+                <TrendingUp className="w-6 h-6 text-amber-500" />
+              </div>
+              <div className="stats-number-mega">
+                <AnimatedCounter value={98} suffix="%" />
+              </div>
+              <div className="stats-label">{t("stats.ratingLabel")}</div>
+              <div className="stats-sublabel">{t("stats.ratingSub")}</div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
