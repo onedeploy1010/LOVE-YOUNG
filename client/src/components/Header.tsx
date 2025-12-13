@@ -1,15 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, ShoppingBag, MessageCircle } from "lucide-react";
+import { Menu, ShoppingBag } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
-
-const navLinks = [
-  { href: "#products", label: "产品系列" },
-  { href: "#benefits", label: "品牌优势" },
-  { href: "#how-to-order", label: "如何订购" },
-  { href: "#testimonials", label: "客户评价" },
-];
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useLanguage } from "@/lib/i18n";
 
 interface HeaderProps {
   whatsappLink: string;
@@ -17,8 +12,16 @@ interface HeaderProps {
 }
 
 export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
+  const { t } = useLanguage();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navLinks = [
+    { href: "#products", label: t("nav.products") },
+    { href: "#innovation", label: t("nav.benefits") },
+    { href: "#how-to-order", label: t("nav.howToOrder") },
+    { href: "#testimonials", label: t("nav.testimonials") },
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -71,6 +74,7 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
+            <LanguageSwitcher />
             <Button
               variant="outline"
               size="default"
@@ -79,7 +83,7 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
               data-testid="button-header-whatsapp"
             >
               <SiWhatsapp className="w-4 h-4" />
-              <span className="hidden lg:inline">WhatsApp咨询</span>
+              <span className="hidden lg:inline">{t("header.whatsapp")}</span>
             </Button>
             <Button
               size="default"
@@ -88,7 +92,7 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
               data-testid="button-header-meta-shop"
             >
               <ShoppingBag className="w-4 h-4" />
-              <span className="hidden lg:inline">前往店铺</span>
+              <span className="hidden lg:inline">{t("header.shop")}</span>
             </Button>
           </div>
 
@@ -120,6 +124,9 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
                   ))}
                 </nav>
                 <div className="flex flex-col gap-3 pt-4 border-t border-border">
+                  <div className="flex justify-center pb-2">
+                    <LanguageSwitcher />
+                  </div>
                   <Button
                     variant="outline"
                     className="w-full gap-2 justify-center"
@@ -127,7 +134,7 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
                     data-testid="button-mobile-whatsapp"
                   >
                     <SiWhatsapp className="w-4 h-4" />
-                    WhatsApp咨询
+                    {t("header.whatsapp")}
                   </Button>
                   <Button
                     className="w-full gap-2 justify-center"
@@ -135,7 +142,7 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
                     data-testid="button-mobile-meta-shop"
                   >
                     <ShoppingBag className="w-4 h-4" />
-                    前往店铺
+                    {t("header.shop")}
                   </Button>
                 </div>
               </div>
