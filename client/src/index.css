@@ -947,3 +947,217 @@
     line-height: 1.1;
   }
 }
+
+/* ============================================
+   MEGA HERO TITLE - Ultra Bold & Dynamic
+   ============================================ */
+
+/* Animated shine effect for hero text */
+@keyframes textShine {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes neonPulse {
+  0%, 100% { 
+    text-shadow: 
+      0 0 10px rgba(255,255,255,0.8),
+      0 0 20px hsl(var(--accent-jade)),
+      0 0 40px hsl(var(--accent-jade)),
+      0 0 60px hsl(var(--accent-jade) / 0.5);
+  }
+  50% { 
+    text-shadow: 
+      0 0 5px rgba(255,255,255,0.5),
+      0 0 15px hsl(var(--accent-jade) / 0.8),
+      0 0 30px hsl(var(--accent-jade) / 0.6),
+      0 0 50px hsl(var(--accent-jade) / 0.3);
+  }
+}
+
+.hero-title-mega {
+  font-size: clamp(3.5rem, 14vw, 9rem);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: white;
+  text-shadow: 
+    0 4px 20px rgba(0,0,0,0.4),
+    0 0 40px hsl(var(--accent-jade) / 0.3);
+}
+
+.hero-title-gradient {
+  background: linear-gradient(135deg, 
+    #fff 0%, 
+    hsl(var(--accent-jade)) 30%, 
+    hsl(var(--accent-mint)) 60%,
+    #fff 100%
+  );
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: textShine 4s ease infinite;
+  filter: drop-shadow(0 4px 20px rgba(0,0,0,0.3));
+}
+
+.hero-title-neon {
+  animation: neonPulse 2.5s ease-in-out infinite;
+}
+
+/* ============================================
+   MEGA COUNTDOWN TIMER - Eye-catching Badge
+   ============================================ */
+
+@keyframes countdownPulse {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 
+      0 0 20px hsl(var(--accent-jade) / 0.6),
+      0 0 40px hsl(var(--accent-jade) / 0.3),
+      inset 0 0 15px rgba(255,255,255,0.15);
+  }
+  50% { 
+    transform: scale(1.03);
+    box-shadow: 
+      0 0 30px hsl(var(--accent-jade) / 0.8),
+      0 0 60px hsl(var(--accent-jade) / 0.4),
+      inset 0 0 20px rgba(255,255,255,0.2);
+  }
+}
+
+@keyframes borderGlow {
+  0%, 100% { border-color: rgba(255,255,255,0.3); }
+  50% { border-color: rgba(255,255,255,0.6); }
+}
+
+.countdown-badge-mega {
+  background: linear-gradient(135deg, 
+    hsl(var(--accent-jade)) 0%, 
+    hsl(var(--accent-mint)) 50%, 
+    hsl(var(--accent-jade)) 100%
+  );
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite, countdownPulse 2s ease-in-out infinite, borderGlow 2s ease-in-out infinite;
+  border: 2px solid rgba(255,255,255,0.4);
+  padding: 14px 28px;
+  border-radius: 9999px;
+  font-size: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.countdown-number {
+  font-size: 1.4rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 15px rgba(255,255,255,0.9);
+  letter-spacing: 0.02em;
+}
+
+.countdown-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0.95;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================
+   DYNAMIC INNOVATION CARDS - Youthful Design
+   ============================================ */
+
+@keyframes floatIcon {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-8px) rotate(2deg); }
+  75% { transform: translateY(-4px) rotate(-2deg); }
+}
+
+@keyframes borderRotate {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes iconGlow {
+  0%, 100% { 
+    box-shadow: 0 0 10px hsl(var(--accent-jade) / 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 25px hsl(var(--accent-jade) / 0.6), 0 0 40px hsl(var(--accent-jade) / 0.2);
+  }
+}
+
+.innovation-card-dynamic {
+  position: relative;
+  background: hsl(var(--card));
+  border-radius: 1.5rem;
+  padding: 2rem;
+  overflow: visible;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.innovation-card-dynamic:hover {
+  transform: translateY(-8px);
+  box-shadow: 
+    0 20px 40px hsl(var(--foreground) / 0.08),
+    0 0 30px hsl(var(--accent-jade) / 0.15);
+}
+
+.innovation-card-dynamic::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 1.6rem;
+  background: linear-gradient(135deg, 
+    hsl(var(--accent-jade)) 0%, 
+    hsl(var(--accent-coral)) 50%,
+    hsl(var(--accent-jade)) 100%
+  );
+  background-size: 200% 200%;
+  animation: borderRotate 4s ease infinite;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.innovation-card-dynamic:hover::before {
+  opacity: 1;
+}
+
+.innovation-icon-float {
+  animation: floatIcon 3s ease-in-out infinite;
+}
+
+.innovation-icon-glow {
+  animation: iconGlow 2s ease-in-out infinite;
+  border-radius: 1rem;
+}
+
+.innovation-stat {
+  font-size: 2.5rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, hsl(var(--accent-jade)) 0%, hsl(var(--secondary)) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+/* Stagger animation delays for innovation cards */
+.innovation-delay-1 { animation-delay: 0.1s; }
+.innovation-delay-2 { animation-delay: 0.2s; }
+.innovation-delay-3 { animation-delay: 0.3s; }
+.innovation-delay-4 { animation-delay: 0.4s; }
+
+/* Glass effect for modern look */
+.glass-card {
+  background: hsl(var(--card) / 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid hsl(var(--border) / 0.5);
+}
+
+.dark .glass-card {
+  background: hsl(var(--card) / 0.5);
+  border: 1px solid hsl(var(--border) / 0.3);
+}

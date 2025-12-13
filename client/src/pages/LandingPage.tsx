@@ -125,10 +125,10 @@ function FreshnessTimer() {
   }, []);
 
   return (
-    <div className="fresh-badge px-4 py-2 rounded-full inline-flex items-center gap-3 text-white font-medium" data-testid="badge-freshness-timer">
-      <Timer className="w-5 h-5" />
-      <span className="text-sm">{t("hero.nextBatch")}</span>
-      <span className="font-bold text-lg tabular-nums">{hours}h {minutes}m {seconds}s</span>
+    <div className="countdown-badge-mega inline-flex items-center gap-4 text-white font-medium" data-testid="badge-freshness-timer">
+      <Timer className="w-6 h-6 animate-pulse" />
+      <span className="countdown-label">{t("hero.nextBatch")}</span>
+      <span className="countdown-number">{hours}h {minutes}m {seconds}s</span>
     </div>
   );
 }
@@ -264,11 +264,11 @@ export default function LandingPage() {
               <motion.h1
                 variants={fadeInUp}
                 transition={{ duration: 0.7 }}
-                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] mb-6 tracking-tight"
+                className="hero-title-mega mb-6"
                 data-testid="text-hero-title"
               >
                 <span className="block">{t("hero.fresh")}</span>
-                <span className="block neon-text">{t("hero.noCompromise")}</span>
+                <span className="block hero-title-gradient hero-title-neon">{t("hero.noCompromise")}</span>
               </motion.h1>
 
               <motion.p
@@ -670,14 +670,15 @@ export default function LandingPage() {
               <motion.div
                 key={index}
                 variants={fadeInUp}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className={`innovation-delay-${index + 1}`}
               >
-                <Card
-                  className="innovation-card p-6 h-full relative z-10 bg-card"
+                <div
+                  className="innovation-card-dynamic h-full relative z-10"
                   data-testid={`innovation-pillar-${index}`}
                 >
-                  <div className="w-14 h-14 mb-6 flex items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10">
-                    <pillar.icon className="w-7 h-7 text-emerald-500" />
+                  <div className="w-16 h-16 mb-6 flex items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 innovation-icon-float innovation-icon-glow">
+                    <pillar.icon className="w-8 h-8 text-emerald-500" />
                   </div>
                   <div className="mb-4">
                     <h3 className="font-bold text-xl text-foreground mb-1">
@@ -691,10 +692,10 @@ export default function LandingPage() {
                     {pillar.description}
                   </p>
                   <div className="mt-auto pt-4 border-t border-border">
-                    <div className="text-3xl font-black gradient-text">{pillar.stat}</div>
+                    <div className="innovation-stat">{pillar.stat}</div>
                     <div className="text-xs text-muted-foreground font-medium">{pillar.statLabel}</div>
                   </div>
-                </Card>
+                </div>
               </motion.div>
             ))}
           </motion.div>
