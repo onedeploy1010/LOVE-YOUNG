@@ -586,7 +586,7 @@ export default function MemberCenterPage() {
   });
 
   const handleLogout = async () => {
-    window.location.href = "/api/auth/logout";
+    window.location.href = "/api/logout";
   };
 
   if (authLoading) {
@@ -606,7 +606,7 @@ export default function MemberCenterPage() {
             <h2 className="text-xl font-semibold">{t("member.notLoggedIn")}</h2>
             <p className="text-muted-foreground">{t("member.loginToAccess")}</p>
             <Button asChild data-testid="button-login">
-              <a href="/api/auth/login">{t("member.login")}</a>
+              <a href="/api/login">{t("member.login")}</a>
             </Button>
             <Link href="/">
               <Button variant="ghost" className="mt-2">
