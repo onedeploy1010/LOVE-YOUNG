@@ -27,6 +27,7 @@ export const products = pgTable("products", {
   image: text("image").notNull(),
   category: text("category").notNull(),
   featured: boolean("featured").default(false),
+  erpnextItemCode: text("erpnext_item_code"),
 });
 
 export const insertProductSchema = createInsertSchema(products).omit({

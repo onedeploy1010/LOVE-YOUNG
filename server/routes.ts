@@ -3,6 +3,12 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertContactMessageSchema, insertOrderSchema } from "@shared/schema";
 import { z } from "zod";
+import {
+  syncProductsToDatabase,
+  syncOrdersFromErpnext,
+  createOrderInErpnext,
+  isErpnextConfigured,
+} from "./services/erpnext";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -165,6 +171,65 @@ export async function registerRoutes(
       res.json(order);
     } catch (error) {
       res.status(500).json({ error: "Failed to update order" });
+    }
+  });
+
+  app.get("/api/sync/status", async (req, res) => {
+    res.json({
+      erpnext: {
+        configured: isErpnextConfigured(),
+        message: isErpnextConfigured() 
+          ? "ERPNext is configured and ready" 
+          : "ERPNext credentials not configured (ERPNEXT_URL, ERPNEXT_API_KEY, ERPNEXT_API_SECRET)",
+      },
+    });
+  });
+
+  app.post("/api/sync/products", async (req, res) => {
+    try {
+      if (!isErpnextConfigured()) {
+        return res.status(400).json({ 
+          error: "ERPNext not configured",
+          message: "Please configure ERPNEXT_URL, ERPNEXT_API_KEY, and ERPNEXT_API_SECRET",
+        });
+      }
+
+      const result = await syncProductsToDatabase();
+      res.json({
+        success: true,
+        message: `Product sync completed: ${result.created} created, ${result.updated} updated`,
+        ...result,
+      });
+    } catch (error) {
+      console.error("Product sync error:", error);
+      res.status(500).json({ 
+        error: "Failed to sync products",
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  });
+
+  app.post("/api/sync/orders", async (req, res) => {
+    try {
+      if (!isErpnextConfigured()) {
+        return res.status(400).json({ 
+          error: "ERPNext not configured",
+          message: "Please configure ERPNEXT_URL, ERPNEXT_API_KEY, and ERPNEXT_API_SECRET",
+        });
+      }
+
+      const result = await syncOrdersFromErpnext();
+      res.json({
+        success: true,
+        message: `Order sync completed: ${result.created} created, ${result.updated} updated`,
+        ...result,
+      });
+    } catch (error) {
+      console.error("Order sync error:", error);
+      res.status(500).json({ 
+        error: "Failed to sync orders",
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   });
 
