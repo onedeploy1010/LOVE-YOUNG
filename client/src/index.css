@@ -977,14 +977,28 @@
 }
 
 .hero-title-mega {
-  font-size: clamp(3.5rem, 14vw, 9rem);
+  font-size: clamp(2.5rem, 10vw, 9rem);
   font-weight: 900;
-  line-height: 0.9;
-  letter-spacing: -0.04em;
+  line-height: 1;
+  letter-spacing: -0.02em;
   color: white;
   text-shadow: 
     0 4px 20px rgba(0,0,0,0.4),
     0 0 40px hsl(var(--accent-jade) / 0.3);
+}
+
+/* Mobile Hero Optimizations */
+@media (max-width: 640px) {
+  .hero-title-mega {
+    font-size: 2.2rem;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 1rem;
+  }
+  
+  .hero-title-gradient {
+    font-size: 2rem;
+  }
 }
 
 .hero-title-gradient {
