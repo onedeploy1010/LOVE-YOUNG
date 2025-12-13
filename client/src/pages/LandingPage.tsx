@@ -125,8 +125,8 @@ function FreshnessTimer() {
   }, []);
 
   return (
-    <div className="countdown-badge-mega inline-flex items-center gap-4 text-white font-medium" data-testid="badge-freshness-timer">
-      <Timer className="w-6 h-6 animate-pulse" />
+    <div className="countdown-badge-mega inline-flex items-center gap-2.5 text-white font-medium shadow-lg" data-testid="badge-freshness-timer">
+      <Timer className="w-4 h-4" />
       <span className="countdown-label">{t("hero.nextBatch")}</span>
       <span className="countdown-number">{hours}h {minutes}m {seconds}s</span>
     </div>
