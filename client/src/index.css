@@ -43,9 +43,10 @@
   --chart-3: 200 75% 40%;
   --chart-4: 280 70% 45%;
   --chart-5: 140 65% 40%;
-  --font-sans: Open Sans, sans-serif;
-  --font-serif: Georgia, serif;
+  --font-sans: 'Noto Sans SC', sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
   --font-mono: Menlo, monospace;
+  --whatsapp-green: 142 70% 45%;
   --radius: .5rem;
   --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
