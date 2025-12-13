@@ -55,12 +55,9 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
             className="brand-logo-container"
             data-testid="link-logo"
           >
-            <div className="brand-logo-icon">
-              <span className="brand-logo-icon-inner">L</span>
-            </div>
-            <div className="brand-logo-main">
+            <div className="brand-logo-text">
               <span className="brand-logo-english">LOVEYOUNG</span>
-              <span className="brand-logo-chinese">养乐鲜炖</span>
+              <span className="brand-logo-chinese">养乐鲜炖 · 燕窝花胶</span>
             </div>
           </a>
 
