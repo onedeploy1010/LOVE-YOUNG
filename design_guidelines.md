@@ -1,6 +1,21 @@
 # LOVEYOUNG Design Guidelines
 Premium Bird's Nest & Fish Maw E-commerce Website
 
+## Brand Color Palette (墨绿色 + 金色 + 米白)
+Based on the LOVEYOUNG logo, the website uses a premium color scheme:
+
+### Primary Colors
+- **墨绿色 (Dark Forest Green)**: HSL(156, 38%, 28%) - Main brand color for headers, buttons, and accents
+- **金色 (Gold)**: HSL(43, 72%, 50%) - Secondary accent for highlights, CTAs, and premium touches
+- **米白/米黄 (Cream/Beige)**: HSL(45, 30%, 95-97%) - Background colors creating warmth and elegance
+
+### Usage Guidelines
+- Primary buttons: Dark forest green with cream text
+- Secondary buttons: Gold with dark green text
+- Backgrounds: Cream/beige tones (米白)
+- Text: Dark green on light backgrounds, cream on dark backgrounds
+- Accents and highlights: Gold color for premium feel
+
 ## Design Approach
 **Reference-Based**: Drawing inspiration from luxury food e-commerce (premium tea brands, high-end supplement sites) and Asian wellness brands. Focus on clean elegance, trust-building, and product showcase excellence with mobile-first responsive design.
 
