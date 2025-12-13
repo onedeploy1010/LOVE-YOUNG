@@ -1,18 +1,21 @@
 import { 
   users, products, testimonials, contactMessages, orders,
-  type User, type InsertUser, 
+  members, memberAddresses, memberPointsLedger,
+  type User, type UpsertUser,
   type Product, type InsertProduct, 
   type Testimonial, type InsertTestimonial, 
   type ContactMessage, type InsertContactMessage,
-  type Order, type InsertOrder
+  type Order, type InsertOrder,
+  type Member, type InsertMember,
+  type MemberAddress, type InsertMemberAddress,
+  type PointsLedger, type InsertPointsLedger
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, or } from "drizzle-orm";
+import { eq, or, desc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  upsertUser(user: UpsertUser): Promise<User>;
   
   getProducts(): Promise<Product[]>;
   getProduct(id: string): Promise<Product | undefined>;
@@ -34,6 +37,23 @@ export interface IStorage {
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: string, order: Partial<InsertOrder>): Promise<Order | undefined>;
   
+  getMember(id: string): Promise<Member | undefined>;
+  getMemberByUserId(userId: string): Promise<Member | undefined>;
+  getMemberByPhone(phone: string): Promise<Member | undefined>;
+  createMember(member: InsertMember): Promise<Member>;
+  updateMember(id: string, member: Partial<InsertMember>): Promise<Member | undefined>;
+  
+  getMemberAddresses(memberId: string): Promise<MemberAddress[]>;
+  getMemberAddress(id: string): Promise<MemberAddress | undefined>;
+  createMemberAddress(address: InsertMemberAddress): Promise<MemberAddress>;
+  updateMemberAddress(id: string, address: Partial<InsertMemberAddress>): Promise<MemberAddress | undefined>;
+  deleteMemberAddress(id: string): Promise<boolean>;
+  setDefaultAddress(memberId: string, addressId: string): Promise<void>;
+  
+  getMemberPoints(memberId: string): Promise<PointsLedger[]>;
+  addPoints(entry: InsertPointsLedger): Promise<PointsLedger>;
+  getMemberOrderHistory(memberId: string): Promise<Order[]>;
+  
   seedDefaultData(): Promise<void>;
 }
 
@@ -43,13 +63,18 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
     return user;
   }
 
@@ -130,6 +155,84 @@ export class DatabaseStorage implements IStorage {
       updatedAt: new Date().toISOString(),
     }).where(eq(orders.id, id)).returning();
     return order || undefined;
+  }
+
+  async getMember(id: string): Promise<Member | undefined> {
+    const [member] = await db.select().from(members).where(eq(members.id, id));
+    return member || undefined;
+  }
+
+  async getMemberByUserId(userId: string): Promise<Member | undefined> {
+    const [member] = await db.select().from(members).where(eq(members.userId, userId));
+    return member || undefined;
+  }
+
+  async getMemberByPhone(phone: string): Promise<Member | undefined> {
+    const [member] = await db.select().from(members).where(eq(members.phone, phone));
+    return member || undefined;
+  }
+
+  async createMember(insertMember: InsertMember): Promise<Member> {
+    const [member] = await db.insert(members).values(insertMember).returning();
+    return member;
+  }
+
+  async updateMember(id: string, updateData: Partial<InsertMember>): Promise<Member | undefined> {
+    const [member] = await db.update(members).set(updateData).where(eq(members.id, id)).returning();
+    return member || undefined;
+  }
+
+  async getMemberAddresses(memberId: string): Promise<MemberAddress[]> {
+    return await db.select().from(memberAddresses).where(eq(memberAddresses.memberId, memberId));
+  }
+
+  async getMemberAddress(id: string): Promise<MemberAddress | undefined> {
+    const [address] = await db.select().from(memberAddresses).where(eq(memberAddresses.id, id));
+    return address || undefined;
+  }
+
+  async createMemberAddress(insertAddress: InsertMemberAddress): Promise<MemberAddress> {
+    const [address] = await db.insert(memberAddresses).values(insertAddress).returning();
+    return address;
+  }
+
+  async updateMemberAddress(id: string, updateData: Partial<InsertMemberAddress>): Promise<MemberAddress | undefined> {
+    const [address] = await db.update(memberAddresses).set(updateData).where(eq(memberAddresses.id, id)).returning();
+    return address || undefined;
+  }
+
+  async deleteMemberAddress(id: string): Promise<boolean> {
+    const result = await db.delete(memberAddresses).where(eq(memberAddresses.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async setDefaultAddress(memberId: string, addressId: string): Promise<void> {
+    await db.update(memberAddresses).set({ isDefault: false }).where(eq(memberAddresses.memberId, memberId));
+    await db.update(memberAddresses).set({ isDefault: true }).where(eq(memberAddresses.id, addressId));
+  }
+
+  async getMemberPoints(memberId: string): Promise<PointsLedger[]> {
+    return await db.select().from(memberPointsLedger)
+      .where(eq(memberPointsLedger.memberId, memberId))
+      .orderBy(desc(memberPointsLedger.createdAt));
+  }
+
+  async addPoints(entry: InsertPointsLedger): Promise<PointsLedger> {
+    const [pointsEntry] = await db.insert(memberPointsLedger).values(entry).returning();
+    
+    const member = await this.getMember(entry.memberId);
+    if (member) {
+      const newBalance = (member.pointsBalance || 0) + entry.points;
+      await this.updateMember(entry.memberId, { pointsBalance: newBalance });
+    }
+    
+    return pointsEntry;
+  }
+
+  async getMemberOrderHistory(memberId: string): Promise<Order[]> {
+    return await db.select().from(orders)
+      .where(eq(orders.memberId, memberId))
+      .orderBy(desc(orders.createdAt));
   }
 
   async seedDefaultData(): Promise<void> {

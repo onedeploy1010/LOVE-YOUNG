@@ -6,12 +6,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingBag, Plus, Minus, Check, CheckCircle, Loader2 } from "lucide-react";
+import { ShoppingBag, Plus, Minus, Check, CheckCircle, Loader2, User, MapPin } from "lucide-react";
 import { SiWhatsapp, SiFacebook } from "react-icons/si";
 import { useLanguage } from "@/lib/i18n";
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
+import type { Member, MemberAddress } from "@shared/schema";
 
 interface OrderModalProps {
   open: boolean;
@@ -64,11 +66,14 @@ const malaysiaStates = [
 
 export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: OrderModalProps) {
   const { t } = useLanguage();
+  const { user, isAuthenticated } = useAuth();
   const [step, setStep] = useState<"package" | "flavors" | "delivery" | "confirm" | "success">("package");
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [selections, setSelections] = useState<FlavorSelection[]>([]);
   const [activeCategory, setActiveCategory] = useState<"birdNest" | "fishMaw">("birdNest");
   const [orderNumber, setOrderNumber] = useState<string>("");
+  const [useGuestCheckout, setUseGuestCheckout] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>({
     customerName: "",
     phone: "",
@@ -77,6 +82,19 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
     state: "",
     postcode: "",
     deliveryDate: "",
+  });
+
+  // Fetch member profile and addresses if authenticated
+  const { data: member } = useQuery<Member>({
+    queryKey: ["/api/members/me"],
+    enabled: isAuthenticated,
+    retry: false,
+  });
+
+  const { data: savedAddresses = [] } = useQuery<MemberAddress[]>({
+    queryKey: ["/api/members/me/addresses"],
+    enabled: isAuthenticated && !!member,
+    retry: false,
   });
 
   const selectedPkg = packages.find(p => p.key === selectedPackage);
@@ -174,7 +192,28 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
       deliveryDate: "",
     });
     setOrderNumber("");
+    setUseGuestCheckout(false);
+    setSelectedAddressId(null);
   };
+
+  const handleSelectSavedAddress = (address: MemberAddress) => {
+    setSelectedAddressId(address.id);
+    setDeliveryInfo({
+      customerName: address.recipientName,
+      phone: address.phone,
+      address: address.addressLine1 + (address.addressLine2 ? `, ${address.addressLine2}` : ""),
+      city: address.city,
+      state: address.state,
+      postcode: address.postcode,
+      deliveryDate: deliveryInfo.deliveryDate,
+    });
+  };
+
+  const handleLogin = () => {
+    window.location.href = "/api/login";
+  };
+
+  const showAddressSelection = isAuthenticated && member && savedAddresses.length > 0 && !useGuestCheckout;
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
@@ -361,94 +400,191 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
 
           {step === "delivery" && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="customerName">{t("order.customerName")} *</Label>
-                <Input
-                  id="customerName"
-                  value={deliveryInfo.customerName}
-                  onChange={(e) => handleDeliveryInfoChange("customerName", e.target.value)}
-                  placeholder={t("order.customerName")}
-                  data-testid="input-customer-name"
-                />
-              </div>
+              {/* Login prompt for guests */}
+              {!isAuthenticated && !useGuestCheckout && (
+                <Card className="p-5">
+                  <div className="text-center space-y-4">
+                    <div className="flex justify-center">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="w-6 h-6 text-primary" />
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-foreground mb-1">{t("order.loginForSavedAddress")}</h4>
+                      <p className="text-sm text-muted-foreground">{t("order.loginBenefit")}</p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Button onClick={handleLogin} data-testid="button-login-checkout">
+                        <User className="w-4 h-4 mr-2" />
+                        {t("order.loginOrRegister")}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setUseGuestCheckout(true)}
+                        data-testid="button-guest-checkout"
+                      >
+                        {t("order.continueAsGuest")}
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              )}
 
-              <div className="space-y-2">
-                <Label htmlFor="phone">{t("order.phone")} *</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={deliveryInfo.phone}
-                  onChange={(e) => handleDeliveryInfoChange("phone", e.target.value)}
-                  placeholder="012-3456789"
-                  data-testid="input-phone"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address">{t("order.address")} *</Label>
-                <Input
-                  id="address"
-                  value={deliveryInfo.address}
-                  onChange={(e) => handleDeliveryInfoChange("address", e.target.value)}
-                  placeholder={t("order.address")}
-                  data-testid="input-address"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">{t("order.city")} *</Label>
-                  <Input
-                    id="city"
-                    value={deliveryInfo.city}
-                    onChange={(e) => handleDeliveryInfoChange("city", e.target.value)}
-                    placeholder={t("order.city")}
-                    data-testid="input-city"
-                  />
+              {/* Saved addresses for logged-in members */}
+              {showAddressSelection && (
+                <div className="space-y-3">
+                  <Label>{t("order.selectSavedAddress")}</Label>
+                  {savedAddresses.map((addr) => (
+                    <Card
+                      key={addr.id}
+                      className={`p-4 cursor-pointer transition-all hover-elevate ${
+                        selectedAddressId === addr.id ? "ring-2 ring-primary" : ""
+                      }`}
+                      onClick={() => handleSelectSavedAddress(addr)}
+                      data-testid={`card-saved-address-${addr.id}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <div className="text-sm">
+                            <p className="font-medium text-foreground">{addr.recipientName}</p>
+                            <p className="text-muted-foreground">{addr.phone}</p>
+                            <p className="text-muted-foreground">
+                              {addr.addressLine1}
+                              {addr.addressLine2 && `, ${addr.addressLine2}`}
+                            </p>
+                            <p className="text-muted-foreground">
+                              {addr.postcode} {addr.city}, {t(`states.${addr.state}`)}
+                            </p>
+                          </div>
+                        </div>
+                        {selectedAddressId === addr.id && (
+                          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                            <Check className="w-4 h-4 text-primary-foreground" />
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  ))}
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      setSelectedAddressId(null);
+                      setUseGuestCheckout(true);
+                    }}
+                    data-testid="button-new-address"
+                  >
+                    {t("order.useNewAddress")}
+                  </Button>
                 </div>
+              )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="postcode">{t("order.postcode")} *</Label>
-                  <Input
-                    id="postcode"
-                    value={deliveryInfo.postcode}
-                    onChange={(e) => handleDeliveryInfoChange("postcode", e.target.value)}
-                    placeholder="12345"
-                    data-testid="input-postcode"
-                  />
-                </div>
-              </div>
+              {/* Manual address form */}
+              {(useGuestCheckout || (isAuthenticated && !showAddressSelection)) && (
+                <>
+                  {isAuthenticated && savedAddresses.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setUseGuestCheckout(false)}
+                      className="mb-2"
+                      data-testid="button-back-to-saved"
+                    >
+                      {t("order.backToSavedAddresses")}
+                    </Button>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="customerName">{t("order.customerName")} *</Label>
+                    <Input
+                      id="customerName"
+                      value={deliveryInfo.customerName}
+                      onChange={(e) => handleDeliveryInfoChange("customerName", e.target.value)}
+                      placeholder={t("order.customerName")}
+                      data-testid="input-customer-name"
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="state">{t("order.state")} *</Label>
-                <Select
-                  value={deliveryInfo.state}
-                  onValueChange={(value) => handleDeliveryInfoChange("state", value)}
-                >
-                  <SelectTrigger data-testid="select-state">
-                    <SelectValue placeholder={t("order.selectState")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {malaysiaStates.map((state) => (
-                      <SelectItem key={state} value={state} data-testid={`option-state-${state}`}>
-                        {t(`states.${state}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">{t("order.phone")} *</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={deliveryInfo.phone}
+                      onChange={(e) => handleDeliveryInfoChange("phone", e.target.value)}
+                      placeholder="012-3456789"
+                      data-testid="input-phone"
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="deliveryDate">{t("order.deliveryDate")}</Label>
-                <Input
-                  id="deliveryDate"
-                  type="date"
-                  value={deliveryInfo.deliveryDate}
-                  onChange={(e) => handleDeliveryInfoChange("deliveryDate", e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  data-testid="input-delivery-date"
-                />
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="address">{t("order.address")} *</Label>
+                    <Input
+                      id="address"
+                      value={deliveryInfo.address}
+                      onChange={(e) => handleDeliveryInfoChange("address", e.target.value)}
+                      placeholder={t("order.address")}
+                      data-testid="input-address"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="city">{t("order.city")} *</Label>
+                      <Input
+                        id="city"
+                        value={deliveryInfo.city}
+                        onChange={(e) => handleDeliveryInfoChange("city", e.target.value)}
+                        placeholder={t("order.city")}
+                        data-testid="input-city"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="postcode">{t("order.postcode")} *</Label>
+                      <Input
+                        id="postcode"
+                        value={deliveryInfo.postcode}
+                        onChange={(e) => handleDeliveryInfoChange("postcode", e.target.value)}
+                        placeholder="12345"
+                        data-testid="input-postcode"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="state">{t("order.state")} *</Label>
+                    <Select
+                      value={deliveryInfo.state}
+                      onValueChange={(value) => handleDeliveryInfoChange("state", value)}
+                    >
+                      <SelectTrigger data-testid="select-state">
+                        <SelectValue placeholder={t("order.selectState")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {malaysiaStates.map((state) => (
+                          <SelectItem key={state} value={state} data-testid={`option-state-${state}`}>
+                            {t(`states.${state}`)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="deliveryDate">{t("order.deliveryDate")}</Label>
+                    <Input
+                      id="deliveryDate"
+                      type="date"
+                      value={deliveryInfo.deliveryDate}
+                      onChange={(e) => handleDeliveryInfoChange("deliveryDate", e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      data-testid="input-delivery-date"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           )}
 

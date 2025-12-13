@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertContactMessageSchema, insertOrderSchema } from "@shared/schema";
+import { insertContactMessageSchema, insertOrderSchema, insertMemberSchema, insertMemberAddressSchema } from "@shared/schema";
 import { z } from "zod";
 import {
   syncProductsToDatabase,
@@ -15,12 +15,229 @@ import {
   isWhatsAppConfigured,
   isTextMessage,
 } from "./services/whatsapp";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   
+  await setupAuth(app);
+
+  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Member profile endpoints
+  app.get("/api/members/me", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(404).json({ error: "Member profile not found" });
+      }
+      res.json(member);
+    } catch (error) {
+      console.error("Error fetching member:", error);
+      res.status(500).json({ error: "Failed to fetch member profile" });
+    }
+  });
+
+  app.post("/api/members/me", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const existingMember = await storage.getMemberByUserId(userId);
+      if (existingMember) {
+        return res.status(400).json({ error: "Member profile already exists" });
+      }
+
+      const result = insertMemberSchema.safeParse({ ...req.body, userId });
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid member data", details: result.error.issues });
+      }
+
+      const member = await storage.createMember(result.data);
+      res.status(201).json(member);
+    } catch (error) {
+      console.error("Error creating member:", error);
+      res.status(500).json({ error: "Failed to create member profile" });
+    }
+  });
+
+  app.put("/api/members/me", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(404).json({ error: "Member profile not found" });
+      }
+
+      const updateSchema = insertMemberSchema.partial().omit({ userId: true });
+      const result = updateSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid member data", details: result.error.issues });
+      }
+
+      const updatedMember = await storage.updateMember(member.id, result.data);
+      res.json(updatedMember);
+    } catch (error) {
+      console.error("Error updating member:", error);
+      res.status(500).json({ error: "Failed to update member profile" });
+    }
+  });
+
+  // Member addresses endpoints
+  app.get("/api/members/me/addresses", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(404).json({ error: "Member profile not found" });
+      }
+
+      const addresses = await storage.getMemberAddresses(member.id);
+      res.json(addresses);
+    } catch (error) {
+      console.error("Error fetching addresses:", error);
+      res.status(500).json({ error: "Failed to fetch addresses" });
+    }
+  });
+
+  app.post("/api/members/me/addresses", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(404).json({ error: "Member profile not found" });
+      }
+
+      const result = insertMemberAddressSchema.safeParse({ ...req.body, memberId: member.id });
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid address data", details: result.error.issues });
+      }
+
+      const address = await storage.createMemberAddress(result.data);
+      
+      // If this is the first address, make it default
+      const allAddresses = await storage.getMemberAddresses(member.id);
+      if (allAddresses.length === 1) {
+        await storage.setDefaultAddress(member.id, address.id);
+      }
+      
+      res.status(201).json(address);
+    } catch (error) {
+      console.error("Error creating address:", error);
+      res.status(500).json({ error: "Failed to create address" });
+    }
+  });
+
+  app.put("/api/members/me/addresses/:addressId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(404).json({ error: "Member profile not found" });
+      }
+
+      const address = await storage.getMemberAddress(req.params.addressId);
+      if (!address || address.memberId !== member.id) {
+        return res.status(404).json({ error: "Address not found" });
+      }
+
+      const updatedAddress = await storage.updateMemberAddress(req.params.addressId, req.body);
+      res.json(updatedAddress);
+    } catch (error) {
+      console.error("Error updating address:", error);
+      res.status(500).json({ error: "Failed to update address" });
+    }
+  });
+
+  app.delete("/api/members/me/addresses/:addressId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(404).json({ error: "Member profile not found" });
+      }
+
+      const address = await storage.getMemberAddress(req.params.addressId);
+      if (!address || address.memberId !== member.id) {
+        return res.status(404).json({ error: "Address not found" });
+      }
+
+      await storage.deleteMemberAddress(req.params.addressId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting address:", error);
+      res.status(500).json({ error: "Failed to delete address" });
+    }
+  });
+
+  app.post("/api/members/me/addresses/:addressId/default", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(404).json({ error: "Member profile not found" });
+      }
+
+      const address = await storage.getMemberAddress(req.params.addressId);
+      if (!address || address.memberId !== member.id) {
+        return res.status(404).json({ error: "Address not found" });
+      }
+
+      await storage.setDefaultAddress(member.id, req.params.addressId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error setting default address:", error);
+      res.status(500).json({ error: "Failed to set default address" });
+    }
+  });
+
+  // Member points endpoints
+  app.get("/api/members/me/points", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(404).json({ error: "Member profile not found" });
+      }
+
+      const pointsHistory = await storage.getMemberPoints(member.id);
+      res.json({
+        balance: member.pointsBalance || 0,
+        history: pointsHistory,
+      });
+    } catch (error) {
+      console.error("Error fetching points:", error);
+      res.status(500).json({ error: "Failed to fetch points" });
+    }
+  });
+
+  // Member order history
+  app.get("/api/members/me/orders", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(404).json({ error: "Member profile not found" });
+      }
+
+      const orders = await storage.getMemberOrderHistory(member.id);
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      res.status(500).json({ error: "Failed to fetch order history" });
+    }
+  });
+
   app.get("/api/products", async (req, res) => {
     try {
       const products = await storage.getProducts();

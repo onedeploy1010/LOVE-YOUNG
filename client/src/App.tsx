@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/LandingPage";
 import OrderTrackingPage from "@/pages/OrderTrackingPage";
 import ChristmasPromoPage from "@/pages/ChristmasPromoPage";
+import MemberCenterPage from "@/pages/MemberCenterPage";
 
 function Router() {
   return (
@@ -15,6 +16,7 @@ function Router() {
       <Route path="/" component={LandingPage} />
       <Route path="/order-tracking" component={OrderTrackingPage} />
       <Route path="/christmas" component={ChristmasPromoPage} />
+      <Route path="/member" component={MemberCenterPage} />
       <Route component={NotFound} />
     </Switch>
   );

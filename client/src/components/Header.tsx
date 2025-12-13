@@ -1,10 +1,19 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, ShoppingBag } from "lucide-react";
+import { Menu, ShoppingBag, User, LogOut } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "@/lib/i18n";
+import { useAuth } from "@/hooks/useAuth";
+import { Link } from "wouter";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface HeaderProps {
   whatsappLink: string;
@@ -13,8 +22,27 @@ interface HeaderProps {
 
 export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
   const { t } = useLanguage();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleLogin = () => {
+    window.location.href = "/api/login";
+  };
+
+  const handleLogout = () => {
+    window.location.href = "/api/logout";
+  };
+
+  const getUserInitials = () => {
+    if (!user) return "U";
+    if (user.firstName && user.lastName) {
+      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+    }
+    if (user.firstName) return user.firstName[0].toUpperCase();
+    if (user.email) return user.email[0].toUpperCase();
+    return "U";
+  };
 
   const navLinks = [
     { href: "#products", label: t("nav.products") },
@@ -95,6 +123,43 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
               <ShoppingBag className="w-4 h-4" />
               <span className="hidden lg:inline">{t("header.shop")}</span>
             </Button>
+            {!isLoading && (
+              isAuthenticated ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" data-testid="button-user-menu">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.profileImageUrl || undefined} />
+                        <AvatarFallback className="text-xs">{getUserInitials()}</AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link href="/member" data-testid="link-member-center">
+                        <User className="w-4 h-4 mr-2" />
+                        {t("header.account")}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout} data-testid="button-logout">
+                      <LogOut className="w-4 h-4 mr-2" />
+                      {t("member.logout")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="default"
+                  className="gap-2"
+                  onClick={handleLogin}
+                  data-testid="button-header-login"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="hidden lg:inline">{t("header.login")}</span>
+                </Button>
+              )
+            )}
           </div>
 
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -147,6 +212,41 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
                     <ShoppingBag className="w-4 h-4" />
                     {t("header.shop")}
                   </Button>
+                  {!isLoading && (
+                    isAuthenticated ? (
+                      <>
+                        <Link href="/member" onClick={() => setMobileMenuOpen(false)}>
+                          <Button
+                            variant="outline"
+                            className="w-full gap-2 justify-center"
+                            data-testid="button-mobile-member"
+                          >
+                            <User className="w-4 h-4" />
+                            {t("header.account")}
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          className="w-full gap-2 justify-center"
+                          onClick={handleLogout}
+                          data-testid="button-mobile-logout"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          {t("member.logout")}
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="w-full gap-2 justify-center"
+                        onClick={handleLogin}
+                        data-testid="button-mobile-login"
+                      >
+                        <User className="w-4 h-4" />
+                        {t("header.login")}
+                      </Button>
+                    )
+                  )}
                 </div>
               </div>
             </SheetContent>
