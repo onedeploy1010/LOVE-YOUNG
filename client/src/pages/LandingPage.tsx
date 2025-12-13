@@ -32,6 +32,7 @@ import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import type { Product, Testimonial } from "@shared/schema";
 import { useLanguage } from "@/lib/i18n";
+import { useLocation } from "wouter";
 
 import heroImage from "@assets/generated_images/premium_bird's_nest_hero_image.png";
 import processImage from "@assets/generated_images/bird's_nest_preparation_process.png";
@@ -153,6 +154,21 @@ function FlavorTicker() {
         ))}
       </div>
     </div>
+  );
+}
+
+function ChristmasFloatingButton() {
+  const [, setLocation] = useLocation();
+  
+  return (
+    <Button
+      className="christmas-floating-button"
+      onClick={() => setLocation("/christmas")}
+      data-testid="button-christmas-promo"
+    >
+      <Star className="w-4 h-4" />
+      <span>圣诞限定</span>
+    </Button>
   );
 }
 
@@ -942,6 +958,7 @@ export default function LandingPage() {
       <Footer whatsappLink={WHATSAPP_LINK} metaShopLink={META_SHOP_LINK} />
       <WhatsAppButton whatsappLink={WHATSAPP_LINK} />
       <ChristmasPromoPopup whatsappLink={WHATSAPP_LINK} metaShopLink={META_SHOP_LINK} />
+      <ChristmasFloatingButton />
       <FlavorModal open={flavorModalOpen} onOpenChange={setFlavorModalOpen} />
     </div>
   );

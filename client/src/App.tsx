@@ -7,12 +7,14 @@ import { LanguageProvider } from "@/lib/i18n";
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/LandingPage";
 import OrderTrackingPage from "@/pages/OrderTrackingPage";
+import ChristmasPromoPage from "@/pages/ChristmasPromoPage";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
       <Route path="/order-tracking" component={OrderTrackingPage} />
+      <Route path="/christmas" component={ChristmasPromoPage} />
       <Route component={NotFound} />
     </Switch>
   );
