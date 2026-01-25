@@ -20,19 +20,19 @@ const FOUNDERS = [
   {
     name: "林雅琳",
     title: "联合创始人 · CEO",
-    image: "/pics/love_young_founders_story_20260106043351_1.png",
+    image: "/pics/founder_1.jpg",
     story: "从职场精英到创业者，雅琳深知现代女性对健康与事业平衡的渴望。她将十年品牌运营经验注入LOVEYOUNG，致力于打造让女性由内而外发光的滋补品牌。"
   },
   {
     name: "陈美玲",
     title: "联合创始人 · 产品总监",
-    image: "/pics/love_young_wellness_journey_20260106043338_1.png",
+    image: "/pics/founder_2.jpg",
     story: "美玲拥有食品科学硕士学位，曾在燕窝产业深耕15年。她坚持'科学配方，天然成分'的理念，亲自把关每一款产品的研发与品控。"
   },
   {
     name: "张慧敏",
     title: "联合创始人 · 运营总监",
-    image: "/pics/love_young_community_impact_20260106043528_1.png",
+    image: "/pics/founder_3.jpg",
     story: "慧敏是社群运营专家，擅长连接人与人之间的温暖纽带。她相信，LOVEYOUNG不仅是卖产品，更是在建立一个互相支持、共同成长的女性社区。"
   }
 ];
