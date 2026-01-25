@@ -600,20 +600,20 @@ export default function LandingPage() {
                   <Badge className="bg-emerald-100 text-emerald-800">Phase 2</Badge>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 mb-8">
-                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-xl">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-3 sm:p-4 rounded-xl">
                     <p className="text-xs text-emerald-600 uppercase">LY 能量值</p>
-                    <p className="text-2xl font-bold text-emerald-900">2,580</p>
+                    <p className="text-xl sm:text-2xl font-bold text-emerald-900">2,580</p>
                     <p className="text-xs text-emerald-500">+120 本周</p>
                   </div>
-                  <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-4 rounded-xl">
+                  <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-3 sm:p-4 rounded-xl">
                     <p className="text-xs text-amber-600 uppercase">累计收益</p>
-                    <p className="text-2xl font-bold text-amber-700">RM 3,240</p>
+                    <p className="text-xl sm:text-2xl font-bold text-amber-700">RM 3,240</p>
                     <p className="text-xs text-amber-500">+RM 580 本月</p>
                   </div>
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl">
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-3 sm:p-4 rounded-xl">
                     <p className="text-xs text-purple-600 uppercase">团队成员</p>
-                    <p className="text-2xl font-bold text-purple-700">28</p>
+                    <p className="text-xl sm:text-2xl font-bold text-purple-700">28</p>
                     <p className="text-xs text-purple-500">10层网络</p>
                   </div>
                 </div>
