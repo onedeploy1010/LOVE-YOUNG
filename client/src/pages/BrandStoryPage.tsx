@@ -150,6 +150,94 @@ export default function BrandStoryPage() {
         </div>
       </section>
 
+      <section className="py-20" data-testid="section-brand-story-visual">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+            >
+              <img 
+                src="/pics/love_young_founders_story_20260106043351_1.png"
+                alt="创业初心"
+                className="rounded-2xl shadow-xl w-full"
+                data-testid="img-founders-story"
+              />
+            </motion.div>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+              className="space-y-6"
+            >
+              <h2 className="text-3xl md:text-4xl font-serif text-primary" data-testid="text-origin-title">
+                创业初心
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                2020年，三位志同道合的女性在吉隆坡相遇。她们有着共同的经历——在忙碌的生活中忽视了自己的健康，直到身体发出警报才意识到滋补养生的重要性。
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                然而，市场上真正优质、便捷、值得信赖的燕窝产品少之又少。于是，她们决定亲自创建一个品牌，用最严格的标准、最真挚的初心，为每一位女性提供最纯净的滋养。
+              </p>
+              <p className="text-muted-foreground leading-relaxed font-medium text-foreground">
+                这就是 LOVEYOUNG 的诞生——先爱自己，才能更好地爱世界。
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-muted/30" data-testid="section-production">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+              className="space-y-6 order-2 lg:order-1"
+            >
+              <h2 className="text-3xl md:text-4xl font-serif text-primary" data-testid="text-production-title">
+                匠心品质
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                从马来西亚自有燕屋基地到现代化生产线，我们全程把控每一个环节。严选顶级燕窝原料，采用低温慢炖工艺，最大程度保留营养成分。
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                每一瓶鲜炖燕窝都经过严格的质量检测，全程冷链配送，确保您收到的每一份产品都是最新鲜、最优质的。
+              </p>
+              <div className="grid grid-cols-2 gap-4 pt-4">
+                <Card className="p-4 text-center">
+                  <p className="text-2xl font-bold text-secondary">100%</p>
+                  <p className="text-xs text-muted-foreground">马来西亚原产</p>
+                </Card>
+                <Card className="p-4 text-center">
+                  <p className="text-2xl font-bold text-secondary">0</p>
+                  <p className="text-xs text-muted-foreground">添加剂防腐剂</p>
+                </Card>
+              </div>
+            </motion.div>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+              className="order-1 lg:order-2"
+            >
+              <img 
+                src="/pics/love_young_brand_storyboard_20260106043504_1.png"
+                alt="匠心品质"
+                className="rounded-2xl shadow-xl w-full"
+                data-testid="img-production"
+              />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       <section className="py-20" data-testid="section-brand-values">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -181,6 +269,77 @@ export default function BrandStoryPage() {
                 </Card>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-card" data-testid="section-lifestyle">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-serif text-primary mb-4">
+              优雅生活方式
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              LOVEYOUNG 倡导的不仅是产品，更是一种由内而外的优雅生活方式
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+            >
+              <Card className="overflow-hidden h-full">
+                <img 
+                  src="/pics/love_young_wellness_lifestyle_20260106043539_1.png"
+                  alt="健康生活"
+                  className="w-full h-48 object-cover"
+                />
+                <CardContent className="p-4">
+                  <h3 className="font-bold text-foreground mb-2">健康养生</h3>
+                  <p className="text-sm text-muted-foreground">每日一瓶鲜炖燕窝，开启元气满满的一天</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="overflow-hidden h-full">
+                <img 
+                  src="/pics/love_young_community_building_20260106043405_1.png"
+                  alt="社群连接"
+                  className="w-full h-48 object-cover"
+                />
+                <CardContent className="p-4">
+                  <h3 className="font-bold text-foreground mb-2">社群连接</h3>
+                  <p className="text-sm text-muted-foreground">与志同道合的姐妹分享养生心得</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+              transition={{ delay: 0.2 }}
+            >
+              <Card className="overflow-hidden h-full">
+                <img 
+                  src="/pics/love_young_event_experience_20260106043435_1.png"
+                  alt="品牌活动"
+                  className="w-full h-48 object-cover"
+                />
+                <CardContent className="p-4">
+                  <h3 className="font-bold text-foreground mb-2">品牌活动</h3>
+                  <p className="text-sm text-muted-foreground">参与私享沙龙，体验优雅圈层</p>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -307,12 +466,28 @@ export default function BrandStoryPage() {
               whileInView="visible"
               viewport={{ once: true }}
               variants={fadeInUp}
+              className="grid grid-cols-2 gap-4"
             >
               <img 
                 src="/pics/love_young_community_impact_20260106043528_1.png"
                 alt="经营人故事"
-                className="rounded-2xl shadow-xl w-full"
-                data-testid="img-partner-stories"
+                className="rounded-xl shadow-lg w-full"
+                data-testid="img-partner-stories-1"
+              />
+              <img 
+                src="/pics/love_young_success_metrics_20260106043449_1.png"
+                alt="成功案例"
+                className="rounded-xl shadow-lg w-full mt-8"
+              />
+              <img 
+                src="/pics/love_young_investment_opportunity_20260106043517_1.png"
+                alt="投资机会"
+                className="rounded-xl shadow-lg w-full -mt-4"
+              />
+              <img 
+                src="/pics/love_young_digital_marketing_20260106043418_1.png"
+                alt="数字营销"
+                className="rounded-xl shadow-lg w-full mt-4"
               />
             </motion.div>
             <motion.div
@@ -349,6 +524,63 @@ export default function BrandStoryPage() {
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20" data-testid="section-future-vision">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+              className="space-y-6"
+            >
+              <h2 className="text-3xl md:text-4xl font-serif text-primary" data-testid="text-future-title">
+                未来愿景
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                LOVEYOUNG 的目标不仅是成为东南亚领先的女性健康滋补品牌，更是要构建一个完整的女性健康生态系统。
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                从燕窝、花胶到益生菌、胶原蛋白，我们将不断丰富产品线，满足女性全方位的健康需求。同时，通过RWA联合经营人计划，让更多女性实现财富与健康的双重丰收。
+              </p>
+              <div className="space-y-3 pt-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+                    <Target className="w-4 h-4 text-secondary" />
+                  </div>
+                  <span className="text-muted-foreground">2027年 进军新加坡、香港市场</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+                    <Target className="w-4 h-4 text-secondary" />
+                  </div>
+                  <span className="text-muted-foreground">2028年 推出全新健康品类</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+                    <Target className="w-4 h-4 text-secondary" />
+                  </div>
+                  <span className="text-muted-foreground">2030年 成为区域领先品牌</span>
+                </div>
+              </div>
+            </motion.div>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+            >
+              <img 
+                src="/pics/love_young_future_vision_20260106043643_1.png"
+                alt="未来愿景"
+                className="rounded-2xl shadow-xl w-full"
+                data-testid="img-future-vision"
+              />
             </motion.div>
           </div>
         </div>
