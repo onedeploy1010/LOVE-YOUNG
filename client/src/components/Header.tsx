@@ -45,9 +45,9 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
   };
 
   const navLinks = [
-    { href: "/brand", label: "品牌故事", isRoute: true },
-    { href: "/products", label: "产品中心", isRoute: true },
-    { href: "/partner", label: "联合经营", isRoute: true },
+    { href: "/brand", label: t("nav.brand"), isRoute: true },
+    { href: "/products", label: t("nav.products"), isRoute: true },
+    { href: "/partner", label: t("nav.partner"), isRoute: true },
   ];
 
   useEffect(() => {

@@ -92,7 +92,7 @@ export default function LandingPage() {
             className="text-amber-400 font-serif italic text-2xl lg:text-3xl mb-4"
             data-testid="text-hero-subtitle"
           >
-            Against The Wind
+            {t("landing.heroTagline")}
           </motion.h2>
           
           <motion.h1 
@@ -102,9 +102,9 @@ export default function LandingPage() {
             className="text-4xl md:text-6xl lg:text-8xl font-serif font-bold mb-6"
             data-testid="text-hero-title"
           >
-            逆风启航 <br />
+            {t("landing.heroTitle")} <br />
             <span className="bg-gradient-to-r from-amber-300 via-amber-100 to-amber-300 bg-clip-text text-transparent">
-              重定义女性力量
+              {t("landing.heroTitleSub")}
             </span>
           </motion.h1>
           
@@ -115,8 +115,8 @@ export default function LandingPage() {
             className="max-w-2xl mx-auto text-lg lg:text-xl font-light mb-10 opacity-90"
             data-testid="text-hero-description"
           >
-            从 Young Love (滋养他人) 到 Love Young (先爱自己)。<br />
-            这不仅是一个品牌的逆转，更是每一位女性灵魂的觉醒。
+            {t("landing.heroDesc")}<br />
+            {t("landing.heroDescSub")}
           </motion.p>
           
           <motion.div 
@@ -131,7 +131,7 @@ export default function LandingPage() {
               onClick={() => setOrderModalOpen(true)}
               data-testid="button-hero-order"
             >
-              立即开启滋养
+              {t("landing.heroOrderBtn")}
             </Button>
             <Link href="/partner">
               <Button 
@@ -140,7 +140,7 @@ export default function LandingPage() {
                 className="border-white/70 text-white rounded-full px-12 text-lg bg-transparent"
                 data-testid="button-hero-partner"
               >
-                加入共建计划
+                {t("landing.heroPartnerBtn")}
               </Button>
             </Link>
           </motion.div>
@@ -176,7 +176,7 @@ export default function LandingPage() {
                 data-testid="img-brand-philosophy"
               />
               <div className="absolute -bottom-6 -right-6 bg-emerald-900 text-white p-6 rounded-xl shadow-xl max-w-xs">
-                <p className="italic font-serif text-lg">"如果连自己都不认真对待，世界也不会。"</p>
+                <p className="italic font-serif text-lg">"{t("landing.brandQuote")}"</p>
               </div>
             </motion.div>
 
@@ -193,14 +193,14 @@ export default function LandingPage() {
                 className="text-3xl lg:text-5xl font-serif font-bold mb-8"
                 data-testid="text-brand-title"
               >
-                品牌初衷：<br />
-                <span className="text-amber-500">逆转的勇气</span>
+                {t("landing.brandTitle")}<br />
+                <span className="text-amber-500">{t("landing.brandTitleSub")}</span>
               </motion.h2>
               
               <motion.div variants={fadeInUp} className="space-y-6 text-muted-foreground leading-relaxed">
-                <p>Love Young 由三位经历情感创伤后自愈自强的年轻女性创立。我们曾身处低谷，曾被要求不断付出，却忘了如何爱自己。</p>
-                <p className="font-semibold text-foreground">"Young Love"是设计时的美丽意外，寓意"养乐"——滋养他人。但我们决定将它逆转，成为"Love Young"——先爱那个年轻、真实的自己。</p>
-                <p>我们提供的不仅是 RM488 的鲜炖礼盒，而是一份关于"新鲜、特别、精致、珍贵"的自我承诺。</p>
+                <p>{t("landing.brandP1")}</p>
+                <p className="font-semibold text-foreground">{t("landing.brandP2")}</p>
+                <p>{t("landing.brandP3")}</p>
               </motion.div>
 
               <motion.div variants={fadeInUp} className="mt-10 grid grid-cols-2 gap-6">
@@ -208,25 +208,25 @@ export default function LandingPage() {
                   <div className="p-2 bg-amber-400/20 rounded-lg text-amber-500">
                     <Heart className="w-5 h-5" />
                   </div>
-                  <span className="font-bold">自愈精神</span>
+                  <span className="font-bold">{t("landing.brandSelfHealing")}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-400/20 rounded-lg text-amber-500">
                     <Zap className="w-5 h-5" />
                   </div>
-                  <span className="font-bold">女性觉醒</span>
+                  <span className="font-bold">{t("landing.brandAwakening")}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-400/20 rounded-lg text-amber-500">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
-                  <span className="font-bold">高定品质</span>
+                  <span className="font-bold">{t("landing.brandQuality")}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-400/20 rounded-lg text-amber-500">
                     <Users className="w-5 h-5" />
                   </div>
-                  <span className="font-bold">共建社区</span>
+                  <span className="font-bold">{t("landing.brandCommunity")}</span>
                 </div>
               </motion.div>
             </motion.div>
@@ -245,11 +245,11 @@ export default function LandingPage() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl lg:text-5xl font-serif font-bold mb-4" data-testid="text-products-title">
-              尊享鲜炖系列
+              {t("landing.productsTitle")}
             </h2>
             <div className="w-24 h-1 bg-amber-400 mx-auto mb-6" />
             <p className="text-amber-400/80 max-w-2xl mx-auto">
-              6罐装奢宠礼盒，12种口味定制化批次鲜炖，冷链直达。
+              {t("landing.productsSubtitle")}
             </p>
           </motion.div>
 
