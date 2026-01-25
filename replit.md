@@ -72,7 +72,16 @@ Key API Endpoints:
 - `/brand` - Brand story page with founder story, brand values, milestones, community
 - `/products` - Products catalog with filtering tabs (燕窝/花胶/礼盒), pricing, order buttons
 - `/partner` - RWA partner program page with 3 tiers, revenue calculator, FAQ
+- `/partner/join` - Partner registration page (requires authentication)
 - `/member` - Member center with role-based navigation (用户/会员/经营人/管理员)
+- `/member/settings` - Account settings (profile, notifications preferences)
+- `/member/notifications` - Message center with tabs for different notification types
+- `/member/help` - Help center with FAQ accordion and customer service contacts
+- `/member/orders` - Order history with status tracking (links to /products for shopping)
+- `/member/addresses` - Shipping address management
+- `/member/points` - Loyalty points center with tier progress (links to /products)
+- `/member/payment` - Payment method management
+- `/member/partner/*` - Partner dashboard sub-pages (for active partners)
 - `/partner/dashboard` - Partner dashboard for active partners
 - `/admin` - Admin dashboard
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MemberLayout } from "@/components/MemberLayout";
 import {
   ShoppingBag, Package, Truck, CheckCircle, Clock,
-  ChevronRight, Search, RefreshCw
+  ChevronRight, RefreshCw
 } from "lucide-react";
 
 const mockOrders = [
@@ -98,9 +99,11 @@ export default function MemberOrdersPage() {
                 <CardContent className="p-12 text-center">
                   <ShoppingBag className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
                   <p className="text-muted-foreground">暂无订单</p>
-                  <Button className="mt-4 bg-secondary text-secondary-foreground" data-testid="button-shop">
-                    去逛逛
-                  </Button>
+                  <Link href="/products">
+                    <Button className="mt-4 bg-secondary text-secondary-foreground" data-testid="button-shop">
+                      去逛逛
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ) : (

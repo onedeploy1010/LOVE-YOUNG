@@ -20,6 +20,14 @@ import PartnerWalletPage from "@/pages/partner/PartnerWalletPage";
 import PartnerRwaPage from "@/pages/partner/PartnerRwaPage";
 import PartnerEarningsPage from "@/pages/partner/PartnerEarningsPage";
 import AdminDashboardPage from "@/pages/AdminDashboardPage";
+import MemberSettingsPage from "@/pages/member/MemberSettingsPage";
+import MemberNotificationsPage from "@/pages/member/MemberNotificationsPage";
+import MemberHelpPage from "@/pages/member/MemberHelpPage";
+import MemberOrdersPage from "@/pages/member/MemberOrdersPage";
+import MemberAddressesPage from "@/pages/member/MemberAddressesPage";
+import MemberPointsPage from "@/pages/member/MemberPointsPage";
+import MemberPaymentPage from "@/pages/member/MemberPaymentPage";
+import PartnerJoinPage from "@/pages/PartnerJoinPage";
 
 function Router() {
   return (
@@ -30,6 +38,13 @@ function Router() {
       <Route path="/order-tracking" component={OrderTrackingPage} />
       <Route path="/christmas" component={ChristmasPromoPage} />
       <Route path="/member" component={MemberCenterPage} />
+      <Route path="/member/settings" component={MemberSettingsPage} />
+      <Route path="/member/notifications" component={MemberNotificationsPage} />
+      <Route path="/member/help" component={MemberHelpPage} />
+      <Route path="/member/orders" component={MemberOrdersPage} />
+      <Route path="/member/addresses" component={MemberAddressesPage} />
+      <Route path="/member/points" component={MemberPointsPage} />
+      <Route path="/member/payment" component={MemberPaymentPage} />
       <Route path="/member/partner" component={PartnerDashboardPage} />
       <Route path="/member/partner/referrals" component={PartnerReferralsPage} />
       <Route path="/member/partner/materials" component={PartnerMaterialsPage} />
@@ -38,6 +53,7 @@ function Router() {
       <Route path="/member/partner/rwa" component={PartnerRwaPage} />
       <Route path="/member/partner/earnings" component={PartnerEarningsPage} />
       <Route path="/partner" component={PartnerPage} />
+      <Route path="/partner/join" component={PartnerJoinPage} />
       <Route path="/partner/dashboard" component={PartnerDashboardPage} />
       <Route path="/admin" component={AdminDashboardPage} />
       <Route component={NotFound} />

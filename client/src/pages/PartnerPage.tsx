@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -272,6 +273,7 @@ function NetworkDiagram() {
 }
 
 export default function PartnerPage() {
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [referralCode, setReferralCode] = useState("");
@@ -320,11 +322,7 @@ export default function PartnerPage() {
   });
 
   const handleJoin = (tierId: string) => {
-    if (!user) {
-      window.location.href = "/api/login";
-      return;
-    }
-    setSelectedTier(tierId);
+    navigate("/partner/join");
   };
 
   const handleSubmitJoin = () => {

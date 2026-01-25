@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -105,18 +106,20 @@ export default function MemberPointsPage() {
             </CardContent>
           </Card>
 
-          <Card className="hover-elevate cursor-pointer">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <ShoppingBag className="w-6 h-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold">消费赚积分</h3>
-                <p className="text-sm text-muted-foreground">每消费RM1得1积分</p>
-              </div>
-              <Button variant="outline" size="sm" data-testid="button-shop">去购物</Button>
-            </CardContent>
-          </Card>
+          <Link href="/products">
+            <Card className="hover-elevate cursor-pointer">
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <ShoppingBag className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold">消费赚积分</h3>
+                  <p className="text-sm text-muted-foreground">每消费RM1得1积分</p>
+                </div>
+                <Button variant="outline" size="sm" data-testid="button-shop">去购物</Button>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         <Card>
