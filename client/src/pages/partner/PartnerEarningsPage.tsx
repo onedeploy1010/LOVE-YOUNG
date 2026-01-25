@@ -167,10 +167,10 @@ export default function PartnerEarningsPage() {
         <CardContent>
           <Tabs defaultValue="all">
             <TabsList className="mb-4">
-              <TabsTrigger value="all">全部</TabsTrigger>
-              <TabsTrigger value="cashback">返现分红</TabsTrigger>
-              <TabsTrigger value="rwa">RWA分红</TabsTrigger>
-              <TabsTrigger value="referral">推荐奖励</TabsTrigger>
+              <TabsTrigger value="all" data-testid="tab-all-earnings">全部</TabsTrigger>
+              <TabsTrigger value="cashback" data-testid="tab-cashback">返现分红</TabsTrigger>
+              <TabsTrigger value="rwa" data-testid="tab-rwa-earnings">RWA分红</TabsTrigger>
+              <TabsTrigger value="referral" data-testid="tab-referral">推荐奖励</TabsTrigger>
             </TabsList>
 
             <TabsContent value="all" className="space-y-0">

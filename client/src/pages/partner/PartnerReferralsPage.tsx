@@ -135,6 +135,7 @@ export default function PartnerReferralsPage() {
               variant={levelFilter === null ? "default" : "outline"} 
               size="sm"
               onClick={() => setLevelFilter(null)}
+              data-testid="button-filter-all"
             >
               全部
             </Button>
@@ -142,6 +143,7 @@ export default function PartnerReferralsPage() {
               variant={levelFilter === 1 ? "default" : "outline"} 
               size="sm"
               onClick={() => setLevelFilter(1)}
+              data-testid="button-filter-level-1"
             >
               第1层 ({stats.level1})
             </Button>
@@ -149,6 +151,7 @@ export default function PartnerReferralsPage() {
               variant={levelFilter === 2 ? "default" : "outline"} 
               size="sm"
               onClick={() => setLevelFilter(2)}
+              data-testid="button-filter-level-2"
             >
               第2层 ({stats.level2})
             </Button>
@@ -156,6 +159,7 @@ export default function PartnerReferralsPage() {
               variant={levelFilter === 3 ? "default" : "outline"} 
               size="sm"
               onClick={() => setLevelFilter(3)}
+              data-testid="button-filter-level-3"
             >
               第3层 ({stats.level3})
             </Button>

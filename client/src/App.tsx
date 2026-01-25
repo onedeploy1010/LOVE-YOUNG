@@ -12,7 +12,13 @@ import OrderTrackingPage from "@/pages/OrderTrackingPage";
 import ChristmasPromoPage from "@/pages/ChristmasPromoPage";
 import MemberCenterPage from "@/pages/MemberCenterPage";
 import PartnerPage from "@/pages/PartnerPage";
-import PartnerDashboardPage from "@/pages/PartnerDashboardPage";
+import PartnerDashboardPage from "@/pages/partner/PartnerDashboardPage";
+import PartnerReferralsPage from "@/pages/partner/PartnerReferralsPage";
+import PartnerMaterialsPage from "@/pages/partner/PartnerMaterialsPage";
+import PartnerLyPointsPage from "@/pages/partner/PartnerLyPointsPage";
+import PartnerWalletPage from "@/pages/partner/PartnerWalletPage";
+import PartnerRwaPage from "@/pages/partner/PartnerRwaPage";
+import PartnerEarningsPage from "@/pages/partner/PartnerEarningsPage";
 import AdminDashboardPage from "@/pages/AdminDashboardPage";
 
 function Router() {
@@ -24,6 +30,13 @@ function Router() {
       <Route path="/order-tracking" component={OrderTrackingPage} />
       <Route path="/christmas" component={ChristmasPromoPage} />
       <Route path="/member" component={MemberCenterPage} />
+      <Route path="/member/partner" component={PartnerDashboardPage} />
+      <Route path="/member/partner/referrals" component={PartnerReferralsPage} />
+      <Route path="/member/partner/materials" component={PartnerMaterialsPage} />
+      <Route path="/member/partner/ly-points" component={PartnerLyPointsPage} />
+      <Route path="/member/partner/wallet" component={PartnerWalletPage} />
+      <Route path="/member/partner/rwa" component={PartnerRwaPage} />
+      <Route path="/member/partner/earnings" component={PartnerEarningsPage} />
       <Route path="/partner" component={PartnerPage} />
       <Route path="/partner/dashboard" component={PartnerDashboardPage} />
       <Route path="/admin" component={AdminDashboardPage} />

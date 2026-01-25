@@ -126,9 +126,9 @@ export default function PartnerLyPointsPage() {
         <CardContent>
           <Tabs defaultValue="all">
             <TabsList className="mb-4">
-              <TabsTrigger value="all">全部</TabsTrigger>
-              <TabsTrigger value="earn">获得</TabsTrigger>
-              <TabsTrigger value="spend">使用</TabsTrigger>
+              <TabsTrigger value="all" data-testid="tab-all-ledger">全部</TabsTrigger>
+              <TabsTrigger value="earn" data-testid="tab-earn">获得</TabsTrigger>
+              <TabsTrigger value="spend" data-testid="tab-spend">使用</TabsTrigger>
             </TabsList>
 
             <TabsContent value="all" className="space-y-0">

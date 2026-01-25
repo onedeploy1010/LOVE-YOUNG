@@ -29,10 +29,11 @@ import type { Product, Testimonial } from "@shared/schema";
 import { useLanguage } from "@/lib/i18n";
 import { Link } from "wouter";
 
-import heroImage from "@assets/generated_images/premium_bird's_nest_hero_image.png";
-import productImage1 from "@assets/IMG_9261_1765659176966.png";
-import productImage2 from "@assets/IMG_9262_1765659176966.png";
-import brandImage from "@assets/IMG_9784_1765662290140.png";
+const heroImage = "/pics/love_young_brand_identity_20260106043554_1.png";
+const productImage1 = "/pics/love_young_luxury_gift_box_detailed_20260106045736_1.png";
+const productImage2 = "/pics/love_young_gift_box_design_20260106043236_1.png";
+const brandImage = "/pics/love_young_founders_story_20260106043351_1.png";
+const productImage3 = "/pics/love_young_wellness_journey_20260106043338_1.png";
 
 const WHATSAPP_PHONE = "60124017174";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent("您好，我对LOVEYOUNG燕窝花胶产品感兴趣，想了解更多信息。")}`;
@@ -322,7 +323,7 @@ export default function LandingPage() {
               <Card className="bg-white/5 border border-white/10 hover:border-amber-400/50 transition-all duration-500 group overflow-hidden">
                 <div className="relative h-72 overflow-hidden">
                   <img 
-                    src={heroImage} 
+                    src={productImage3} 
                     alt="季节限定" 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
