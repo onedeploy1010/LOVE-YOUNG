@@ -42,7 +42,30 @@ The server implements:
 - **Validation**: Zod schemas generated via drizzle-zod
 - **Development Fallback**: In-memory storage implementation in `server/storage.ts`
 
-Database tables include: users, products, testimonials, contact_messages.
+Database tables include:
+- **Core**: users, products, testimonials, contact_messages, orders
+- **Member System**: members, member_addresses, member_points_ledger
+- **Partner System (联合经营人)**: partners, ly_points_ledger, cash_wallet_ledger, bonus_pool_cycles, monthly_cashback_tracking, rwa_token_ledger, withdrawal_requests
+- **ERP System**: inventory, inventory_ledger, purchase_orders, production_batches, hygiene_inspections, cold_chain_shipments, cost_records, bills, suppliers
+
+### Partner System Architecture
+The partner (联合经营人) system supports:
+- **3-Tier Packages**: Phase 1 (RM 1000/2000 LY), Phase 2 (RM 1300/2600 LY), Phase 3 (RM 1500/3000 LY)
+- **Referral System**: 8-character unique referral codes, 10-level deep network (planned)
+- **LY Points**: Tracked via auditable ledger entries, not direct balance updates
+- **Cash Wallet**: For cashback and withdrawal functionality
+- **RWA Tokens**: 10-day bonus pool cycles with 30% of sales allocated
+
+Key API Endpoints:
+- `GET /api/partner/profile` - Get current user's partner profile
+- `POST /api/partner/join` - Join partner program (requires auth)
+- `GET /api/partner/ly-ledger` - LY points transaction history
+- `GET /api/partner/cash-ledger` - Cash wallet transaction history
+- `GET /api/partner/referral-stats` - Referral network statistics
+- `GET /api/partner/current-cycle` - Current bonus pool cycle info
+- `GET /api/admin/partners` - Admin: list all partners
+- `POST /api/admin/partners/:id/activate` - Admin: activate partner
+- `GET /api/admin/dashboard-stats` - Admin: dashboard statistics
 
 ### Design System
 The project follows specific design guidelines documented in `design_guidelines.md`:

@@ -214,9 +214,10 @@ export type UserRole = typeof userRoleEnum[number];
 export const partners = pgTable("partners", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   memberId: varchar("member_id").notNull().references(() => members.id),
+  referralCode: varchar("referral_code", { length: 8 }).unique(), // 8-character unique referral code
   tier: text("tier").notNull().default("phase1"), // phase1, phase2, phase3
   status: text("status").notNull().default("pending"), // pending, active, suspended
-  referrerId: varchar("referrer_id").references(() => partners.id), // 推荐人
+  referrerId: varchar("referrer_id"), // 推荐人partner ID (self-reference handled in DB)
   lyBalance: integer("ly_balance").default(0), // LY积分余额
   cashWalletBalance: integer("cash_wallet_balance").default(0), // 现金钱包余额（分）
   rwaTokens: integer("rwa_tokens").default(0), // 当前周期RWA令牌

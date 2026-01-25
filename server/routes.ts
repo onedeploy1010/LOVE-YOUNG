@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertContactMessageSchema, insertOrderSchema, insertMemberSchema, insertMemberAddressSchema } from "@shared/schema";
+import { insertContactMessageSchema, insertOrderSchema, insertMemberSchema, insertMemberAddressSchema, insertPartnerSchema } from "@shared/schema";
 import { z } from "zod";
 import {
   syncProductsToDatabase,
@@ -483,6 +483,295 @@ export async function registerRoutes(
         error: "Failed to sync orders",
         message: error instanceof Error ? error.message : "Unknown error",
       });
+    }
+  });
+
+  // ============ Partner (经营人) API Routes ============
+
+  // Get partner profile
+  app.get("/api/partner/profile", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(404).json({ error: "Member profile not found" });
+      }
+
+      const partner = await storage.getPartnerByMemberId(member.id);
+      if (!partner) {
+        return res.status(404).json({ error: "Partner profile not found" });
+      }
+      res.json(partner);
+    } catch (error) {
+      console.error("Error fetching partner:", error);
+      res.status(500).json({ error: "Failed to fetch partner profile" });
+    }
+  });
+
+  // Join partner program - with Zod validation
+  const joinPartnerSchema = z.object({
+    tier: z.enum(["phase1", "phase2", "phase3"]),
+    referralCode: z.string().optional(),
+  });
+
+  app.post("/api/partner/join", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(400).json({ error: "Please create a member profile first" });
+      }
+
+      const existingPartner = await storage.getPartnerByMemberId(member.id);
+      if (existingPartner) {
+        return res.status(400).json({ error: "Already a partner" });
+      }
+
+      // Validate request body with Zod
+      const parseResult = joinPartnerSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ error: "Invalid request data", details: parseResult.error.issues });
+      }
+
+      const { tier, referralCode } = parseResult.data;
+
+      // Find referrer if referral code provided
+      let referrerId = null;
+      if (referralCode) {
+        const referrer = await storage.getPartnerByReferralCode(referralCode);
+        if (referrer) {
+          referrerId = referrer.id;
+        }
+      }
+
+      // Calculate LY points based on tier
+      const lyPointsMap: Record<string, number> = {
+        phase1: 2000,
+        phase2: 2600,
+        phase3: 3000,
+      };
+
+      const priceMap: Record<string, number> = {
+        phase1: 100000, // RM 1000 in cents
+        phase2: 130000,
+        phase3: 150000,
+      };
+
+      // Generate unique 8-character referral code with collision check
+      const generateReferralCode = async (): Promise<string> => {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let code = "";
+        let attempts = 0;
+        const maxAttempts = 10;
+        
+        while (attempts < maxAttempts) {
+          code = "";
+          for (let i = 0; i < 8; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+          }
+          // Check if code already exists
+          const existing = await storage.getPartnerByReferralCode(code);
+          if (!existing) {
+            return code;
+          }
+          attempts++;
+        }
+        // Fallback: use timestamp-based code
+        return `LY${Date.now().toString(36).toUpperCase().slice(-6)}`;
+      };
+
+      const newReferralCode = await generateReferralCode();
+
+      // Create partner with initial lyBalance = 0 (will add via ledger)
+      const partner = await storage.createPartner({
+        memberId: member.id,
+        referralCode: newReferralCode,
+        tier,
+        status: "pending",
+        referrerId,
+        lyBalance: 0,
+        cashWalletBalance: 0,
+        rwaTokens: 0,
+        totalSales: 0,
+        totalCashback: 0,
+        paymentAmount: priceMap[tier],
+      });
+
+      // Create LY points ledger entry for initial bonus (auditable)
+      await storage.addLyPoints({
+        partnerId: partner.id,
+        points: lyPointsMap[tier],
+        type: "bonus",
+        description: `初始LY积分 - ${tier === "phase1" ? "第一阶段" : tier === "phase2" ? "第二阶段" : "第三阶段"}套餐`,
+        referenceId: partner.id,
+        referenceType: "partner_join",
+      });
+
+      // Update member role to partner (pending payment confirmation)
+      await storage.updateMember(member.id, { role: "partner" });
+
+      // Fetch updated partner with LY balance
+      const updatedPartner = await storage.getPartnerByMemberId(member.id);
+      res.status(201).json(updatedPartner || partner);
+    } catch (error) {
+      console.error("Error joining partner program:", error);
+      res.status(500).json({ error: "Failed to join partner program" });
+    }
+  });
+
+  // Get LY points ledger
+  app.get("/api/partner/ly-ledger", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(404).json({ error: "Member profile not found" });
+      }
+
+      const partner = await storage.getPartnerByMemberId(member.id);
+      if (!partner) {
+        return res.status(404).json({ error: "Partner profile not found" });
+      }
+
+      const ledger = await storage.getLyPointsLedger(partner.id);
+      res.json(ledger);
+    } catch (error) {
+      console.error("Error fetching LY ledger:", error);
+      res.status(500).json({ error: "Failed to fetch LY ledger" });
+    }
+  });
+
+  // Get cash wallet ledger
+  app.get("/api/partner/cash-ledger", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(404).json({ error: "Member profile not found" });
+      }
+
+      const partner = await storage.getPartnerByMemberId(member.id);
+      if (!partner) {
+        return res.status(404).json({ error: "Partner profile not found" });
+      }
+
+      const ledger = await storage.getCashWalletLedger(partner.id);
+      res.json(ledger);
+    } catch (error) {
+      console.error("Error fetching cash ledger:", error);
+      res.status(500).json({ error: "Failed to fetch cash ledger" });
+    }
+  });
+
+  // Get referral stats
+  app.get("/api/partner/referral-stats", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(404).json({ error: "Member profile not found" });
+      }
+
+      const partner = await storage.getPartnerByMemberId(member.id);
+      if (!partner) {
+        return res.status(404).json({ error: "Partner profile not found" });
+      }
+
+      const stats = await storage.getPartnerReferralStats(partner.id);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching referral stats:", error);
+      res.status(500).json({ error: "Failed to fetch referral stats" });
+    }
+  });
+
+  // Get current bonus pool cycle
+  app.get("/api/partner/current-cycle", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member) {
+        return res.status(404).json({ error: "Member profile not found" });
+      }
+
+      const partner = await storage.getPartnerByMemberId(member.id);
+      if (!partner) {
+        return res.status(404).json({ error: "Partner profile not found" });
+      }
+
+      const cycle = await storage.getCurrentBonusPoolCycle();
+      if (!cycle) {
+        return res.json(null);
+      }
+
+      const myTokens = partner.rwaTokens || 0;
+      const endDate = new Date(cycle.endDate);
+      const now = new Date();
+      const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+
+      res.json({
+        cycleNumber: cycle.cycleNumber,
+        daysRemaining,
+        poolAmount: cycle.poolAmount,
+        myTokens,
+        totalTokens: cycle.totalTokens,
+      });
+    } catch (error) {
+      console.error("Error fetching current cycle:", error);
+      res.status(500).json({ error: "Failed to fetch current cycle" });
+    }
+  });
+
+  // ============ Admin API Routes ============
+
+  // Get all partners (admin only)
+  app.get("/api/admin/partners", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member || member.role !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const partners = await storage.getAllPartners();
+      res.json(partners);
+    } catch (error) {
+      console.error("Error fetching partners:", error);
+      res.status(500).json({ error: "Failed to fetch partners" });
+    }
+  });
+
+  // Activate partner (admin only)
+  app.post("/api/admin/partners/:id/activate", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member || member.role !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const partner = await storage.activatePartner(req.params.id);
+      res.json(partner);
+    } catch (error) {
+      console.error("Error activating partner:", error);
+      res.status(500).json({ error: "Failed to activate partner" });
+    }
+  });
+
+  // Get dashboard stats (admin only)
+  app.get("/api/admin/dashboard-stats", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const member = await storage.getMemberByUserId(userId);
+      if (!member || member.role !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const stats = await storage.getAdminDashboardStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      res.status(500).json({ error: "Failed to fetch dashboard stats" });
     }
   });
 

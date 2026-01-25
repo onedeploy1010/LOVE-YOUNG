@@ -1,6 +1,7 @@
 import { 
   users, products, testimonials, contactMessages, orders,
   members, memberAddresses, memberPointsLedger,
+  partners, lyPointsLedger, cashWalletLedger, bonusPoolCycles,
   type User, type UpsertUser,
   type Product, type InsertProduct, 
   type Testimonial, type InsertTestimonial, 
@@ -8,10 +9,14 @@ import {
   type Order, type InsertOrder,
   type Member, type InsertMember,
   type MemberAddress, type InsertMemberAddress,
-  type PointsLedger, type InsertPointsLedger
+  type PointsLedger, type InsertPointsLedger,
+  type Partner, type InsertPartner,
+  type LyPointsLedger, type InsertLyPointsLedger,
+  type CashWalletLedger, type InsertCashWalletLedger,
+  type BonusPoolCycle, type InsertBonusPoolCycle
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, or, desc } from "drizzle-orm";
+import { eq, or, desc, sql, count } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -53,6 +58,30 @@ export interface IStorage {
   getMemberPoints(memberId: string): Promise<PointsLedger[]>;
   addPoints(entry: InsertPointsLedger): Promise<PointsLedger>;
   getMemberOrderHistory(memberId: string): Promise<Order[]>;
+  
+  // Partner methods
+  getPartnerByMemberId(memberId: string): Promise<Partner | undefined>;
+  getPartnerByReferralCode(code: string): Promise<Partner | undefined>;
+  createPartner(partner: InsertPartner): Promise<Partner>;
+  updatePartner(id: string, partner: Partial<InsertPartner>): Promise<Partner | undefined>;
+  activatePartner(id: string): Promise<Partner | undefined>;
+  getAllPartners(): Promise<Partner[]>;
+  
+  // LY Points methods
+  getLyPointsLedger(partnerId: string): Promise<LyPointsLedger[]>;
+  addLyPoints(entry: InsertLyPointsLedger): Promise<LyPointsLedger>;
+  
+  // Cash wallet methods
+  getCashWalletLedger(partnerId: string): Promise<CashWalletLedger[]>;
+  addCashWalletEntry(entry: InsertCashWalletLedger): Promise<CashWalletLedger>;
+  
+  // Bonus pool methods
+  getCurrentBonusPoolCycle(): Promise<BonusPoolCycle | undefined>;
+  createBonusPoolCycle(cycle: InsertBonusPoolCycle): Promise<BonusPoolCycle>;
+  
+  // Stats methods
+  getPartnerReferralStats(partnerId: string): Promise<{ directReferrals: number; totalNetwork: number; monthlyEarnings: number }>;
+  getAdminDashboardStats(): Promise<{ activePartners: number; monthlyOrders: number; monthlySales: number; poolBalance: number }>;
   
   seedDefaultData(): Promise<void>;
 }
@@ -233,6 +262,139 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(orders)
       .where(eq(orders.memberId, memberId))
       .orderBy(desc(orders.createdAt));
+  }
+
+  // Partner methods
+  async getPartnerByMemberId(memberId: string): Promise<Partner | undefined> {
+    const [partner] = await db.select().from(partners).where(eq(partners.memberId, memberId));
+    return partner || undefined;
+  }
+
+  async getPartnerByReferralCode(code: string): Promise<Partner | undefined> {
+    const [partner] = await db.select().from(partners).where(eq(partners.referralCode, code.toUpperCase()));
+    return partner || undefined;
+  }
+
+  async createPartner(partnerData: InsertPartner): Promise<Partner> {
+    const [partner] = await db.insert(partners).values(partnerData).returning();
+    return partner;
+  }
+
+  async updatePartner(id: string, updateData: Partial<InsertPartner>): Promise<Partner | undefined> {
+    const [partner] = await db.update(partners).set({
+      ...updateData,
+      updatedAt: new Date().toISOString(),
+    }).where(eq(partners.id, id)).returning();
+    return partner || undefined;
+  }
+
+  async activatePartner(id: string): Promise<Partner | undefined> {
+    return this.updatePartner(id, { status: "active", paymentDate: new Date().toISOString() });
+  }
+
+  async getAllPartners(): Promise<Partner[]> {
+    return await db.select().from(partners).orderBy(desc(partners.createdAt));
+  }
+
+  // LY Points methods
+  async getLyPointsLedger(partnerId: string): Promise<LyPointsLedger[]> {
+    return await db.select().from(lyPointsLedger)
+      .where(eq(lyPointsLedger.partnerId, partnerId))
+      .orderBy(desc(lyPointsLedger.createdAt));
+  }
+
+  async addLyPoints(entry: InsertLyPointsLedger): Promise<LyPointsLedger> {
+    const [record] = await db.insert(lyPointsLedger).values(entry).returning();
+    
+    // Update partner's LY balance
+    const partner = await db.select().from(partners).where(eq(partners.id, entry.partnerId));
+    if (partner.length > 0) {
+      const newBalance = (partner[0].lyBalance || 0) + entry.points;
+      await db.update(partners).set({ lyBalance: newBalance }).where(eq(partners.id, entry.partnerId));
+    }
+    
+    return record;
+  }
+
+  // Cash wallet methods
+  async getCashWalletLedger(partnerId: string): Promise<CashWalletLedger[]> {
+    return await db.select().from(cashWalletLedger)
+      .where(eq(cashWalletLedger.partnerId, partnerId))
+      .orderBy(desc(cashWalletLedger.createdAt));
+  }
+
+  async addCashWalletEntry(entry: InsertCashWalletLedger): Promise<CashWalletLedger> {
+    const [record] = await db.insert(cashWalletLedger).values(entry).returning();
+    
+    // Update partner's cash balance
+    const partner = await db.select().from(partners).where(eq(partners.id, entry.partnerId));
+    if (partner.length > 0) {
+      const newBalance = (partner[0].cashWalletBalance || 0) + entry.amount;
+      await db.update(partners).set({ cashWalletBalance: newBalance }).where(eq(partners.id, entry.partnerId));
+    }
+    
+    return record;
+  }
+
+  // Bonus pool methods
+  async getCurrentBonusPoolCycle(): Promise<BonusPoolCycle | undefined> {
+    const [cycle] = await db.select().from(bonusPoolCycles)
+      .where(eq(bonusPoolCycles.status, "active"))
+      .orderBy(desc(bonusPoolCycles.cycleNumber))
+      .limit(1);
+    return cycle || undefined;
+  }
+
+  async createBonusPoolCycle(cycleData: InsertBonusPoolCycle): Promise<BonusPoolCycle> {
+    const [cycle] = await db.insert(bonusPoolCycles).values(cycleData).returning();
+    return cycle;
+  }
+
+  // Stats methods
+  async getPartnerReferralStats(partnerId: string): Promise<{ directReferrals: number; totalNetwork: number; monthlyEarnings: number }> {
+    // Get direct referrals (partners who have this partner as their referrer)
+    const directReferrals = await db.select().from(partners).where(eq(partners.referrerId, partnerId));
+    
+    // For now, total network is same as direct (can implement multi-level later)
+    const totalNetwork = directReferrals.length;
+    
+    // Monthly earnings from LY points ledger
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const monthlyLedger = await db.select().from(lyPointsLedger)
+      .where(eq(lyPointsLedger.partnerId, partnerId));
+    const monthlyEarnings = monthlyLedger
+      .filter(entry => entry.createdAt && entry.createdAt >= startOfMonth)
+      .reduce((sum, entry) => sum + (entry.points > 0 ? entry.points : 0), 0);
+    
+    return {
+      directReferrals: directReferrals.length,
+      totalNetwork,
+      monthlyEarnings,
+    };
+  }
+
+  async getAdminDashboardStats(): Promise<{ activePartners: number; monthlyOrders: number; monthlySales: number; poolBalance: number }> {
+    // Active partners
+    const activePartnersList = await db.select().from(partners).where(eq(partners.status, "active"));
+    
+    // Monthly orders and sales
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const allOrders = await db.select().from(orders);
+    const monthlyOrders = allOrders.filter(o => o.createdAt && o.createdAt >= startOfMonth);
+    const monthlySales = monthlyOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+    
+    // Current pool balance
+    const currentCycle = await this.getCurrentBonusPoolCycle();
+    const poolBalance = currentCycle?.poolAmount || 0;
+    
+    return {
+      activePartners: activePartnersList.length,
+      monthlyOrders: monthlyOrders.length,
+      monthlySales,
+      poolBalance,
+    };
   }
 
   async seedDefaultData(): Promise<void> {

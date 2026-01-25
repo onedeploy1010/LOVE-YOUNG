@@ -9,6 +9,9 @@ import LandingPage from "@/pages/LandingPage";
 import OrderTrackingPage from "@/pages/OrderTrackingPage";
 import ChristmasPromoPage from "@/pages/ChristmasPromoPage";
 import MemberCenterPage from "@/pages/MemberCenterPage";
+import PartnerPage from "@/pages/PartnerPage";
+import PartnerDashboardPage from "@/pages/PartnerDashboardPage";
+import AdminDashboardPage from "@/pages/AdminDashboardPage";
 
 function Router() {
   return (
@@ -17,6 +20,9 @@ function Router() {
       <Route path="/order-tracking" component={OrderTrackingPage} />
       <Route path="/christmas" component={ChristmasPromoPage} />
       <Route path="/member" component={MemberCenterPage} />
+      <Route path="/partner" component={PartnerPage} />
+      <Route path="/partner/dashboard" component={PartnerDashboardPage} />
+      <Route path="/admin" component={AdminDashboardPage} />
       <Route component={NotFound} />
     </Switch>
   );
