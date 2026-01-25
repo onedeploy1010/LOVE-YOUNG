@@ -45,10 +45,10 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
   };
 
   const navLinks = [
-    { href: "#products", label: t("nav.products") },
-    { href: "#innovation", label: t("nav.benefits") },
-    { href: "#how-to-order", label: t("nav.howToOrder") },
-    { href: "#testimonials", label: t("nav.testimonials") },
+    { href: "#brand", label: "品牌故事" },
+    { href: "#products", label: "产品中心" },
+    { href: "#rwa", label: "联合经营" },
+    { href: "/partner", label: "成为经营人", isRoute: true },
   ];
 
   useEffect(() => {
@@ -91,14 +91,25 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
 
           <nav className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => (
-              <button
-                key={link.href}
-                onClick={() => scrollToSection(link.href)}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                data-testid={`link-nav-${link.href.replace("#", "")}`}
-              >
-                {link.label}
-              </button>
+              link.isRoute ? (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  data-testid={`link-nav-${link.href.replace("/", "")}`}
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <button
+                  key={link.href}
+                  onClick={() => scrollToSection(link.href)}
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  data-testid={`link-nav-${link.href.replace("#", "")}`}
+                >
+                  {link.label}
+                </button>
+              )
             ))}
           </nav>
 
@@ -181,14 +192,26 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
                 </div>
                 <nav className="flex flex-col gap-4">
                   {navLinks.map((link) => (
-                    <button
-                      key={link.href}
-                      onClick={() => scrollToSection(link.href)}
-                      className="text-left text-base font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
-                      data-testid={`link-mobile-${link.href.replace("#", "")}`}
-                    >
-                      {link.label}
-                    </button>
+                    link.isRoute ? (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="text-left text-base font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
+                        data-testid={`link-mobile-${link.href.replace("/", "")}`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <button
+                        key={link.href}
+                        onClick={() => scrollToSection(link.href)}
+                        className="text-left text-base font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
+                        data-testid={`link-mobile-${link.href.replace("#", "")}`}
+                      >
+                        {link.label}
+                      </button>
+                    )
                   ))}
                 </nav>
                 <div className="flex flex-col gap-3 pt-4 border-t border-border">

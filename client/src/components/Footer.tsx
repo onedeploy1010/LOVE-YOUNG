@@ -1,4 +1,5 @@
 import { SiWhatsapp, SiFacebook, SiInstagram } from "react-icons/si";
+import { Link } from "wouter";
 
 interface FooterProps {
   whatsappLink: string;
@@ -9,22 +10,25 @@ export function Footer({ whatsappLink, metaShopLink }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-card border-t border-border" data-testid="footer">
+    <footer className="bg-primary text-primary-foreground" data-testid="footer">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           <div className="lg:col-span-2">
-            <span className="font-serif text-2xl font-semibold text-foreground">
-              LOVEYOUNG
-            </span>
-            <p className="mt-4 text-muted-foreground max-w-md leading-relaxed">
-              精选优质燕窝与花胶，坚持传统工艺，每日鲜炖，冷链配送。为您带来纯正天然的滋补养生体验。
+            <div className="flex items-center gap-2">
+              <span className="font-serif text-2xl font-bold text-secondary">
+                LOVE YOUNG
+              </span>
+              <span className="text-xs border-l border-primary-foreground/30 pl-2 opacity-70">养乐</span>
+            </div>
+            <p className="mt-4 opacity-70 max-w-md leading-relaxed" data-testid="text-footer-description">
+              逆风启航，重定义女性力量。从 Young Love 到 Love Young，我们相信先爱自己，才能更好地爱这个世界。
             </p>
             <div className="flex items-center gap-4 mt-6">
               <a
                 href={whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-primary-foreground/10 hover-elevate"
                 aria-label="WhatsApp"
                 data-testid="link-footer-whatsapp"
               >
@@ -34,7 +38,7 @@ export function Footer({ whatsappLink, metaShopLink }: FooterProps) {
                 href={metaShopLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-primary-foreground/10 hover-elevate"
                 aria-label="Facebook"
                 data-testid="link-footer-facebook"
               >
@@ -44,7 +48,7 @@ export function Footer({ whatsappLink, metaShopLink }: FooterProps) {
                 href={metaShopLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-primary-foreground/10 hover-elevate"
                 aria-label="Instagram"
                 data-testid="link-footer-instagram"
               >
@@ -54,81 +58,81 @@ export function Footer({ whatsappLink, metaShopLink }: FooterProps) {
           </div>
 
           <div>
-            <h4 className="font-semibold text-foreground mb-4">快速链接</h4>
+            <h4 className="font-semibold text-secondary mb-4" data-testid="text-footer-links-title">快速链接</h4>
             <ul className="space-y-3">
               <li>
                 <a
+                  href="#brand"
+                  className="opacity-70 hover-elevate inline-block"
+                  data-testid="link-footer-brand"
+                >
+                  品牌故事
+                </a>
+              </li>
+              <li>
+                <a
                   href="#products"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="opacity-70 hover-elevate inline-block"
                   data-testid="link-footer-products"
                 >
-                  产品系列
+                  产品中心
                 </a>
               </li>
               <li>
                 <a
-                  href="#benefits"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                  data-testid="link-footer-benefits"
+                  href="#rwa"
+                  className="opacity-70 hover-elevate inline-block"
+                  data-testid="link-footer-rwa"
                 >
-                  品牌优势
+                  联合经营
                 </a>
               </li>
               <li>
-                <a
-                  href="#how-to-order"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                  data-testid="link-footer-order"
+                <Link
+                  href="/partner"
+                  className="opacity-70 hover-elevate inline-block"
+                  data-testid="link-footer-partner"
                 >
-                  如何订购
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#testimonials"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                  data-testid="link-footer-testimonials"
-                >
-                  客户评价
-                </a>
+                  成为经营人
+                </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold text-foreground mb-4">联系我们</h4>
-            <ul className="space-y-3 text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <span className="font-medium text-foreground">营业时间:</span>
+            <h4 className="font-semibold text-secondary mb-4" data-testid="text-footer-contact-title">联系我们</h4>
+            <ul className="space-y-3 opacity-70">
+              <li className="flex items-start gap-2" data-testid="text-footer-hours">
+                <span className="font-medium opacity-100">营业时间:</span>
                 <span>周一至周日 9:00-21:00</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="font-medium text-foreground">WhatsApp:</span>
+                <span className="font-medium opacity-100">WhatsApp:</span>
                 <a
                   href={whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-foreground transition-colors"
+                  className="hover-elevate inline-block"
                   data-testid="link-footer-whatsapp-number"
                 >
                   点击咨询
                 </a>
               </li>
               <li className="text-sm">
-                <span className="text-xs bg-whatsapp/10 text-whatsapp px-2 py-1 rounded">
-                  自动回复24小时内响应
+                <span className="text-xs bg-secondary/20 text-secondary px-2 py-1 rounded" data-testid="text-footer-response-time">
+                  24小时内响应
                 </span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-muted-foreground">
-            © {currentYear} LOVEYOUNG燕窝花胶鲜炖. 保留所有权利.
+        <div className="mt-12 pt-8 border-t border-primary-foreground/10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm opacity-60" data-testid="text-footer-copyright">
+            © {currentYear} Love Young 养乐. 保留所有权利.
           </p>
-          <p className="text-sm text-muted-foreground">
-            100% 天然原料 | 每日新鲜炖煮 | 冷链安全配送
+          <p className="text-sm opacity-60" data-testid="text-footer-slogan">
+            Against The Wind | 逆风启航
           </p>
         </div>
       </div>
