@@ -6,23 +6,24 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
-  LayoutDashboard,
-  Users,
-  FileText,
-  Star,
-  Wallet,
-  PieChart,
-  TrendingUp,
+  Home,
+  Settings,
+  Bell,
+  HelpCircle,
+  ShoppingBag,
+  MapPin,
+  Gift,
+  CreditCard,
   Menu,
   ArrowLeft,
-  Home,
-  Crown,
   ChevronRight,
-  LogOut
+  LogOut,
+  User,
+  Star
 } from "lucide-react";
 import type { User as UserType, Member, Partner, UserState } from "@shared/schema";
 
-interface PartnerLayoutProps {
+interface MemberLayoutProps {
   children: React.ReactNode;
 }
 
@@ -33,17 +34,22 @@ interface UserStateResponse {
   partner: Partner | null;
 }
 
-const menuItems = [
-  { path: "/member/partner", label: "经营概览", icon: LayoutDashboard },
-  { path: "/member/partner/referrals", label: "推荐网络", icon: Users },
-  { path: "/member/partner/materials", label: "推广物料", icon: FileText },
-  { path: "/member/partner/ly-points", label: "LY积分", icon: Star },
-  { path: "/member/partner/wallet", label: "现金钱包", icon: Wallet },
-  { path: "/member/partner/rwa", label: "RWA奖金池", icon: PieChart },
-  { path: "/member/partner/earnings", label: "收益记录", icon: TrendingUp },
+const accountItems = [
+  { path: "/member/settings", label: "账户设置", icon: Settings },
+  { path: "/member/notifications", label: "消息通知", icon: Bell },
+  { path: "/member/help", label: "帮助中心", icon: HelpCircle },
 ];
 
-export function PartnerLayout({ children }: PartnerLayoutProps) {
+const memberItems = [
+  { path: "/member/orders", label: "订单记录", icon: ShoppingBag },
+  { path: "/member/addresses", label: "地址管理", icon: MapPin },
+  { path: "/member/points", label: "积分中心", icon: Gift },
+  { path: "/member/payment", label: "支付方式", icon: CreditCard },
+];
+
+const allItems = [...accountItems, ...memberItems];
+
+export function MemberLayout({ children }: MemberLayoutProps) {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
 
@@ -51,14 +57,9 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
     queryKey: ["/api/auth/state"],
   });
 
-  const isActive = (path: string) => {
-    if (path === "/member/partner") {
-      return location === path;
-    }
-    return location.startsWith(path);
-  };
+  const isActive = (path: string) => location === path;
 
-  const currentPage = menuItems.find(item => isActive(item.path));
+  const currentPage = allItems.find(item => isActive(item.path));
   const user = userState?.user;
   const member = userState?.member;
 
@@ -70,40 +71,75 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
     <div className="flex flex-col h-full">
       <div className="p-4 border-b">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center">
-            <Crown className="w-5 h-5 text-secondary" />
-          </div>
+          <Avatar className="w-12 h-12 border-2 border-secondary">
+            <AvatarImage src={user?.profileImageUrl || undefined} />
+            <AvatarFallback className="bg-secondary text-secondary-foreground">
+              {user?.firstName?.charAt(0) || member?.name?.charAt(0) || "U"}
+            </AvatarFallback>
+          </Avatar>
           <div>
-            <h2 className="font-semibold text-primary">经营人中心</h2>
-            <Badge variant="outline" className="text-xs">Phase 1</Badge>
+            <p className="font-medium">{member?.name || user?.firstName || "会员"}</p>
+            <Badge variant="default" className="gap-1 text-xs">
+              <Star className="w-3 h-3" />
+              会员
+            </Badge>
           </div>
         </div>
       </div>
       
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.path);
-          return (
-            <Link key={item.path} href={item.path}>
-              <Button
-                variant={active ? "secondary" : "ghost"}
-                className={`w-full justify-start gap-3 ${active ? "bg-secondary/20 text-secondary font-medium" : ""}`}
-                onClick={() => setOpen(false)}
-                data-testid={`nav-${item.path.split('/').pop()}`}
-              >
-                <Icon className="w-4 h-4" />
-                {item.label}
-                {active && <ChevronRight className="w-4 h-4 ml-auto" />}
-              </Button>
-            </Link>
-          );
-        })}
+      <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
+        <div>
+          <p className="text-xs text-muted-foreground mb-2 px-2">账户管理</p>
+          <div className="space-y-1">
+            {accountItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+              return (
+                <Link key={item.path} href={item.path}>
+                  <Button
+                    variant={active ? "secondary" : "ghost"}
+                    className={`w-full justify-start gap-3 ${active ? "bg-secondary/20 text-secondary font-medium" : ""}`}
+                    onClick={() => setOpen(false)}
+                    data-testid={`nav-${item.path.split('/').pop()}`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {item.label}
+                    {active && <ChevronRight className="w-4 h-4 ml-auto" />}
+                  </Button>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-xs text-muted-foreground mb-2 px-2">会员服务</p>
+          <div className="space-y-1">
+            {memberItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+              return (
+                <Link key={item.path} href={item.path}>
+                  <Button
+                    variant={active ? "secondary" : "ghost"}
+                    className={`w-full justify-start gap-3 ${active ? "bg-secondary/20 text-secondary font-medium" : ""}`}
+                    onClick={() => setOpen(false)}
+                    data-testid={`nav-${item.path.split('/').pop()}`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {item.label}
+                    {active && <ChevronRight className="w-4 h-4 ml-auto" />}
+                  </Button>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       </nav>
 
       <div className="p-4 border-t space-y-2">
         <Link href="/member">
-          <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-back-member">
+          <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-back-center">
             <ArrowLeft className="w-4 h-4" />
             返回会员中心
           </Button>
@@ -139,8 +175,8 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
             </Link>
 
             <div className="hidden lg:flex items-center gap-2 ml-4">
-              <Crown className="w-5 h-5 text-secondary" />
-              <span className="text-sm font-medium">经营人中心</span>
+              <User className="w-5 h-5 text-secondary" />
+              <span className="text-sm font-medium">会员中心</span>
               {currentPage && (
                 <>
                   <ChevronRight className="w-4 h-4 text-primary-foreground/60" />
@@ -152,9 +188,9 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
 
           <div className="flex items-center gap-3">
             <Link href="/member" className="hidden sm:block">
-              <Button variant="ghost" size="sm" className="text-primary-foreground gap-2" data-testid="button-header-member">
+              <Button variant="ghost" size="sm" className="text-primary-foreground gap-2" data-testid="button-header-center">
                 <ArrowLeft className="w-4 h-4" />
-                返回会员中心
+                返回仪表盘
               </Button>
             </Link>
 
@@ -166,7 +202,7 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
                 </AvatarFallback>
               </Avatar>
               <span className="hidden md:block text-sm font-medium" data-testid="text-user-name">
-                {member?.name || user?.firstName || "经营人"}
+                {member?.name || user?.firstName || "会员"}
               </span>
             </div>
 
@@ -198,7 +234,7 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
         </aside>
 
         <main className="flex-1 p-4 lg:p-8">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             {children}
           </div>
         </main>
