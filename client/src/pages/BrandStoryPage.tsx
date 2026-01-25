@@ -18,19 +18,34 @@ const fadeInUp = {
 
 const FOUNDERS = [
   {
-    name: "林雅琳",
+    name: "Vivian",
+    subtitle: "从一碗花胶燕窝开始的人",
+    motto: "初心，是把「好东西」坚持做到最好",
     image: "/pics/founder_1.webp",
-    story: "从职场精英到创业者，雅琳深知现代女性对健康与事业平衡的渴望。她将十年品牌运营经验注入LOVEYOUNG，致力于打造让女性由内而外发光的滋补品牌。"
+    story: "Vivian，是最早踏上这条路的人。从最初的朋友圈分享开始，她一步步把花胶燕窝带进更大的社区，走进月子中心、美容院，也走进无数女性的日常生活。",
+    insight: "她不急着做规模，反而把最多的时间放在产品本身——反复测试口感、研究配方、调整甜度与浓稠度，只为找到既好喝、又对身体真正友善的平衡点。",
+    belief: "品质，是品牌在逆风中最稳的船。",
+    focus: "深耕产品"
   },
   {
-    name: "陈美玲",
+    name: "Agnes",
+    subtitle: "看过太多故事后，选择守护健康",
+    motto: "她相信，真正的财富从来不是数字",
     image: "/pics/founder_2.webp",
-    story: "美玲拥有食品科学硕士学位，曾在燕窝产业深耕15年。她坚持'科学配方，天然成分'的理念，亲自把关每一款产品的研发与品控。"
+    story: "Agnes，是保险行业里的女强人。多年职业生涯，让她见过太多人生的高峰与低谷——有人事业辉煌，却失去健康；有人财富充足，却忽略了自己和家人。",
+    insight: "这些真实发生在客户身上的故事，让她逐渐明白：身心健康，才是一切保障的根本。她希望，把自己多年对「风险、守护、长期价值」的理解，转化为一种更贴近生活的陪伴。",
+    belief: "让身边的人，在忙碌与压力中，依然能照顾好自己。",
+    focus: "理解风险与守护"
   },
   {
-    name: "张慧敏",
+    name: "Andrey",
+    subtitle: "在聚光灯下，更懂得真正的保养",
+    motto: "美，不该来自焦虑，而来自状态",
     image: "/pics/founder_3.webp",
-    story: "慧敏是社群运营专家，擅长连接人与人之间的温暖纽带。她相信，LOVEYOUNG不仅是卖产品，更是在建立一个互相支持、共同成长的女性社区。"
+    story: "Andrey，十几岁便成为职业车模，后来发展为KOL，深耕自媒体领域。她活跃在宴会、派对、时尚与社交场合，见过太多关于「美」的定义——快速的、表面的、被消费的。",
+    insight: "但她越来越清楚地知道：真正让人保持青春与魅力的，不是外在的堆叠，而是心态稳定、饮食健康、身体轻盈。花胶燕窝，对她而言，不是「补品」，而是一种让身体回到平衡、让生活更从容的日常选择。",
+    belief: "最好的保养，是不勉强自己。",
+    focus: "站在潮流与女性生活方式前沿"
   }
 ];
 
@@ -105,15 +120,16 @@ export default function BrandStoryPage() {
       <section className="py-20 bg-card" data-testid="section-founders">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="text-center mb-16">
+            <Badge className="bg-secondary/20 text-secondary mb-4">品牌人物志</Badge>
             <h2 className="text-3xl md:text-4xl font-serif text-primary mb-4" data-testid="text-founders-title">
-              三位创始人的故事
+              逆风启航 · 创始人故事
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              三位志同道合的女性，因为对健康与美丽的共同追求，携手创建了LOVEYOUNG
+              三种人生路径，同一个方向——健康，不该只是当问题出现时的补救，而应该是生活中被温柔坚持的日常
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="space-y-16">
             {FOUNDERS.map((founder, index) => (
               <motion.div
                 key={index}
@@ -121,26 +137,62 @@ export default function BrandStoryPage() {
                 whileInView="visible"
                 viewport={{ once: true }}
                 variants={fadeInUp}
-                transition={{ delay: index * 0.15 }}
               >
-                <Card className="h-full overflow-hidden" data-testid={`card-founder-${index}`}>
-                  <div className="aspect-[3/4] overflow-hidden bg-muted">
-                    <img 
-                      src={founder.image}
-                      alt={founder.name}
-                      className="w-full h-full object-cover object-top"
-                    />
+                <div className={`grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center ${index % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}>
+                  <div className={`${index % 2 === 1 ? 'lg:order-2' : ''}`}>
+                    <div className="aspect-square max-w-md mx-auto overflow-hidden rounded-2xl shadow-xl bg-muted">
+                      <img 
+                        src={founder.image}
+                        alt={founder.name}
+                        className="w-full h-full object-cover"
+                        data-testid={`img-founder-${index}`}
+                      />
+                    </div>
                   </div>
-                  <CardContent className="p-6 space-y-4">
-                    <h3 className="text-xl font-bold text-foreground">{founder.name}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">
-                      {founder.story}
-                    </p>
-                  </CardContent>
-                </Card>
+                  <div className={`space-y-6 ${index % 2 === 1 ? 'lg:order-1' : ''}`} data-testid={`card-founder-${index}`}>
+                    <div>
+                      <Badge className="bg-primary/10 text-primary mb-3">{founder.focus}</Badge>
+                      <h3 className="text-2xl md:text-3xl font-serif text-primary mb-2">{founder.name}</h3>
+                      <p className="text-lg text-secondary font-medium">{founder.subtitle}</p>
+                    </div>
+                    <blockquote className="border-l-4 border-secondary pl-4 py-2">
+                      <p className="text-muted-foreground italic">{founder.motto}</p>
+                    </blockquote>
+                    <p className="text-muted-foreground leading-relaxed">{founder.story}</p>
+                    <p className="text-muted-foreground leading-relaxed">{founder.insight}</p>
+                    <div className="bg-primary/5 rounded-xl p-4 border border-primary/10">
+                      <p className="text-primary font-medium text-center">"{founder.belief}"</p>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            className="mt-20 text-center"
+          >
+            <Card className="max-w-3xl mx-auto bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+              <CardContent className="p-8">
+                <h3 className="text-xl md:text-2xl font-serif text-primary mb-4">三种人生路径 · 同一个方向</h3>
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  {FOUNDERS.map((founder, index) => (
+                    <div key={index} className="text-center">
+                      <p className="text-secondary font-medium">{founder.name}</p>
+                      <p className="text-sm text-muted-foreground">{founder.focus}</p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-muted-foreground leading-relaxed">
+                  她们在各自的人生阶段，都走过不顺、看过现实、经历过选择。最终，她们在同一个理念下汇合——这，就是「逆风启航」真正想传递的品牌精神。
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </section>
 
