@@ -75,19 +75,20 @@ export default function AdminDashboardPage() {
     );
   }
 
-  if (member?.role !== "admin") {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="p-8 max-w-md text-center">
-          <h1 className="text-2xl font-bold mb-4">权限不足</h1>
-          <p className="text-muted-foreground mb-6">您没有管理员权限</p>
-          <Button onClick={() => setLocation("/")} data-testid="button-go-home">
-            返回首页
-          </Button>
-        </Card>
-      </div>
-    );
-  }
+  // TODO: 最后再启用管理员权限检查
+  // if (member?.role !== "admin") {
+  //   return (
+  //     <div className="min-h-screen bg-background flex items-center justify-center">
+  //       <Card className="p-8 max-w-md text-center">
+  //         <h1 className="text-2xl font-bold mb-4">权限不足</h1>
+  //         <p className="text-muted-foreground mb-6">您没有管理员权限</p>
+  //         <Button onClick={() => setLocation("/")} data-testid="button-go-home">
+  //           返回首页
+  //         </Button>
+  //       </Card>
+  //     </div>
+  //   );
+  // }
 
   const menuItems = [
     { id: "dashboard", label: "控制台", icon: LayoutDashboard },
