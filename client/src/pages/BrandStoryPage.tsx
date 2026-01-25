@@ -2,7 +2,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Heart, Leaf, Users, Star, Shield, Globe } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, Heart, Leaf, Users, Star, Shield, Globe, Rocket, Target, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 
@@ -14,6 +15,27 @@ const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
 };
+
+const FOUNDERS = [
+  {
+    name: "林雅琳",
+    title: "联合创始人 · CEO",
+    image: "/pics/love_young_founders_story_20260106043351_1.png",
+    story: "从职场精英到创业者，雅琳深知现代女性对健康与事业平衡的渴望。她将十年品牌运营经验注入LOVEYOUNG，致力于打造让女性由内而外发光的滋补品牌。"
+  },
+  {
+    name: "陈美玲",
+    title: "联合创始人 · 产品总监",
+    image: "/pics/love_young_wellness_journey_20260106043338_1.png",
+    story: "美玲拥有食品科学硕士学位，曾在燕窝产业深耕15年。她坚持'科学配方，天然成分'的理念，亲自把关每一款产品的研发与品控。"
+  },
+  {
+    name: "张慧敏",
+    title: "联合创始人 · 运营总监",
+    image: "/pics/love_young_community_impact_20260106043528_1.png",
+    story: "慧敏是社群运营专家，擅长连接人与人之间的温暖纽带。她相信，LOVEYOUNG不仅是卖产品，更是在建立一个互相支持、共同成长的女性社区。"
+  }
+];
 
 const BRAND_VALUES = [
   {
@@ -39,11 +61,14 @@ const BRAND_VALUES = [
 ];
 
 const MILESTONES = [
-  { year: "2018", event: "品牌创立于吉隆坡，专注高端燕窝鲜炖" },
-  { year: "2020", event: "建立马来西亚自有燕屋基地" },
-  { year: "2022", event: "推出花胶系列，完善滋补产品线" },
-  { year: "2024", event: "启动RWA联合经营人计划" },
-  { year: "2025", event: "品牌升级，发布\"逆风启航\"系列" }
+  { year: "2020", event: "品牌创立于吉隆坡，专注高端燕窝鲜炖事业", type: "past" },
+  { year: "2022", event: "建立马来西亚自有燕屋基地，实现原料自主可控", type: "past" },
+  { year: "2024", event: "创新升级产品线，推出全新口味系列，深受市场好评", type: "past" },
+  { year: "2025", event: "品牌正式更名为 LOVEYOUNG 养乐，开启全新品牌时代", type: "present" },
+  { year: "2026", event: "启动\"逆风启航\"计划，推出RWA联合经营人体系", type: "present" },
+  { year: "2027", event: "计划进军新加坡、香港市场，建立区域分销网络", type: "future" },
+  { year: "2028", event: "目标推出益生菌、胶原蛋白等新品类，完善健康生态", type: "future" },
+  { year: "2030", event: "愿景成为东南亚领先的女性健康滋补品牌", type: "future" }
 ];
 
 export default function BrandStoryPage() {
@@ -67,6 +92,7 @@ export default function BrandStoryPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
+              <Badge className="bg-secondary/20 text-secondary mb-4">Since 2020</Badge>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-primary mb-6" data-testid="text-brand-title">
                 逆风启航<br />
                 <span className="text-secondary">养乐优选</span>
@@ -79,48 +105,47 @@ export default function BrandStoryPage() {
         </div>
       </section>
 
-      <section className="py-20 bg-card" data-testid="section-founder-story">
+      <section className="py-20 bg-card" data-testid="section-founders">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeInUp}
-            >
-              <img 
-                src="/pics/love_young_founders_story_20260106043351_1.png"
-                alt="创始人故事"
-                className="rounded-2xl shadow-xl w-full"
-                data-testid="img-founder-story"
-              />
-            </motion.div>
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeInUp}
-              className="space-y-6"
-            >
-              <h2 className="text-3xl md:text-4xl font-serif text-primary" data-testid="text-founder-title">
-                创始初心
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                品牌创始人林女士，曾是一位忙碌的职业女性。在经历了健康的低谷后，她深刻体会到滋补养生对女性的重要性。然而，市场上真正优质、便捷的燕窝产品少之又少。
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                2018年，带着"让每一位女性都能轻松享受高品质滋补"的愿景，LOVEYOUNG 在吉隆坡诞生。从一间小小的厨房开始，到如今拥有自有燕屋基地和现代化生产线，我们始终坚持初心。
-              </p>
-              <div className="flex items-center gap-4 pt-4">
-                <div className="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center">
-                  <Star className="w-8 h-8 text-secondary" />
-                </div>
-                <div>
-                  <p className="font-bold text-foreground">林雅琳 创始人</p>
-                  <p className="text-sm text-muted-foreground">LOVEYOUNG 养乐鲜炖</p>
-                </div>
-              </div>
-            </motion.div>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-serif text-primary mb-4" data-testid="text-founders-title">
+              三位创始人的故事
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              三位志同道合的女性，因为对健康与美丽的共同追求，携手创建了LOVEYOUNG
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {FOUNDERS.map((founder, index) => (
+              <motion.div
+                key={index}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUp}
+                transition={{ delay: index * 0.15 }}
+              >
+                <Card className="h-full overflow-hidden" data-testid={`card-founder-${index}`}>
+                  <div className="aspect-[4/3] overflow-hidden">
+                    <img 
+                      src={founder.image}
+                      alt={founder.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <CardContent className="p-6 space-y-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-foreground">{founder.name}</h3>
+                      <p className="text-sm text-secondary font-medium">{founder.title}</p>
+                    </div>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {founder.story}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -185,7 +210,7 @@ export default function BrandStoryPage() {
                   <p className="text-sm opacity-70">忠实顾客</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-secondary">6</p>
+                  <p className="text-3xl font-bold text-secondary">5</p>
                   <p className="text-sm opacity-70">年品牌历程</p>
                 </div>
                 <div className="text-center">
@@ -215,9 +240,9 @@ export default function BrandStoryPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-serif text-primary mb-4" data-testid="text-milestones-title">
-              品牌历程
+              品牌历程与未来蓝图
             </h2>
-            <p className="text-muted-foreground">从一间厨房到全球品牌，我们一直在前行</p>
+            <p className="text-muted-foreground">从创立到腾飞，我们的故事才刚刚开始</p>
           </div>
           <div className="relative">
             <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-border -translate-x-1/2 hidden md:block" />
@@ -235,13 +260,35 @@ export default function BrandStoryPage() {
                   data-testid={`milestone-${index}`}
                 >
                   <div className={`flex-1 ${index % 2 === 0 ? "md:text-left" : "md:text-right"}`}>
-                    <Card className="inline-block p-4">
-                      <CardContent className="p-0">
-                        <p className="text-muted-foreground">{milestone.event}</p>
+                    <Card className={`inline-block p-4 ${
+                      milestone.type === "future" ? "border-dashed border-secondary/50 bg-secondary/5" : ""
+                    }`}>
+                      <CardContent className="p-0 flex items-start gap-3">
+                        {milestone.type === "future" && (
+                          <Rocket className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
+                        )}
+                        {milestone.type === "present" && (
+                          <Sparkles className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
+                        )}
+                        <div>
+                          {milestone.type === "future" && (
+                            <Badge variant="outline" className="text-xs mb-2 text-secondary border-secondary/50">未来规划</Badge>
+                          )}
+                          {milestone.type === "present" && (
+                            <Badge className="text-xs mb-2 bg-secondary text-secondary-foreground">进行中</Badge>
+                          )}
+                          <p className="text-muted-foreground">{milestone.event}</p>
+                        </div>
                       </CardContent>
                     </Card>
                   </div>
-                  <div className="w-16 h-16 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center font-bold text-lg z-10">
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center font-bold text-lg z-10 ${
+                    milestone.type === "future" 
+                      ? "bg-secondary/20 text-secondary border-2 border-dashed border-secondary" 
+                      : milestone.type === "present"
+                        ? "bg-secondary text-secondary-foreground ring-4 ring-secondary/30"
+                        : "bg-primary text-primary-foreground"
+                  }`}>
                     {milestone.year}
                   </div>
                   <div className="flex-1 hidden md:block" />
@@ -252,7 +299,7 @@ export default function BrandStoryPage() {
         </div>
       </section>
 
-      <section className="py-20 bg-card" data-testid="section-community">
+      <section className="py-20 bg-card" data-testid="section-partner-stories">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <motion.div
@@ -263,9 +310,9 @@ export default function BrandStoryPage() {
             >
               <img 
                 src="/pics/love_young_community_impact_20260106043528_1.png"
-                alt="品牌社区"
+                alt="经营人故事"
                 className="rounded-2xl shadow-xl w-full"
-                data-testid="img-community"
+                data-testid="img-partner-stories"
               />
             </motion.div>
             <motion.div
@@ -275,20 +322,21 @@ export default function BrandStoryPage() {
               variants={fadeInUp}
               className="space-y-6"
             >
-              <h2 className="text-3xl md:text-4xl font-serif text-primary" data-testid="text-community-title">
-                共建美好社区
+              <Badge className="bg-secondary/20 text-secondary">Coming Soon</Badge>
+              <h2 className="text-3xl md:text-4xl font-serif text-primary" data-testid="text-partner-stories-title">
+                联合经营人故事
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                LOVEYOUNG 不只是一个产品品牌，更是一个温暖的女性社区。在这里，志同道合的姐妹们分享养生心得、交流生活智慧、互相支持鼓励。
+                每一位LOVEYOUNG联合经营人都有属于自己的精彩故事。她们来自不同的背景——有的是全职妈妈，有的是职场白领，有的是资深创业者。但她们都有一个共同点：选择了LOVEYOUNG，选择了逆风启航。
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                通过我们的联合经营人计划，越来越多的女性不仅收获了健康，更找到了事业的第二曲线。她们在 LOVEYOUNG 实现了财富与优雅的双重丰收。
+                我们正在筹备经营人故事博客专栏，将陆续分享这些美丽女性的创业历程、成长心得和成功经验。敬请期待！
               </p>
               <div className="flex flex-wrap gap-4 pt-4">
                 <Link href="/partner">
-                  <Button className="gap-2" data-testid="button-join-community">
+                  <Button className="gap-2 bg-secondary text-secondary-foreground" data-testid="button-become-partner">
                     <Users className="w-4 h-4" />
-                    加入我们
+                    成为经营人
                   </Button>
                 </Link>
                 <Button 
