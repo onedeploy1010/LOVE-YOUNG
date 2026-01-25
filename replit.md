@@ -83,7 +83,17 @@ Key API Endpoints:
 - `/member/payment` - Payment method management
 - `/member/partner/*` - Partner dashboard sub-pages (for active partners)
 - `/partner/dashboard` - Partner dashboard for active partners
-- `/admin` - Admin dashboard
+- `/admin` - Admin dashboard (main control panel)
+- `/admin/partners` - Partner management (activation, status)
+- `/admin/orders` - Order management (processing, tracking)
+- `/admin/products` - Product catalog management
+- `/admin/members` - Member management
+- `/admin/bonus-pool` - RWA bonus pool cycles management
+- `/admin/inventory` - Inventory stock management
+- `/admin/purchase` - Purchase orders and suppliers
+- `/admin/logistics` - Cold chain logistics tracking
+- `/admin/bills` - Bill and expense management
+- `/admin/finance` - Financial reports and analytics
 
 ### Design System
 The project follows specific design guidelines documented in `design_guidelines.md`:

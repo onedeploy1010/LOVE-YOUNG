@@ -20,6 +20,16 @@ import PartnerWalletPage from "@/pages/partner/PartnerWalletPage";
 import PartnerRwaPage from "@/pages/partner/PartnerRwaPage";
 import PartnerEarningsPage from "@/pages/partner/PartnerEarningsPage";
 import AdminDashboardPage from "@/pages/AdminDashboardPage";
+import AdminPartnersPage from "@/pages/admin/AdminPartnersPage";
+import AdminOrdersPage from "@/pages/admin/AdminOrdersPage";
+import AdminProductsPage from "@/pages/admin/AdminProductsPage";
+import AdminMembersPage from "@/pages/admin/AdminMembersPage";
+import AdminBonusPoolPage from "@/pages/admin/AdminBonusPoolPage";
+import AdminInventoryPage from "@/pages/admin/AdminInventoryPage";
+import AdminPurchasePage from "@/pages/admin/AdminPurchasePage";
+import AdminLogisticsPage from "@/pages/admin/AdminLogisticsPage";
+import AdminBillsPage from "@/pages/admin/AdminBillsPage";
+import AdminFinancePage from "@/pages/admin/AdminFinancePage";
 import MemberSettingsPage from "@/pages/member/MemberSettingsPage";
 import MemberNotificationsPage from "@/pages/member/MemberNotificationsPage";
 import MemberHelpPage from "@/pages/member/MemberHelpPage";
@@ -56,6 +66,16 @@ function Router() {
       <Route path="/partner/join" component={PartnerJoinPage} />
       <Route path="/partner/dashboard" component={PartnerDashboardPage} />
       <Route path="/admin" component={AdminDashboardPage} />
+      <Route path="/admin/partners" component={AdminPartnersPage} />
+      <Route path="/admin/orders" component={AdminOrdersPage} />
+      <Route path="/admin/products" component={AdminProductsPage} />
+      <Route path="/admin/members" component={AdminMembersPage} />
+      <Route path="/admin/bonus-pool" component={AdminBonusPoolPage} />
+      <Route path="/admin/inventory" component={AdminInventoryPage} />
+      <Route path="/admin/purchase" component={AdminPurchasePage} />
+      <Route path="/admin/logistics" component={AdminLogisticsPage} />
+      <Route path="/admin/bills" component={AdminBillsPage} />
+      <Route path="/admin/finance" component={AdminFinancePage} />
       <Route component={NotFound} />
     </Switch>
   );
