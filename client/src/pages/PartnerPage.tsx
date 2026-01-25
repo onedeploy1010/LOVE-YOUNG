@@ -73,7 +73,7 @@ const PARTNER_TIERS = [
     name: "创始经营人",
     subtitle: "Phase 2",
     price: 1300,
-    lyPoints: 2600,
+    lyPoints: 2860,
     dividendWeight: "1.2x",
     icon: ShieldCheck,
     features: [
@@ -91,7 +91,7 @@ const PARTNER_TIERS = [
     name: "战略经营人",
     subtitle: "Phase 3",
     price: 1500,
-    lyPoints: 3000,
+    lyPoints: 3750,
     dividendWeight: "1.5x",
     icon: Gem,
     features: [
