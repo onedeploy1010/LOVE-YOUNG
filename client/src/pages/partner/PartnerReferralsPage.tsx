@@ -1,0 +1,233 @@
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import {
+  Users, UserPlus, Search, ChevronRight, Crown,
+  TrendingUp, Star, Filter
+} from "lucide-react";
+import { useState } from "react";
+
+const mockReferrals = [
+  { id: 1, name: "李小华", level: 1, status: "active", joinDate: "2025-12-15", lyEarned: 200, tier: "Phase 1" },
+  { id: 2, name: "王美丽", level: 1, status: "active", joinDate: "2025-12-20", lyEarned: 150, tier: "Phase 1" },
+  { id: 3, name: "张晓明", level: 1, status: "pending", joinDate: "2026-01-05", lyEarned: 0, tier: "待激活" },
+  { id: 4, name: "陈雅琳", level: 2, status: "active", joinDate: "2026-01-10", lyEarned: 80, tier: "Phase 1" },
+  { id: 5, name: "林美玲", level: 2, status: "active", joinDate: "2026-01-12", lyEarned: 60, tier: "Phase 2" },
+  { id: 6, name: "黄小燕", level: 3, status: "active", joinDate: "2026-01-18", lyEarned: 30, tier: "Phase 1" },
+];
+
+const levelColors: Record<number, string> = {
+  1: "bg-secondary text-secondary-foreground",
+  2: "bg-primary text-primary-foreground",
+  3: "bg-blue-500 text-white",
+};
+
+export default function PartnerReferralsPage() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [levelFilter, setLevelFilter] = useState<number | null>(null);
+
+  const filteredReferrals = mockReferrals.filter(r => {
+    const matchesSearch = r.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLevel = levelFilter === null || r.level === levelFilter;
+    return matchesSearch && matchesLevel;
+  });
+
+  const stats = {
+    total: mockReferrals.length,
+    active: mockReferrals.filter(r => r.status === "active").length,
+    level1: mockReferrals.filter(r => r.level === 1).length,
+    level2: mockReferrals.filter(r => r.level === 2).length,
+    level3: mockReferrals.filter(r => r.level === 3).length,
+    totalLyEarned: mockReferrals.reduce((sum, r) => sum + r.lyEarned, 0),
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-serif text-primary" data-testid="text-referrals-title">推荐网络</h1>
+        <p className="text-muted-foreground">查看您的团队成员与下线网络</p>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Users className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.total}</p>
+                <p className="text-xs text-muted-foreground">总推荐人数</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-green-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.active}</p>
+                <p className="text-xs text-muted-foreground">活跃成员</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
+                <Crown className="w-5 h-5 text-secondary" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.level1}</p>
+                <p className="text-xs text-muted-foreground">直推成员</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                <Star className="w-5 h-5 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.totalLyEarned}</p>
+                <p className="text-xs text-muted-foreground">累计获得LY</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <CardTitle>团队成员列表</CardTitle>
+              <CardDescription>10层深度推荐网络</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="搜索成员..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 w-[200px]"
+                  data-testid="input-search-referrals"
+                />
+              </div>
+              <Button variant="outline" size="icon" data-testid="button-filter">
+                <Filter className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2 mb-4 flex-wrap">
+            <Button 
+              variant={levelFilter === null ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setLevelFilter(null)}
+            >
+              全部
+            </Button>
+            <Button 
+              variant={levelFilter === 1 ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setLevelFilter(1)}
+            >
+              第1层 ({stats.level1})
+            </Button>
+            <Button 
+              variant={levelFilter === 2 ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setLevelFilter(2)}
+            >
+              第2层 ({stats.level2})
+            </Button>
+            <Button 
+              variant={levelFilter === 3 ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setLevelFilter(3)}
+            >
+              第3层 ({stats.level3})
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {filteredReferrals.map((referral) => (
+              <div
+                key={referral.id}
+                className="flex items-center justify-between p-4 rounded-lg border hover-elevate cursor-pointer"
+                data-testid={`card-referral-${referral.id}`}
+              >
+                <div className="flex items-center gap-4">
+                  <Avatar>
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {referral.name.slice(0, 1)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{referral.name}</p>
+                      <Badge className={levelColors[referral.level]} variant="secondary">
+                        第{referral.level}层
+                      </Badge>
+                      {referral.status === "pending" && (
+                        <Badge variant="outline" className="text-orange-500 border-orange-500">待激活</Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      加入时间: {referral.joinDate} · {referral.tier}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="font-medium text-secondary">+{referral.lyEarned} LY</p>
+                    <p className="text-xs text-muted-foreground">累计贡献</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {filteredReferrals.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>暂无匹配的成员</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
+                <UserPlus className="w-6 h-6 text-secondary" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">邀请更多好友加入</h3>
+                <p className="text-muted-foreground">每成功推荐一位经营人，可获得LY积分奖励</p>
+              </div>
+            </div>
+            <Button className="bg-secondary text-secondary-foreground hover:bg-secondary/90" data-testid="button-invite">
+              <UserPlus className="w-4 h-4 mr-2" />
+              立即邀请
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
