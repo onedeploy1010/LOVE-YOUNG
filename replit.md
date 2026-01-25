@@ -67,12 +67,27 @@ Key API Endpoints:
 - `POST /api/admin/partners/:id/activate` - Admin: activate partner
 - `GET /api/admin/dashboard-stats` - Admin: dashboard statistics
 
+### Site Pages
+- `/` - Landing page with hero, brand teaser, products showcase, RWA preview
+- `/brand` - Brand story page with founder story, brand values, milestones, community
+- `/products` - Products catalog with filtering tabs (燕窝/花胶/礼盒), pricing, order buttons
+- `/partner` - RWA partner program page with 3 tiers, revenue calculator, FAQ
+- `/member` - Member center with role-based navigation (用户/会员/经营人/管理员)
+- `/partner/dashboard` - Partner dashboard for active partners
+- `/admin` - Admin dashboard
+
 ### Design System
 The project follows specific design guidelines documented in `design_guidelines.md`:
 - Typography: Noto Sans SC (Chinese) + Playfair Display (English headings)
-- Color scheme: Premium neutral tones with primary accent (HSL 345)
+- Color scheme: Emerald green (primary) + Gold (secondary) - "逆风启航" theme
 - Layout: Mobile-first with max-w-7xl container
 - Components: Clean, luxury aesthetic with generous spacing
+
+### Image Assets
+Product and brand images are stored in `client/public/pics/`:
+- Brand identity and storyboard images
+- Event and community photos
+- Wellness and lifestyle imagery
 
 ## External Dependencies
 
