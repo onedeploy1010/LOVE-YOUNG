@@ -645,6 +645,84 @@ export default function BrandStoryPage() {
         </div>
       </section>
 
+      <section className="py-20 bg-muted/30" data-testid="section-community-wellness">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-serif text-primary mb-4" data-testid="text-community-title">
+              社区活动 · 健康生活
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              LOVEYOUNG 不仅是一个品牌，更是一个赋能女性成长的社区
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+            >
+              <Card className="overflow-hidden h-full">
+                <img 
+                  src="/attached_assets/love_young_community_impact_20260106043528_1_1769380081881.png"
+                  alt="社区影响力"
+                  className="w-full h-64 object-cover"
+                  data-testid="img-community-impact"
+                />
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold text-primary mb-2">社区影响力</h3>
+                  <p className="text-muted-foreground text-sm">
+                    赋能马来西亚女性，通过LOVEYOUNG学院和公益活动创造积极的社会影响。
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+            >
+              <Card className="overflow-hidden h-full">
+                <img 
+                  src="/attached_assets/love_young_wellness_lifestyle_20260106043539_1_1769380081885.png"
+                  alt="健康生活方式"
+                  className="w-full h-64 object-cover"
+                  data-testid="img-wellness-lifestyle"
+                />
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold text-primary mb-2">健康生活方式</h3>
+                  <p className="text-muted-foreground text-sm">
+                    从冥想到瑜伽，从职场到社交，LOVEYOUNG陪伴现代女性的每一个生活场景。
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+            >
+              <Card className="overflow-hidden h-full">
+                <img 
+                  src="/attached_assets/love_young_event_experience_20260106043435_1_1769380063105.png"
+                  alt="品牌活动体验"
+                  className="w-full h-64 object-cover"
+                  data-testid="img-event-experience"
+                />
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold text-primary mb-2">品牌活动体验</h3>
+                  <p className="text-muted-foreground text-sm">
+                    从接待到参观，从交流到派对，为经营人打造独特的溯源之旅体验。
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       <section className="py-20" data-testid="section-brand-cta">
         <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-serif text-primary mb-6" data-testid="text-cta-title">

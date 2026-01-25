@@ -939,6 +939,53 @@ export default function PartnerPage() {
         </div>
       </section>
 
+      <section className="py-20 bg-muted/30" data-testid="section-ecosystem">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+            >
+              <img 
+                src="/attached_assets/love_young_ecosystem_20260106043624_1_1769380035812.png"
+                alt="LOVEYOUNG品牌生态系统"
+                className="rounded-2xl shadow-xl w-full"
+                data-testid="img-ecosystem"
+              />
+            </motion.div>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUp}
+              className="space-y-6"
+            >
+              <h2 className="text-3xl md:text-4xl font-serif text-primary" data-testid="text-ecosystem-title">
+                LOVEYOUNG 品牌生态系统
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                LOVEYOUNG 构建了一个完整的品牌生态系统，涵盖优质产品、KOL合作、RWA投资、社区建设、数字营销等多个维度。
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                作为联合经营人，您将成为这个生态系统的重要一员，共同推动品牌发展，分享品牌成长红利。
+              </p>
+              <div className="grid grid-cols-2 gap-4 pt-4">
+                <div className="p-4 rounded-xl bg-background border">
+                  <p className="text-2xl font-bold text-secondary">5+</p>
+                  <p className="text-sm text-muted-foreground">业务模块</p>
+                </div>
+                <div className="p-4 rounded-xl bg-background border">
+                  <p className="text-2xl font-bold text-secondary">360°</p>
+                  <p className="text-sm text-muted-foreground">全方位支持</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       <section id="faq" className="py-20" data-testid="section-faq">
         <div className="max-w-3xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="text-center mb-12">
