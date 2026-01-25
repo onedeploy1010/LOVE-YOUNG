@@ -253,15 +253,18 @@ export default function BrandStoryPage() {
                 匠心品质
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                从马来西亚自有燕屋基地到现代化生产线，我们全程把控每一个环节。严选顶级燕窝原料，采用低温慢炖工艺，最大程度保留营养成分。
+                从燕窝与花胶原产地的亲自采购开始，到每一批原料的严谨筛选，我们只选择符合标准的优质食材进入生产流程。
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                每一瓶鲜炖燕窝都经过严格的质量检测，全程冷链配送，确保您收到的每一份产品都是最新鲜、最优质的。
+                所有产品均在 <span className="text-primary font-medium">LoveYoung 自有无菌生产基地</span> 完成炖煮与灌装，采用低温慢炖工艺，在确保卫生安全的前提下，最大程度保留食材本身的营养与口感层次。
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                每一瓶鲜炖产品都经过多重质量检测，并通过全程冷链配送，确保送达您手中的，始终是新鲜、安心、值得信赖的品质。
               </p>
               <div className="grid grid-cols-2 gap-4 pt-4">
                 <Card className="p-4 text-center">
                   <p className="text-2xl font-bold text-secondary">100%</p>
-                  <p className="text-xs text-muted-foreground">马来西亚原产</p>
+                  <p className="text-xs text-muted-foreground">原产地直采</p>
                 </Card>
                 <Card className="p-4 text-center">
                   <p className="text-2xl font-bold text-secondary">0</p>
@@ -277,8 +280,8 @@ export default function BrandStoryPage() {
               className="order-1 lg:order-2"
             >
               <img 
-                src="/pics/production_line.jpg"
-                alt="无菌炖煮生产线"
+                src="/pics/craftsmanship_journey.webp"
+                alt="匠心品质之旅：原产地采购、严谨筛选、无菌生产、冷链配送"
                 className="rounded-2xl shadow-xl w-full"
                 data-testid="img-production"
               />
