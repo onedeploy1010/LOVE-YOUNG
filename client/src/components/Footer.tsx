@@ -61,39 +61,39 @@ export function Footer({ whatsappLink, metaShopLink }: FooterProps) {
             <h4 className="font-semibold text-secondary mb-4" data-testid="text-footer-links-title">快速链接</h4>
             <ul className="space-y-3">
               <li>
-                <a
-                  href="#brand"
+                <Link
+                  href="/brand"
                   className="opacity-70 hover-elevate inline-block"
                   data-testid="link-footer-brand"
                 >
                   品牌故事
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#products"
+                <Link
+                  href="/products"
                   className="opacity-70 hover-elevate inline-block"
                   data-testid="link-footer-products"
                 >
                   产品中心
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#rwa"
-                  className="opacity-70 hover-elevate inline-block"
-                  data-testid="link-footer-rwa"
-                >
-                  联合经营
-                </a>
+                </Link>
               </li>
               <li>
                 <Link
                   href="/partner"
                   className="opacity-70 hover-elevate inline-block"
-                  data-testid="link-footer-partner"
+                  data-testid="link-footer-rwa"
                 >
-                  成为经营人
+                  联合经营
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/member"
+                  className="opacity-70 hover-elevate inline-block"
+                  data-testid="link-footer-member"
+                >
+                  会员中心
                 </Link>
               </li>
             </ul>
