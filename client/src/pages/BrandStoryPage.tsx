@@ -19,20 +19,17 @@ const fadeInUp = {
 const FOUNDERS = [
   {
     name: "林雅琳",
-    title: "联合创始人 · CEO",
-    image: "/pics/founder_1.jpg",
+    image: "/pics/founder_1.webp",
     story: "从职场精英到创业者，雅琳深知现代女性对健康与事业平衡的渴望。她将十年品牌运营经验注入LOVEYOUNG，致力于打造让女性由内而外发光的滋补品牌。"
   },
   {
     name: "陈美玲",
-    title: "联合创始人 · 产品总监",
-    image: "/pics/founder_2.jpg",
+    image: "/pics/founder_2.webp",
     story: "美玲拥有食品科学硕士学位，曾在燕窝产业深耕15年。她坚持'科学配方，天然成分'的理念，亲自把关每一款产品的研发与品控。"
   },
   {
     name: "张慧敏",
-    title: "联合创始人 · 运营总监",
-    image: "/pics/founder_3.jpg",
+    image: "/pics/founder_3.webp",
     story: "慧敏是社群运营专家，擅长连接人与人之间的温暖纽带。她相信，LOVEYOUNG不仅是卖产品，更是在建立一个互相支持、共同成长的女性社区。"
   }
 ];
@@ -135,10 +132,7 @@ export default function BrandStoryPage() {
                     />
                   </div>
                   <CardContent className="p-6 space-y-4">
-                    <div>
-                      <h3 className="text-xl font-bold text-foreground">{founder.name}</h3>
-                      <p className="text-sm text-secondary font-medium">{founder.title}</p>
-                    </div>
+                    <h3 className="text-xl font-bold text-foreground">{founder.name}</h3>
                     <p className="text-muted-foreground text-sm leading-relaxed">
                       {founder.story}
                     </p>
@@ -472,34 +466,27 @@ export default function BrandStoryPage() {
               whileInView="visible"
               viewport={{ once: true }}
               variants={fadeInUp}
-              className="grid grid-cols-2 gap-4"
+              className="grid grid-cols-3 gap-4"
             >
               <div className="rounded-xl shadow-lg overflow-hidden bg-muted">
                 <img 
-                  src="/pics/love_young_community_impact_20260106043528_1.png"
-                  alt="经营人故事"
+                  src="/pics/partner_story_1.webp"
+                  alt="经营人故事 - Lisa"
                   className="w-full h-auto object-contain"
                   data-testid="img-partner-stories-1"
                 />
               </div>
-              <div className="rounded-xl shadow-lg overflow-hidden bg-muted mt-8">
+              <div className="rounded-xl shadow-lg overflow-hidden bg-muted mt-6">
                 <img 
-                  src="/pics/love_young_success_metrics_20260106043449_1.png"
-                  alt="成功案例"
+                  src="/pics/partner_story_2.webp"
+                  alt="经营人故事 - Sarah"
                   className="w-full h-auto object-contain"
                 />
               </div>
-              <div className="rounded-xl shadow-lg overflow-hidden bg-muted -mt-4">
+              <div className="rounded-xl shadow-lg overflow-hidden bg-muted">
                 <img 
-                  src="/pics/love_young_investment_opportunity_20260106043517_1.png"
-                  alt="投资机会"
-                  className="w-full h-auto object-contain"
-                />
-              </div>
-              <div className="rounded-xl shadow-lg overflow-hidden bg-muted mt-4">
-                <img 
-                  src="/pics/love_young_digital_marketing_20260106043418_1.png"
-                  alt="数字营销"
+                  src="/pics/partner_story_3.webp"
+                  alt="经营人故事 - Emma"
                   className="w-full h-auto object-contain"
                 />
               </div>
