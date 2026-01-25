@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/lib/i18n";
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/LandingPage";
+import BrandStoryPage from "@/pages/BrandStoryPage";
+import ProductsPage from "@/pages/ProductsPage";
 import OrderTrackingPage from "@/pages/OrderTrackingPage";
 import ChristmasPromoPage from "@/pages/ChristmasPromoPage";
 import MemberCenterPage from "@/pages/MemberCenterPage";
@@ -17,6 +19,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
+      <Route path="/brand" component={BrandStoryPage} />
+      <Route path="/products" component={ProductsPage} />
       <Route path="/order-tracking" component={OrderTrackingPage} />
       <Route path="/christmas" component={ChristmasPromoPage} />
       <Route path="/member" component={MemberCenterPage} />
