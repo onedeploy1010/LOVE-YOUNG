@@ -226,7 +226,10 @@ export default function BrandStoryPage() {
                 2020年，三位志同道合的女性在吉隆坡相遇。她们有着共同的经历——在忙碌的生活中忽视了自己的健康，直到身体发出警报才意识到滋补养生的重要性。
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                然而，市场上真正优质、便捷、值得信赖的燕窝产品少之又少。于是，她们决定亲自创建一个品牌，用最严格的标准、最真挚的初心，为每一位女性提供最纯净的滋养。
+                然而，市场上真正优质、无防腐剂的鲜炖花胶燕窝产品少之又少。这是最健康的滋补方式，却也非常费时去制作。都市女性常常忙于照顾家人和工作，根本无法为自己好好煮上那么一碗。
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                于是，她们决定亲自创建一个品牌，用最严格的标准、最真挚的初心，为每一位忙碌的女性提供最纯净、最便捷的滋养。
               </p>
               <p className="text-muted-foreground leading-relaxed font-medium text-foreground">
                 这就是 LOVEYOUNG 的诞生——先爱自己，才能更好地爱世界。
