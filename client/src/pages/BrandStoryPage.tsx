@@ -277,8 +277,8 @@ export default function BrandStoryPage() {
               className="order-1 lg:order-2"
             >
               <img 
-                src="/pics/love_young_brand_storyboard_20260106043504_1.png"
-                alt="匠心品质"
+                src="/pics/production_line.jpg"
+                alt="无菌炖煮生产线"
                 className="rounded-2xl shadow-xl w-full"
                 data-testid="img-production"
               />
