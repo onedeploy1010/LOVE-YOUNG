@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { PartnerLayout } from "@/components/PartnerLayout";
 import {
   Star, ArrowUpRight, ArrowDownRight, Gift, ShoppingBag,
   Users, TrendingUp, History, Filter, Download
@@ -30,11 +31,12 @@ const stats = {
 
 export default function PartnerLyPointsPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-serif text-primary" data-testid="text-ly-points-title">LY积分</h1>
-        <p className="text-muted-foreground">查看积分明细与使用记录</p>
-      </div>
+    <PartnerLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-ly-points-title">LY积分</h1>
+          <p className="text-muted-foreground">查看积分明细与使用记录</p>
+        </div>
 
       <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
         <CardContent className="p-6">
@@ -253,6 +255,7 @@ export default function PartnerLyPointsPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </PartnerLayout>
   );
 }

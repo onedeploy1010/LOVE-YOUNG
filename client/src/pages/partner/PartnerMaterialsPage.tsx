@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PartnerLayout } from "@/components/PartnerLayout";
 import {
   Share2, Download, Copy, Image, FileText, Video,
   ExternalLink, Check, QrCode, Smartphone
@@ -38,11 +39,12 @@ export default function PartnerMaterialsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-serif text-primary" data-testid="text-materials-title">推广物料</h1>
-        <p className="text-muted-foreground">获取分享素材，助力您的推广</p>
-      </div>
+    <PartnerLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-materials-title">推广物料</h1>
+          <p className="text-muted-foreground">获取分享素材，助力您的推广</p>
+        </div>
 
       <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
         <CardContent className="p-6">
@@ -225,6 +227,7 @@ export default function PartnerMaterialsPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </PartnerLayout>
   );
 }

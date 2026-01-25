@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { PartnerLayout } from "@/components/PartnerLayout";
 import {
   Dialog,
   DialogContent,
@@ -48,11 +49,12 @@ export default function PartnerWalletPage() {
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-serif text-primary" data-testid="text-wallet-title">现金钱包</h1>
-        <p className="text-muted-foreground">收益查看与提现申请</p>
-      </div>
+    <PartnerLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-wallet-title">现金钱包</h1>
+          <p className="text-muted-foreground">收益查看与提现申请</p>
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
@@ -237,6 +239,7 @@ export default function PartnerWalletPage() {
           </Button>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </PartnerLayout>
   );
 }

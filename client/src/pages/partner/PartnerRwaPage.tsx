@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { PartnerLayout } from "@/components/PartnerLayout";
 import {
   Award, TrendingUp, Clock, CheckCircle, Coins,
   Calendar, PiggyBank, Users, ChevronRight, Info
@@ -33,11 +34,12 @@ export default function PartnerRwaPage() {
   const activeCycle = mockCycles.find(c => c.status === "active");
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-serif text-primary" data-testid="text-rwa-title">RWA奖金池</h1>
-        <p className="text-muted-foreground">查看分红周期与令牌持有</p>
-      </div>
+    <PartnerLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-rwa-title">RWA奖金池</h1>
+          <p className="text-muted-foreground">查看分红周期与令牌持有</p>
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 bg-gradient-to-r from-secondary/10 to-primary/10 border-secondary/20">
@@ -222,6 +224,7 @@ export default function PartnerRwaPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </PartnerLayout>
   );
 }

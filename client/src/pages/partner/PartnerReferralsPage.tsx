@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import { PartnerLayout } from "@/components/PartnerLayout";
 import {
   Users, UserPlus, Search, ChevronRight, Crown,
   TrendingUp, Star, Filter
@@ -44,11 +45,12 @@ export default function PartnerReferralsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-serif text-primary" data-testid="text-referrals-title">推荐网络</h1>
-        <p className="text-muted-foreground">查看您的团队成员与下线网络</p>
-      </div>
+    <PartnerLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-referrals-title">推荐网络</h1>
+          <p className="text-muted-foreground">查看您的团队成员与下线网络</p>
+        </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
@@ -232,6 +234,7 @@ export default function PartnerReferralsPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </PartnerLayout>
   );
 }

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { PartnerLayout } from "@/components/PartnerLayout";
 import {
   TrendingUp, Users, Wallet, Award, Share2,
   ArrowUpRight, ArrowDownRight, Copy, Check,
@@ -40,11 +41,12 @@ export default function PartnerDashboardPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-serif text-primary" data-testid="text-partner-dashboard-title">经营概览</h1>
-        <p className="text-muted-foreground">查看您的经营数据与业绩表现</p>
-      </div>
+    <PartnerLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-partner-dashboard-title">经营概览</h1>
+          <p className="text-muted-foreground">查看您的经营数据与业绩表现</p>
+        </div>
 
       <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
         <CardContent className="p-6">
@@ -232,6 +234,7 @@ export default function PartnerDashboardPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </PartnerLayout>
   );
 }

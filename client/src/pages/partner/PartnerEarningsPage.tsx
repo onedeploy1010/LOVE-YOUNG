@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { PartnerLayout } from "@/components/PartnerLayout";
 import {
   TrendingUp, DollarSign, Award, Users, ShoppingBag,
   Calendar, Download, Filter, ArrowUpRight, PieChart
@@ -38,11 +39,12 @@ export default function PartnerEarningsPage() {
   const growthPercent = ((stats.thisMonthEarnings - stats.lastMonthEarnings) / stats.lastMonthEarnings * 100).toFixed(1);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-serif text-primary" data-testid="text-earnings-title">收益记录</h1>
-        <p className="text-muted-foreground">查看返现分红与RWA奖金历史</p>
-      </div>
+    <PartnerLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-earnings-title">收益记录</h1>
+          <p className="text-muted-foreground">查看返现分红与RWA奖金历史</p>
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <Card className="lg:col-span-2 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
@@ -236,6 +238,7 @@ export default function PartnerEarningsPage() {
           </Tabs>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </PartnerLayout>
   );
 }
