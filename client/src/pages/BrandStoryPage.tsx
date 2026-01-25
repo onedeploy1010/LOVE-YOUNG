@@ -127,11 +127,11 @@ export default function BrandStoryPage() {
                 transition={{ delay: index * 0.15 }}
               >
                 <Card className="h-full overflow-hidden" data-testid={`card-founder-${index}`}>
-                  <div className="aspect-[4/3] overflow-hidden">
+                  <div className="aspect-[3/4] overflow-hidden bg-muted">
                     <img 
                       src={founder.image}
                       alt={founder.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-top"
                     />
                   </div>
                   <CardContent className="p-6 space-y-4">
@@ -291,11 +291,13 @@ export default function BrandStoryPage() {
               variants={fadeInUp}
             >
               <Card className="overflow-hidden h-full">
-                <img 
-                  src="/pics/love_young_wellness_lifestyle_20260106043539_1.png"
-                  alt="健康生活"
-                  className="w-full h-48 object-cover"
-                />
+                <div className="aspect-[4/3] bg-muted flex items-center justify-center">
+                  <img 
+                    src="/pics/love_young_wellness_lifestyle_20260106043539_1.png"
+                    alt="健康生活"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
                 <CardContent className="p-4">
                   <h3 className="font-bold text-foreground mb-2">健康养生</h3>
                   <p className="text-sm text-muted-foreground">每日一瓶鲜炖燕窝，开启元气满满的一天</p>
@@ -310,11 +312,13 @@ export default function BrandStoryPage() {
               transition={{ delay: 0.1 }}
             >
               <Card className="overflow-hidden h-full">
-                <img 
-                  src="/pics/love_young_community_building_20260106043405_1.png"
-                  alt="社群连接"
-                  className="w-full h-48 object-cover"
-                />
+                <div className="aspect-[4/3] bg-muted flex items-center justify-center">
+                  <img 
+                    src="/pics/love_young_community_building_20260106043405_1.png"
+                    alt="社群连接"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
                 <CardContent className="p-4">
                   <h3 className="font-bold text-foreground mb-2">社群连接</h3>
                   <p className="text-sm text-muted-foreground">与志同道合的姐妹分享养生心得</p>
@@ -329,11 +333,13 @@ export default function BrandStoryPage() {
               transition={{ delay: 0.2 }}
             >
               <Card className="overflow-hidden h-full">
-                <img 
-                  src="/pics/love_young_event_experience_20260106043435_1.png"
-                  alt="品牌活动"
-                  className="w-full h-48 object-cover"
-                />
+                <div className="aspect-[4/3] bg-muted flex items-center justify-center">
+                  <img 
+                    src="/pics/love_young_event_experience_20260106043435_1.png"
+                    alt="品牌活动"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
                 <CardContent className="p-4">
                   <h3 className="font-bold text-foreground mb-2">品牌活动</h3>
                   <p className="text-sm text-muted-foreground">参与私享沙龙，体验优雅圈层</p>
@@ -468,27 +474,35 @@ export default function BrandStoryPage() {
               variants={fadeInUp}
               className="grid grid-cols-2 gap-4"
             >
-              <img 
-                src="/pics/love_young_community_impact_20260106043528_1.png"
-                alt="经营人故事"
-                className="rounded-xl shadow-lg w-full"
-                data-testid="img-partner-stories-1"
-              />
-              <img 
-                src="/pics/love_young_success_metrics_20260106043449_1.png"
-                alt="成功案例"
-                className="rounded-xl shadow-lg w-full mt-8"
-              />
-              <img 
-                src="/pics/love_young_investment_opportunity_20260106043517_1.png"
-                alt="投资机会"
-                className="rounded-xl shadow-lg w-full -mt-4"
-              />
-              <img 
-                src="/pics/love_young_digital_marketing_20260106043418_1.png"
-                alt="数字营销"
-                className="rounded-xl shadow-lg w-full mt-4"
-              />
+              <div className="rounded-xl shadow-lg overflow-hidden bg-muted">
+                <img 
+                  src="/pics/love_young_community_impact_20260106043528_1.png"
+                  alt="经营人故事"
+                  className="w-full h-auto object-contain"
+                  data-testid="img-partner-stories-1"
+                />
+              </div>
+              <div className="rounded-xl shadow-lg overflow-hidden bg-muted mt-8">
+                <img 
+                  src="/pics/love_young_success_metrics_20260106043449_1.png"
+                  alt="成功案例"
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+              <div className="rounded-xl shadow-lg overflow-hidden bg-muted -mt-4">
+                <img 
+                  src="/pics/love_young_investment_opportunity_20260106043517_1.png"
+                  alt="投资机会"
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+              <div className="rounded-xl shadow-lg overflow-hidden bg-muted mt-4">
+                <img 
+                  src="/pics/love_young_digital_marketing_20260106043418_1.png"
+                  alt="数字营销"
+                  className="w-full h-auto object-contain"
+                />
+              </div>
             </motion.div>
             <motion.div
               initial="hidden"
