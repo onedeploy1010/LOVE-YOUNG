@@ -1,703 +1,342 @@
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useLanguage } from "@/lib/i18n";
-import { useAuth } from "@/hooks/useAuth";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { User, MapPin, Gift, ShoppingBag, Plus, Trash2, Star, LogOut, ArrowLeft, Loader2 } from "lucide-react";
-import { Link } from "wouter";
-import type { Member, MemberAddress, PointsLedger, Order } from "@shared/schema";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  User, Crown, Shield, Star,
+  Home, ShoppingBag, MapPin, Gift, Settings,
+  Users, Wallet, TrendingUp, Award, BarChart3,
+  Package, ClipboardList, Truck, DollarSign, FileText,
+  ChevronRight, LogOut, Loader2
+} from "lucide-react";
+import type { User as UserType, Member, Partner, UserState } from "@shared/schema";
 
-const malaysianStatesMap: Record<string, { zh: string; en: string; ms: string }> = {
-  johor: { zh: "柔佛", en: "Johor", ms: "Johor" },
-  kedah: { zh: "吉打", en: "Kedah", ms: "Kedah" },
-  kelantan: { zh: "吉兰丹", en: "Kelantan", ms: "Kelantan" },
-  melaka: { zh: "马六甲", en: "Melaka", ms: "Melaka" },
-  negeri_sembilan: { zh: "森美兰", en: "Negeri Sembilan", ms: "Negeri Sembilan" },
-  pahang: { zh: "彭亨", en: "Pahang", ms: "Pahang" },
-  penang: { zh: "槟城", en: "Penang", ms: "Pulau Pinang" },
-  perak: { zh: "霹雳", en: "Perak", ms: "Perak" },
-  perlis: { zh: "玻璃市", en: "Perlis", ms: "Perlis" },
-  sabah: { zh: "沙巴", en: "Sabah", ms: "Sabah" },
-  sarawak: { zh: "砂拉越", en: "Sarawak", ms: "Sarawak" },
-  selangor: { zh: "雪兰莪", en: "Selangor", ms: "Selangor" },
-  terengganu: { zh: "登嘉楼", en: "Terengganu", ms: "Terengganu" },
-  kuala_lumpur: { zh: "吉隆坡", en: "Kuala Lumpur", ms: "Kuala Lumpur" },
-  labuan: { zh: "纳闽", en: "Labuan", ms: "Labuan" },
-  putrajaya: { zh: "布城", en: "Putrajaya", ms: "Putrajaya" },
+interface UserStateResponse {
+  state: UserState;
+  user: UserType | null;
+  member: Member | null;
+  partner: Partner | null;
+}
+
+type MenuSection = {
+  title: string;
+  items: {
+    icon: React.ElementType;
+    label: string;
+    href: string;
+    badge?: string;
+    description?: string;
+  }[];
 };
 
-function ProfileTab({ member, onUpdate }: { member: Member | null; onUpdate: () => void }) {
-  const { t, language } = useLanguage();
-  const { toast } = useToast();
-  const [isEditing, setIsEditing] = useState(!member);
-  const [formData, setFormData] = useState({
-    name: member?.name || "",
-    phone: member?.phone || "",
-    email: member?.email || "",
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data: typeof formData) => apiRequest("POST", "/api/members/me", data),
-    onSuccess: () => {
-      toast({ title: language === "zh" ? "创建成功" : "Profile created" });
-      queryClient.invalidateQueries({ queryKey: ["/api/members/me"] });
-      setIsEditing(false);
-      onUpdate();
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: (data: typeof formData) => apiRequest("PUT", "/api/members/me", data),
-    onSuccess: () => {
-      toast({ title: language === "zh" ? "保存成功" : "Profile saved" });
-      queryClient.invalidateQueries({ queryKey: ["/api/members/me"] });
-      setIsEditing(false);
-      onUpdate();
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (member) {
-      updateMutation.mutate(formData);
-    } else {
-      createMutation.mutate(formData);
+function getMenuByState(state: UserState, partner: Partner | null): MenuSection[] {
+  const baseMenu: MenuSection[] = [
+    {
+      title: "账户管理",
+      items: [
+        { icon: Home, label: "个人中心", href: "/member", description: "查看账户概览" },
+        { icon: Settings, label: "账户设置", href: "/member/settings", description: "修改个人信息" },
+      ]
     }
-  };
+  ];
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <User className="h-5 w-5" />
-          {t("member.profile")}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {!member && !isEditing ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">{t("member.createProfile")}</p>
-            <Button onClick={() => setIsEditing(true)} data-testid="button-create-profile">
-              <Plus className="h-4 w-4 mr-2" />
-              {t("member.createProfile")}
-            </Button>
-          </div>
-        ) : isEditing ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t("member.name")}</Label>
-              <Input
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                data-testid="input-profile-name"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>{t("member.phone")}</Label>
-              <Input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder={language === "zh" ? "例如: 012-3456789" : "e.g. 012-3456789"}
-                required
-                data-testid="input-profile-phone"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>{t("member.email")}</Label>
-              <Input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                data-testid="input-profile-email"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit" disabled={isPending} data-testid="button-save-profile">
-                {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                {t("member.save")}
-              </Button>
-              {member && (
-                <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
-                  {language === "zh" ? "取消" : "Cancel"}
-                </Button>
-              )}
-            </div>
-          </form>
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <Label className="text-muted-foreground">{t("member.name")}</Label>
-              <p className="text-lg" data-testid="text-profile-name">{member?.name}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">{t("member.phone")}</Label>
-              <p className="text-lg" data-testid="text-profile-phone">{member?.phone}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">{t("member.email")}</Label>
-              <p className="text-lg" data-testid="text-profile-email">{member?.email || "-"}</p>
-            </div>
-            <Button variant="outline" onClick={() => setIsEditing(true)} data-testid="button-edit-profile">
-              {t("member.edit")}
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function AddressesTab({ memberId }: { memberId: string | null }) {
-  const { t, language } = useLanguage();
-  const { toast } = useToast();
-  const [isAdding, setIsAdding] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    label: "home",
-    recipientName: "",
-    phone: "",
-    addressLine1: "",
-    addressLine2: "",
-    city: "",
-    state: "",
-    postcode: "",
-  });
-
-  const { data: addresses = [] } = useQuery<MemberAddress[]>({
-    queryKey: ["/api/members/me/addresses"],
-    enabled: !!memberId,
-  });
-
-  const addMutation = useMutation({
-    mutationFn: (data: typeof formData) => apiRequest("POST", "/api/members/me/addresses", data),
-    onSuccess: () => {
-      toast({ title: language === "zh" ? "添加成功" : "Address added" });
-      queryClient.invalidateQueries({ queryKey: ["/api/members/me/addresses"] });
-      setIsAdding(false);
-      resetForm();
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: typeof formData }) =>
-      apiRequest("PUT", `/api/members/me/addresses/${id}`, data),
-    onSuccess: () => {
-      toast({ title: language === "zh" ? "更新成功" : "Address updated" });
-      queryClient.invalidateQueries({ queryKey: ["/api/members/me/addresses"] });
-      setEditingId(null);
-      resetForm();
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiRequest("DELETE", `/api/members/me/addresses/${id}`),
-    onSuccess: () => {
-      toast({ title: language === "zh" ? "删除成功" : "Address deleted" });
-      queryClient.invalidateQueries({ queryKey: ["/api/members/me/addresses"] });
-    },
-  });
-
-  const setDefaultMutation = useMutation({
-    mutationFn: (id: string) => apiRequest("POST", `/api/members/me/addresses/${id}/default`),
-    onSuccess: () => {
-      toast({ title: language === "zh" ? "设为默认成功" : "Set as default" });
-      queryClient.invalidateQueries({ queryKey: ["/api/members/me/addresses"] });
-    },
-  });
-
-  const resetForm = () => {
-    setFormData({
-      label: "home",
-      recipientName: "",
-      phone: "",
-      addressLine1: "",
-      addressLine2: "",
-      city: "",
-      state: "",
-      postcode: "",
-    });
-  };
-
-  const handleEdit = (address: MemberAddress) => {
-    setEditingId(address.id);
-    setFormData({
-      label: address.label || "home",
-      recipientName: address.recipientName,
-      phone: address.phone,
-      addressLine1: address.addressLine1,
-      addressLine2: address.addressLine2 || "",
-      city: address.city,
-      state: address.state,
-      postcode: address.postcode,
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingId) {
-      updateMutation.mutate({ id: editingId, data: formData });
-    } else {
-      addMutation.mutate(formData);
-    }
-  };
-
-  const getStateName = (stateKey: string) => {
-    const state = malaysianStatesMap[stateKey];
-    return state ? state[language] : stateKey;
-  };
-
-  if (!memberId) {
-    return (
-      <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
-          {t("member.createProfile")}
-        </CardContent>
-      </Card>
-    );
+  if (state === "user") {
+    return [
+      ...baseMenu,
+      {
+        title: "开始体验",
+        items: [
+          { icon: ShoppingBag, label: "浏览产品", href: "/#products", description: "探索我们的产品系列" },
+          { icon: Crown, label: "成为会员", href: "/partner", description: "了解会员权益", badge: "推荐" },
+        ]
+      }
+    ];
   }
 
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle className="flex items-center gap-2">
-          <MapPin className="h-5 w-5" />
-          {t("member.addresses")}
-        </CardTitle>
-        {!isAdding && !editingId && (
-          <Button size="sm" onClick={() => setIsAdding(true)} data-testid="button-add-address">
-            <Plus className="h-4 w-4 mr-2" />
-            {t("member.addAddress")}
-          </Button>
-        )}
-      </CardHeader>
-      <CardContent>
-        {(isAdding || editingId) && (
-          <form onSubmit={handleSubmit} className="space-y-4 mb-6 p-4 border rounded-md">
-            <h4 className="font-medium">{editingId ? t("member.editAddress") : t("member.addAddress")}</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t("member.name")}</Label>
-                <Input
-                  value={formData.recipientName}
-                  onChange={(e) => setFormData({ ...formData, recipientName: e.target.value })}
-                  required
-                  data-testid="input-address-name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t("member.phone")}</Label>
-                <Input
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                  data-testid="input-address-phone"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t("order.address")}</Label>
-              <Input
-                value={formData.addressLine1}
-                onChange={(e) => setFormData({ ...formData, addressLine1: e.target.value })}
-                required
-                data-testid="input-address-line1"
-              />
-            </div>
-            <Input
-              value={formData.addressLine2}
-              onChange={(e) => setFormData({ ...formData, addressLine2: e.target.value })}
-              placeholder={language === "zh" ? "地址第二行（可选）" : "Address line 2 (optional)"}
-              data-testid="input-address-line2"
-            />
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>{t("order.city")}</Label>
-                <Input
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  required
-                  data-testid="input-address-city"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t("order.state")}</Label>
-                <Select
-                  value={formData.state}
-                  onValueChange={(val) => setFormData({ ...formData, state: val })}
-                >
-                  <SelectTrigger data-testid="select-address-state">
-                    <SelectValue placeholder={t("order.selectState")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(malaysianStatesMap).map(([key, names]) => (
-                      <SelectItem key={key} value={key}>
-                        {names[language]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{t("order.postcode")}</Label>
-                <Input
-                  value={formData.postcode}
-                  onChange={(e) => setFormData({ ...formData, postcode: e.target.value })}
-                  required
-                  data-testid="input-address-postcode"
-                />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit" disabled={addMutation.isPending || updateMutation.isPending} data-testid="button-save-address">
-                {(addMutation.isPending || updateMutation.isPending) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                {t("member.save")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsAdding(false);
-                  setEditingId(null);
-                  resetForm();
-                }}
-              >
-                {language === "zh" ? "取消" : "Cancel"}
-              </Button>
-            </div>
-          </form>
-        )}
-
-        {addresses.length === 0 && !isAdding ? (
-          <p className="text-center text-muted-foreground py-8">{t("member.noAddresses")}</p>
-        ) : (
-          <div className="space-y-4">
-            {addresses.map((address) => (
-              <div
-                key={address.id}
-                className="p-4 border rounded-md space-y-2"
-                data-testid={`card-address-${address.id}`}
-              >
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{address.recipientName}</span>
-                    {address.isDefault && (
-                      <Badge variant="secondary" className="text-xs">
-                        <Star className="h-3 w-3 mr-1" />
-                        {t("member.default")}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    {!address.isDefault && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setDefaultMutation.mutate(address.id)}
-                        data-testid={`button-set-default-${address.id}`}
-                      >
-                        {t("member.setDefault")}
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleEdit(address)}
-                      data-testid={`button-edit-address-${address.id}`}
-                    >
-                      {t("member.edit")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => deleteMutation.mutate(address.id)}
-                      data-testid={`button-delete-address-${address.id}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground">{address.phone}</p>
-                <p className="text-sm">
-                  {address.addressLine1}
-                  {address.addressLine2 && `, ${address.addressLine2}`}
-                </p>
-                <p className="text-sm">
-                  {address.city}, {getStateName(address.state)} {address.postcode}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function PointsTab({ memberId, pointsBalance }: { memberId: string | null; pointsBalance: number }) {
-  const { t, language } = useLanguage();
-
-  const { data: pointsData } = useQuery<{ balance: number; history: PointsLedger[] }>({
-    queryKey: ["/api/members/me/points"],
-    enabled: !!memberId,
-  });
-
-  if (!memberId) {
-    return (
-      <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
-          {t("member.createProfile")}
-        </CardContent>
-      </Card>
-    );
+  if (state === "member") {
+    return [
+      ...baseMenu,
+      {
+        title: "会员服务",
+        items: [
+          { icon: ShoppingBag, label: "订单记录", href: "/member/orders", description: "查看历史订单" },
+          { icon: MapPin, label: "地址管理", href: "/member/addresses", description: "管理收货地址" },
+          { icon: Gift, label: "积分中心", href: "/member/points", description: "查看积分余额" },
+        ]
+      },
+      {
+        title: "更多服务",
+        items: [
+          { icon: Crown, label: "成为经营人", href: "/partner", description: "解锁更多权益", badge: "热门" },
+        ]
+      }
+    ];
   }
 
-  const history = pointsData?.history || [];
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Gift className="h-5 w-5" />
-          {t("member.points")}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="text-center p-6 bg-primary/10 rounded-lg">
-          <p className="text-muted-foreground mb-2">{t("member.pointsBalance")}</p>
-          <p className="text-4xl font-bold text-primary" data-testid="text-points-balance">
-            {pointsBalance}
-          </p>
-        </div>
-
-        <div>
-          <h4 className="font-medium mb-4">{t("member.pointsHistory")}</h4>
-          {history.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">{t("member.noPoints")}</p>
-          ) : (
-            <div className="space-y-3">
-              {history.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="flex items-center justify-between p-3 border rounded-md"
-                  data-testid={`row-points-${entry.id}`}
-                >
-                  <div>
-                    <p className="font-medium">{entry.description}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(entry.createdAt || "").toLocaleDateString()}
-                    </p>
-                  </div>
-                  <span
-                    className={`font-bold ${entry.type === "earn" || entry.type === "bonus" ? "text-green-600" : "text-red-600"}`}
-                  >
-                    {entry.type === "earn" || entry.type === "bonus" ? "+" : "-"}
-                    {Math.abs(entry.points)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function OrdersTab({ memberId }: { memberId: string | null }) {
-  const { t, language } = useLanguage();
-
-  const { data: orders = [] } = useQuery<Order[]>({
-    queryKey: ["/api/members/me/orders"],
-    enabled: !!memberId,
-  });
-
-  if (!memberId) {
-    return (
-      <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
-          {t("member.createProfile")}
-        </CardContent>
-      </Card>
-    );
+  if (state === "partner") {
+    const pendingBadge = partner?.status === "pending" ? "待激活" : undefined;
+    return [
+      ...baseMenu,
+      {
+        title: "会员服务",
+        items: [
+          { icon: ShoppingBag, label: "订单记录", href: "/member/orders", description: "查看历史订单" },
+          { icon: MapPin, label: "地址管理", href: "/member/addresses", description: "管理收货地址" },
+          { icon: Gift, label: "积分中心", href: "/member/points", description: "查看积分余额" },
+        ]
+      },
+      {
+        title: "经营人中心",
+        items: [
+          { icon: TrendingUp, label: "经营概览", href: "/member/partner", description: "查看经营数据", badge: pendingBadge },
+          { icon: Users, label: "推荐网络", href: "/member/partner/referrals", description: "我的团队成员" },
+          { icon: Wallet, label: "LY积分", href: "/member/partner/ly-points", description: "积分明细与使用" },
+          { icon: DollarSign, label: "现金钱包", href: "/member/partner/wallet", description: "收益与提现" },
+          { icon: Award, label: "RWA奖金池", href: "/member/partner/rwa", description: "查看分红周期" },
+        ]
+      }
+    ];
   }
 
-  const statusLabels: Record<string, { zh: string; en: string; ms: string }> = {
-    pending: { zh: "待确认", en: "Pending", ms: "Menunggu" },
-    confirmed: { zh: "已确认", en: "Confirmed", ms: "Disahkan" },
-    processing: { zh: "准备中", en: "Processing", ms: "Memproses" },
-    shipped: { zh: "已发货", en: "Shipped", ms: "Dihantar" },
-    delivered: { zh: "已送达", en: "Delivered", ms: "Dihantar" },
-    cancelled: { zh: "已取消", en: "Cancelled", ms: "Dibatalkan" },
-  };
+  if (state === "admin") {
+    return [
+      ...baseMenu,
+      {
+        title: "管理后台",
+        items: [
+          { icon: BarChart3, label: "数据看板", href: "/admin", description: "实时业务数据" },
+          { icon: Users, label: "经营人管理", href: "/admin/partners", description: "审核与管理经营人" },
+          { icon: ShoppingBag, label: "订单管理", href: "/admin/orders", description: "处理客户订单" },
+          { icon: Package, label: "产品管理", href: "/admin/products", description: "管理产品目录" },
+        ]
+      },
+      {
+        title: "ERP系统",
+        items: [
+          { icon: ClipboardList, label: "库存管理", href: "/admin/inventory", description: "库存与采购" },
+          { icon: Truck, label: "物流追踪", href: "/admin/logistics", description: "冷链物流管理" },
+          { icon: FileText, label: "财务报表", href: "/admin/finance", description: "收支与账单" },
+        ]
+      }
+    ];
+  }
 
+  return baseMenu;
+}
+
+function getStateLabel(state: UserState): { label: string; variant: "default" | "secondary" | "outline"; icon: React.ElementType } {
+  switch (state) {
+    case "user":
+      return { label: "用户", variant: "secondary", icon: User };
+    case "member":
+      return { label: "会员", variant: "default", icon: Star };
+    case "partner":
+      return { label: "联合经营人", variant: "default", icon: Crown };
+    case "admin":
+      return { label: "管理员", variant: "default", icon: Shield };
+    default:
+      return { label: "用户", variant: "secondary", icon: User };
+  }
+}
+
+function MenuCard({ section }: { section: MenuSection }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ShoppingBag className="h-5 w-5" />
-          {t("member.orders")}
-        </CardTitle>
+    <Card className="mb-4">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">{section.title}</CardTitle>
       </CardHeader>
-      <CardContent>
-        {orders.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">{t("member.noOrders")}</p>
-        ) : (
-          <div className="space-y-4">
-            {orders.map((order) => (
-              <div
-                key={order.id}
-                className="p-4 border rounded-md space-y-2"
-                data-testid={`card-order-${order.id}`}
-              >
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <span className="font-mono font-medium" data-testid={`text-order-number-${order.id}`}>
-                    {order.orderNumber}
-                  </span>
-                  <Badge variant={order.status === "delivered" ? "default" : "secondary"}>
-                    {statusLabels[order.status]?.[language] || order.status}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(order.createdAt || "").toLocaleDateString()}
-                </p>
-                <p className="text-sm">{order.items}</p>
-                <div className="flex items-center justify-between">
-                  <span className="font-bold">RM{order.totalAmount}</span>
-                  {order.pointsEarned && order.pointsEarned > 0 && (
-                    <Badge variant="outline" className="text-green-600">
-                      +{order.pointsEarned} {language === "zh" ? "积分" : "points"}
+      <CardContent className="p-0">
+        {section.items.map((item, index) => (
+          <Link key={item.href} href={item.href}>
+            <div
+              className="flex items-center gap-4 px-6 py-4 hover-elevate cursor-pointer"
+              data-testid={`menu-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+            >
+              <div className="w-10 h-10 rounded-lg bg-secondary/50 flex items-center justify-center">
+                <item.icon className="w-5 h-5 text-secondary-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{item.label}</span>
+                  {item.badge && (
+                    <Badge variant={item.badge === "待激活" ? "outline" : "default"} className="text-xs">
+                      {item.badge}
                     </Badge>
                   )}
                 </div>
+                {item.description && (
+                  <p className="text-sm text-muted-foreground truncate">{item.description}</p>
+                )}
               </div>
-            ))}
-          </div>
-        )}
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </div>
+          </Link>
+        ))}
       </CardContent>
     </Card>
   );
 }
 
-export default function MemberCenterPage() {
-  const { t, language } = useLanguage();
-  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
-  const { toast } = useToast();
+function QuickStats({ state, partner }: { state: UserState; partner: Partner | null }) {
+  if (state === "user" || state === "member") {
+    return null;
+  }
 
-  const { data: member, isLoading: memberLoading, refetch: refetchMember } = useQuery<Member>({
-    queryKey: ["/api/members/me"],
-    enabled: isAuthenticated && !authLoading,
-    retry: false,
-  });
-
-  const handleLogout = async () => {
-    window.location.href = "/api/logout";
-  };
-
-  if (authLoading) {
+  if (state === "partner" && partner) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <Card className="p-4">
+          <div className="text-2xl font-bold text-secondary">{partner.lyBalance || 0}</div>
+          <div className="text-sm text-muted-foreground">LY积分</div>
+        </Card>
+        <Card className="p-4">
+          <div className="text-2xl font-bold text-secondary">RM {((partner.cashWalletBalance || 0) / 100).toFixed(2)}</div>
+          <div className="text-sm text-muted-foreground">现金余额</div>
+        </Card>
+        <Card className="p-4">
+          <div className="text-2xl font-bold text-secondary">{partner.rwaTokens || 0}</div>
+          <div className="text-sm text-muted-foreground">RWA令牌</div>
+        </Card>
+        <Card className="p-4">
+          <div className="text-2xl font-bold text-secondary">RM {((partner.totalSales || 0) / 100).toFixed(0)}</div>
+          <div className="text-sm text-muted-foreground">累计销售</div>
+        </Card>
       </div>
     );
   }
 
-  if (!isAuthenticated) {
+  if (state === "admin") {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardContent className="py-12 text-center space-y-4">
-            <User className="h-16 w-16 mx-auto text-muted-foreground" />
-            <h2 className="text-xl font-semibold">{t("member.notLoggedIn")}</h2>
-            <p className="text-muted-foreground">{t("member.loginToAccess")}</p>
-            <Button asChild data-testid="button-login">
-              <a href="/api/login">{t("member.login")}</a>
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <Card className="p-4 bg-primary/5">
+          <div className="text-2xl font-bold text-primary">--</div>
+          <div className="text-sm text-muted-foreground">活跃经营人</div>
+        </Card>
+        <Card className="p-4 bg-primary/5">
+          <div className="text-2xl font-bold text-primary">--</div>
+          <div className="text-sm text-muted-foreground">本月订单</div>
+        </Card>
+        <Card className="p-4 bg-primary/5">
+          <div className="text-2xl font-bold text-primary">--</div>
+          <div className="text-sm text-muted-foreground">本月销售</div>
+        </Card>
+        <Card className="p-4 bg-primary/5">
+          <div className="text-2xl font-bold text-primary">--</div>
+          <div className="text-sm text-muted-foreground">奖金池余额</div>
+        </Card>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+export default function MemberCenter() {
+  const [, navigate] = useLocation();
+
+  const { data: userState, isLoading, error } = useQuery<UserStateResponse>({
+    queryKey: ["/api/auth/state"],
+  });
+
+  const handleLogout = () => {
+    window.location.href = "/api/logout";
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-secondary" />
+          <p className="mt-4 text-muted-foreground">加载中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !userState) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle>请先登录</CardTitle>
+            <CardDescription>登录后即可访问会员中心</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              className="w-full bg-secondary text-secondary-foreground"
+              onClick={() => window.location.href = "/api/login"}
+              data-testid="button-login"
+            >
+              登录 / 注册
             </Button>
-            <Link href="/">
-              <Button variant="ghost" className="mt-2">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                {language === "zh" ? "返回首页" : "Back to Home"}
-              </Button>
-            </Link>
           </CardContent>
         </Card>
       </div>
     );
   }
 
+  const { state, user, member, partner } = userState;
+  const stateInfo = getStateLabel(state);
+  const menuSections = getMenuByState(state, partner);
+  const StateIcon = stateInfo.icon;
+
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
-          <Link href="/">
-            <Button variant="ghost" size="sm" data-testid="button-back-home">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {language === "zh" ? "返回首页" : "Back to Home"}
-            </Button>
-          </Link>
-          <h1 className="text-lg font-semibold">{t("member.title")}</h1>
-          <Button variant="ghost" size="sm" onClick={handleLogout} data-testid="button-logout">
-            <LogOut className="h-4 w-4 mr-2" />
-            {t("member.logout")}
-          </Button>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8 max-w-3xl">
-        {memberLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="bg-primary text-primary-foreground py-8 px-4">
+        <div className="max-w-md mx-auto">
+          <div className="flex items-center gap-4">
+            <Avatar className="w-16 h-16 border-2 border-secondary">
+              <AvatarImage src={user?.profileImageUrl || undefined} />
+              <AvatarFallback className="bg-secondary text-secondary-foreground text-xl">
+                {user?.firstName?.charAt(0) || member?.name?.charAt(0) || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <h1 className="text-xl font-bold" data-testid="text-user-name">
+                {member?.name || user?.firstName || "用户"}
+              </h1>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant={stateInfo.variant} className="gap-1" data-testid="badge-user-state">
+                  <StateIcon className="w-3 h-3" />
+                  {stateInfo.label}
+                </Badge>
+                {partner?.referralCode && (
+                  <span className="text-xs opacity-70">
+                    推荐码: {partner.referralCode}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-        ) : (
-          <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="profile" data-testid="tab-profile">
-                <User className="h-4 w-4 mr-2 hidden sm:inline" />
-                {t("member.profile")}
-              </TabsTrigger>
-              <TabsTrigger value="addresses" data-testid="tab-addresses">
-                <MapPin className="h-4 w-4 mr-2 hidden sm:inline" />
-                {t("member.addresses")}
-              </TabsTrigger>
-              <TabsTrigger value="points" data-testid="tab-points">
-                <Gift className="h-4 w-4 mr-2 hidden sm:inline" />
-                {t("member.points")}
-              </TabsTrigger>
-              <TabsTrigger value="orders" data-testid="tab-orders">
-                <ShoppingBag className="h-4 w-4 mr-2 hidden sm:inline" />
-                {t("member.orders")}
-              </TabsTrigger>
-            </TabsList>
+        </div>
+      </div>
 
-            <TabsContent value="profile">
-              <ProfileTab member={member || null} onUpdate={() => refetchMember()} />
-            </TabsContent>
+      <div className="max-w-md mx-auto p-4 -mt-4">
+        <QuickStats state={state} partner={partner} />
 
-            <TabsContent value="addresses">
-              <AddressesTab memberId={member?.id || null} />
-            </TabsContent>
+        {menuSections.map((section, index) => (
+          <MenuCard key={index} section={section} />
+        ))}
 
-            <TabsContent value="points">
-              <PointsTab memberId={member?.id || null} pointsBalance={member?.pointsBalance || 0} />
-            </TabsContent>
+        <Separator className="my-6" />
 
-            <TabsContent value="orders">
-              <OrdersTab memberId={member?.id || null} />
-            </TabsContent>
-          </Tabs>
-        )}
-      </main>
+        <Button
+          variant="outline"
+          className="w-full gap-2"
+          onClick={handleLogout}
+          data-testid="button-logout"
+        >
+          <LogOut className="w-4 h-4" />
+          退出登录
+        </Button>
+
+        <p className="text-center text-xs text-muted-foreground mt-6" data-testid="text-version">
+          LOVE YOUNG 养乐 v1.0
+        </p>
+      </div>
     </div>
   );
 }

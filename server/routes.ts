@@ -35,6 +35,76 @@ export async function registerRoutes(
     }
   });
 
+  // Get user state - returns user's current role/state in the system
+  // States: user (basic), member (has orders), partner (active partner), admin
+  app.get("/api/auth/state", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Check if user has a member profile
+      const member = await storage.getMemberByUserId(userId);
+      
+      if (!member) {
+        // Basic user - logged in but no member profile
+        return res.json({
+          state: "user",
+          user,
+          member: null,
+          partner: null,
+        });
+      }
+
+      // Check if admin
+      if (member.role === "admin") {
+        return res.json({
+          state: "admin",
+          user,
+          member,
+          partner: null,
+        });
+      }
+
+      // Check if partner
+      const partner = await storage.getPartnerByMemberId(member.id);
+      if (partner && partner.status === "active") {
+        return res.json({
+          state: "partner",
+          user,
+          member,
+          partner,
+        });
+      }
+
+      // Check if has purchase history (member status)
+      const orderCount = await storage.getMemberOrderCount(member.id);
+      if (orderCount > 0) {
+        return res.json({
+          state: "member",
+          user,
+          member,
+          partner: partner || null, // May be pending partner
+        });
+      }
+
+      // Has member profile but no orders - still user state
+      return res.json({
+        state: "user",
+        user,
+        member,
+        partner: partner || null,
+      });
+
+    } catch (error) {
+      console.error("Error fetching user state:", error);
+      res.status(500).json({ error: "Failed to fetch user state" });
+    }
+  });
+
   // Member profile endpoints
   app.get("/api/members/me", isAuthenticated, async (req: any, res) => {
     try {

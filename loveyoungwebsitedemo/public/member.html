@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>会员中心 - Love Young 养乐</title>
+    <meta name="description" content="Love Young会员中心，管理您的订单、积分、权益和个人信息。">
+    <link rel="stylesheet" href="styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="images/love_young_logo_20260125_202545.png" alt="Love Young Logo" class="logo-img">
+                <span class="brand-name">Love Young <span class="chinese-name">养乐</span></span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">首页</a></li>
+                <li><a href="brand.html" class="nav-link">品牌故事</a></li>
+                <li><a href="products.html" class="nav-link">礼盒商城</a></li>
+                <li><a href="rwa.html" class="nav-link">联合经营人</a></li>
+                <li><a href="member.html" class="nav-link active">会员中心</a></li>
+                <li><a href="contact.html" class="nav-link">联系我们</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="btn-login">登录</button>
+                <button class="btn-register">注册</button>
+            </div>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 会员中心主体 -->
+    <section class="member-center">
+        <div class="container">
+            <div class="member-layout">
+                <!-- 侧边栏 -->
+                <aside class="member-sidebar">
+                    <div class="member-profile">
+                        <div class="profile-avatar">
+                            <img src="images/wellness_lifestyle_20260125_202546.png" alt="用户头像" class="avatar-img">
+                            <button class="avatar-edit">📷</button>
+                        </div>
+                        <div class="profile-info">
+                            <h3 class="profile-name">李女士</h3>
+                            <p class="profile-level">创始经营人</p>
+                            <div class="profile-stats">
+                                <div class="stat-item">
+                                    <span class="stat-value">2,580</span>
+                                    <span class="stat-label">YL积分</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value">¥24,500</span>
+                                    <span class="stat-label">累计分红</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <nav class="member-nav">
+                        <ul class="nav-list">
+                            <li><a href="#dashboard" class="nav-item active">概览</a></li>
+                            <li><a href="#orders" class="nav-item">我的订单</a></li>
+                            <li><a href="#points" class="nav-item">积分管理</a></li>
+                            <li><a href="#dividends" class="nav-item">分红记录</a></li>
+                            <li><a href="#benefits" class="nav-item">会员权益</a></li>
+                            <li><a href="#profile" class="nav-item">个人信息</a></li>
+                            <li><a href="#settings" class="nav-item">账户设置</a></li>
+                        </ul>
+                    </nav>
+                </aside>
+
+                <!-- 主内容区 -->
+                <main class="member-content">
+                    <!-- 概览页面 -->
+                    <div id="dashboard" class="content-section active">
+                        <div class="section-header">
+                            <h2 class="section-title">会员概览</h2>
+                            <p class="section-subtitle">欢迎回来，李女士！</p>
+                        </div>
+
+                        <!-- 快速统计 -->
+                        <div class="dashboard-stats">
+                            <div class="stat-card">
+                                <div class="stat-icon">🛍️</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">12</div>
+                                    <div class="stat-label">累计订单</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">💎</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">2,580</div>
+                                    <div class="stat-label">YL积分</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">💰</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">¥24,500</div>
+                                    <div class="stat-label">累计分红</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">👑</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">创始</div>
+                                    <div class="stat-label">经营人等级</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 最近活动 -->
+                        <div class="recent-activities">
+                            <h3 class="subsection-title">最近活动</h3>
+                            <div class="activity-list">
+                                <div class="activity-item">
+                                    <div class="activity-icon">💰</div>
+                                    <div class="activity-content">
+                                        <h4>收到分红</h4>
+                                        <p>2024年1月分红 ¥2,000 已到账</p>
+                                        <span class="activity-time">2024-01-15 10:30</span>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon">🛍️</div>
+                                    <div class="activity-content">
+                                        <h4>订单完成</h4>
+                                        <p>尊享焕颜礼盒已发货，预计明日到达</p>
+                                        <span class="activity-time">2024-01-12 14:20</span>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon">⭐</div>
+                                    <div class="activity-content">
+                                        <h4>积分获得</h4>
+                                        <p>购买产品获得 200 YL积分</p>
+                                        <span class="activity-time">2024-01-10 16:45</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 推荐产品 -->
+                        <div class="recommended-products">
+                            <h3 class="subsection-title">为您推荐</h3>
+                            <div class="products-grid">
+                                <div class="product-card-mini">
+                                    <img src="images/gift_box_product_20260125_202546.png" alt="产品" class="product-image">
+                                    <div class="product-info">
+                                        <h4 class="product-name">春季养颜限定礼盒</h4>
+                                        <div class="product-price">¥1,299</div>
+                                        <button class="btn btn-sm">立即购买</button>
+                                    </div>
+                                </div>
+                                <div class="product-card-mini">
+                                    <img src="images/wellness_lifestyle_20260125_202546.png" alt="产品" class="product-image">
+                                    <div class="product-info">
+                                        <h4 class="product-name">白金燕窝臻品</h4>
+                                        <div class="product-price">¥3,999</div>
+                                        <button class="btn btn-sm">立即购买</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 我的订单 -->
+                    <div id="orders" class="content-section">
+                        <div class="section-header">
+                            <h2 class="section-title">我的订单</h2>
+                            <div class="order-filters">
+                                <button class="filter-btn active">全部</button>
+                                <button class="filter-btn">待付款</button>
+                                <button class="filter-btn">待发货</button>
+                                <button class="filter-btn">待收货</button>
+                                <button class="filter-btn">已完成</button>
+                            </div>
+                        </div>
+
+                        <div class="orders-list">
+                            <div class="order-item">
+                                <div class="order-header">
+                                    <div class="order-info">
+                                        <span class="order-number">订单号：LY2024011501</span>
+                                        <span class="order-date">2024-01-15</span>
+                                    </div>
+                                    <div class="order-status completed">已完成</div>
+                                </div>
+                                <div class="order-content">
+                                    <div class="order-products">
+                                        <div class="product-item">
+                                            <img src="images/gift_box_product_20260125_202546.png" alt="产品" class="product-thumb">
+                                            <div class="product-details">
+                                                <h4 class="product-name">Love Young 尊享焕颜礼盒</h4>
+                                                <p class="product-spec">规格：标准装</p>
+                                                <div class="product-price">¥1,999 × 1</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="order-total">
+                                        <span class="total-label">订单总额：</span>
+                                        <span class="total-amount">¥1,999</span>
+                                    </div>
+                                </div>
+                                <div class="order-actions">
+                                    <button class="btn btn-outline btn-sm">查看详情</button>
+                                    <button class="btn btn-outline btn-sm">再次购买</button>
+                                    <button class="btn btn-outline btn-sm">评价</button>
+                                </div>
+                            </div>
+
+                            <div class="order-item">
+                                <div class="order-header">
+                                    <div class="order-info">
+                                        <span class="order-number">订单号：LY2024011202</span>
+                                        <span class="order-date">2024-01-12</span>
+                                    </div>
+                                    <div class="order-status shipping">配送中</div>
+                                </div>
+                                <div class="order-content">
+                                    <div class="order-products">
+                                        <div class="product-item">
+                                            <img src="images/wellness_lifestyle_20260125_202546.png" alt="产品" class="product-thumb">
+                                            <div class="product-details">
+                                                <h4 class="product-name">青春定格膳食套装</h4>
+                                                <p class="product-spec">规格：30包装</p>
+                                                <div class="product-price">¥899 × 2</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="order-total">
+                                        <span class="total-label">订单总额：</span>
+                                        <span class="total-amount">¥1,798</span>
+                                    </div>
+                                </div>
+                                <div class="order-actions">
+                                    <button class="btn btn-outline btn-sm">查看物流</button>
+                                    <button class="btn btn-primary btn-sm">确认收货</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 积分管理 -->
+                    <div id="points" class="content-section">
+                        <div class="section-header">
+                            <h2 class="section-title">积分管理</h2>
+                            <div class="points-summary">
+                                <div class="points-balance">
+                                    <span class="balance-label">当前积分：</span>
+                                    <span class="balance-amount">2,580 YL</span>
+                                </div>
+                                <button class="btn btn-primary">积分兑换</button>
+                            </div>
+                        </div>
+
+                        <div class="points-content">
+                            <div class="points-rules">
+                                <h3 class="subsection-title">积分规则</h3>
+                                <div class="rules-grid">
+                                    <div class="rule-item">
+                                        <div class="rule-icon">🛍️</div>
+                                        <h4>购买产品</h4>
+                                        <p>每消费1元获得1积分</p>
+                                    </div>
+                                    <div class="rule-item">
+                                        <div class="rule-icon">👥</div>
+                                        <h4>推荐好友</h4>
+                                        <p>成功推荐获得500积分</p>
+                                    </div>
+                                    <div class="rule-item">
+                                        <div class="rule-icon">📝</div>
+                                        <h4>评价产品</h4>
+                                        <p>每次评价获得50积分</p>
+                                    </div>
+                                    <div class="rule-item">
+                                        <div class="rule-icon">🎂</div>
+                                        <h4>生日礼品</h4>
+                                        <p>生日当月获得200积分</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="points-history">
+                                <h3 class="subsection-title">积分记录</h3>
+                                <div class="history-list">
+                                    <div class="history-item">
+                                        <div class="history-info">
+                                            <h4>购买产品</h4>
+                                            <p>订单号：LY2024011501</p>
+                                            <span class="history-time">2024-01-15 10:30</span>
+                                        </div>
+                                        <div class="history-points gain">+200</div>
+                                    </div>
+                                    <div class="history-item">
+                                        <div class="history-info">
+                                            <h4>积分兑换</h4>
+                                            <p>兑换：专属礼品</p>
+                                            <span class="history-time">2024-01-10 14:20</span>
+                                        </div>
+                                        <div class="history-points spend">-500</div>
+                                    </div>
+                                    <div class="history-item">
+                                        <div class="history-info">
+                                            <h4>推荐好友</h4>
+                                            <p>好友：王女士</p>
+                                            <span class="history-time">2024-01-08 16:45</span>
+                                        </div>
+                                        <div class="history-points gain">+500</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 分红记录 -->
+                    <div id="dividends" class="content-section">
+                        <div class="section-header">
+                            <h2 class="section-title">分红记录</h2>
+                            <div class="dividend-summary">
+                                <div class="summary-item">
+                                    <span class="summary-label">累计分红：</span>
+                                    <span class="summary-value">¥24,500</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">本年分红：</span>
+                                    <span class="summary-value">¥6,000</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dividend-chart">
+                            <h3 class="subsection-title">分红趋势</h3>
+                            <div class="chart-container">
+                                <div class="chart-placeholder">
+                                    <div class="chart-line">
+                                        <div class="line-point" style="left: 10%; bottom: 30%">
+                                            <span class="point-value">¥1,500</span>
+                                        </div>
+                                        <div class="line-point" style="left: 30%; bottom: 45%">
+                                            <span class="point-value">¥1,800</span>
+                                        </div>
+                                        <div class="line-point" style="left: 50%; bottom: 60%">
+                                            <span class="point-value">¥2,200</span>
+                                        </div>
+                                        <div class="line-point" style="left: 70%; bottom: 55%">
+                                            <span class="point-value">¥2,000</span>
+                                        </div>
+                                        <div class="line-point" style="left: 90%; bottom: 70%">
+                                            <span class="point-value">¥2,500</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dividend-history">
+                            <h3 class="subsection-title">分红明细</h3>
+                            <div class="dividend-table">
+                                <div class="table-header">
+                                    <div class="table-col">分红期间</div>
+                                    <div class="table-col">分红金额</div>
+                                    <div class="table-col">分红率</div>
+                                    <div class="table-col">发放时间</div>
+                                    <div class="table-col">状态</div>
+                                </div>
+                                <div class="table-row">
+                                    <div class="table-col">2024年1月</div>
+                                    <div class="table-col">¥2,000</div>
+                                    <div class="table-col">12%</div>
+                                    <div class="table-col">2024-01-15</div>
+                                    <div class="table-col"><span class="status-badge completed">已发放</span></div>
+                                </div>
+                                <div class="table-row">
+                                    <div class="table-col">2023年12月</div>
+                                    <div class="table-col">¥2,200</div>
+                                    <div class="table-col">13.2%</div>
+                                    <div class="table-col">2023-12-15</div>
+                                    <div class="table-col"><span class="status-badge completed">已发放</span></div>
+                                </div>
+                                <div class="table-row">
+                                    <div class="table-col">2023年11月</div>
+                                    <div class="table-col">¥1,800</div>
+                                    <div class="table-col">10.8%</div>
+                                    <div class="table-col">2023-11-15</div>
+                                    <div class="table-col"><span class="status-badge completed">已发放</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 会员权益 -->
+                    <div id="benefits" class="content-section">
+                        <div class="section-header">
+                            <h2 class="section-title">会员权益</h2>
+                            <div class="member-level">
+                                <span class="level-badge founder">创始经营人</span>
+                                <span class="level-desc">享受最高级别会员权益</span>
+                            </div>
+                        </div>
+
+                        <div class="benefits-grid">
+                            <div class="benefit-card">
+                                <div class="benefit-icon">💰</div>
+                                <h3 class="benefit-title">月度分红</h3>
+                                <p class="benefit-desc">享受12%年化分红，每月15日准时发放</p>
+                                <div class="benefit-status active">已激活</div>
+                            </div>
+                            <div class="benefit-card">
+                                <div class="benefit-icon">🛍️</div>
+                                <h3 class="benefit-title">专属折扣</h3>
+                                <p class="benefit-desc">所有产品享受8.5折优惠价格</p>
+                                <div class="benefit-status active">已激活</div>
+                            </div>
+                            <div class="benefit-card">
+                                <div class="benefit-icon">🎁</div>
+                                <div class="benefit-content">
+                                    <h3 class="benefit-title">生日礼品</h3>
+                                    <p class="benefit-desc">生日月份获得专属定制礼盒</p>
+                                    <div class="benefit-status active">已激活</div>
+                                </div>
+                            </div>
+                            <div class="benefit-card">
+                                <div class="benefit-icon">👥</div>
+                                <h3 class="benefit-title">专属活动</h3>
+                                <p class="benefit-desc">参加高端沙龙和品牌活动</p>
+                                <div class="benefit-status active">已激活</div>
+                            </div>
+                            <div class="benefit-card">
+                                <div class="benefit-icon">🏨</div>
+                                <h3 class="benefit-title">康养基地</h3>
+                                <p class="benefit-desc">免费入住全球康养基地</p>
+                                <div class="benefit-status active">已激活</div>
+                            </div>
+                            <div class="benefit-card">
+                                <div class="benefit-icon">📞</div>
+                                <h3 class="benefit-title">专属客服</h3>
+                                <p class="benefit-desc">1对1专属客服和投资顾问</p>
+                                <div class="benefit-status active">已激活</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 个人信息 -->
+                    <div id="profile" class="content-section">
+                        <div class="section-header">
+                            <h2 class="section-title">个人信息</h2>
+                            <button class="btn btn-outline">编辑信息</button>
+                        </div>
+
+                        <div class="profile-form">
+                            <div class="form-section">
+                                <h3 class="form-title">基本信息</h3>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">姓名</label>
+                                        <input type="text" class="form-input" value="李女士" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">手机号</label>
+                                        <input type="text" class="form-input" value="138****8888" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">邮箱</label>
+                                        <input type="email" class="form-input" value="li****@example.com" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">生日</label>
+                                        <input type="date" class="form-input" value="1985-03-15" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3 class="form-title">收货地址</h3>
+                                <div class="address-list">
+                                    <div class="address-item">
+                                        <div class="address-info">
+                                            <h4 class="address-name">李女士</h4>
+                                            <p class="address-detail">上海市浦东新区陆家嘴环路1000号</p>
+                                            <p class="address-phone">138****8888</p>
+                                        </div>
+                                        <div class="address-actions">
+                                            <span class="address-default">默认</span>
+                                            <button class="btn-edit">编辑</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline">添加新地址</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 账户设置 -->
+                    <div id="settings" class="content-section">
+                        <div class="section-header">
+                            <h2 class="section-title">账户设置</h2>
+                        </div>
+
+                        <div class="settings-list">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4 class="setting-title">修改密码</h4>
+                                    <p class="setting-desc">定期修改密码，保护账户安全</p>
+                                </div>
+                                <button class="btn btn-outline btn-sm">修改</button>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4 class="setting-title">绑定手机</h4>
+                                    <p class="setting-desc">已绑定：138****8888</p>
+                                </div>
+                                <button class="btn btn-outline btn-sm">更换</button>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4 class="setting-title">绑定邮箱</h4>
+                                    <p class="setting-desc">已绑定：li****@example.com</p>
+                                </div>
+                                <button class="btn btn-outline btn-sm">更换</button>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4 class="setting-title">消息通知</h4>
+                                    <p class="setting-desc">接收订单、分红等重要通知</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4 class="setting-title">营销推送</h4>
+                                    <p class="setting-desc">接收产品推荐和活动信息</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="images/love_young_logo_20260125_202545.png" alt="Love Young Logo" class="footer-logo-img">
+                        <h3 class="footer-brand">Love Young 养乐</h3>
+                    </div>
+                    <p class="footer-description">
+                        Love Young 致力于打造高品质生活方式，通过联合经营人模式与优质康养产品，为精英人士提供身心健康与财富增值的双重保障。
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="social-link">📘</a>
+                        <a href="#" class="social-link">📷</a>
+                        <a href="#" class="social-link">🐦</a>
+                        <a href="#" class="social-link">📺</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>快速链接</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">首页</a></li>
+                        <li><a href="brand.html">品牌故事</a></li>
+                        <li><a href="products.html">礼盒商城</a></li>
+                        <li><a href="rwa.html">联合经营人</a></li>
+                        <li><a href="member.html">会员中心</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>核心服务</h4>
+                    <ul class="footer-links">
+                        <li>RWA 联合经营计划</li>
+                        <li>尊享礼盒定制</li>
+                        <li>全球康养基地</li>
+                        <li>会员权益中心</li>
+                        <li>私人管家服务</li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>联系我们</h4>
+                    <div class="contact-info">
+                        <p>📍 上海市静安区南京西路 1266 号恒隆广场</p>
+                        <p>📞 400-820-XXXX</p>
+                        <p>✉️ contact@loveyoung.com</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 Love Young 品牌管理（上海）有限公司. 版权所有</p>
+                <div class="footer-legal">
+                    <a href="#">隐私政策</a>
+                    <a href="#">服务条款</a>
+                    <a href="#">沪ICP备XXXXXXXX号</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="scripts/main.js"></script>
+    <script src="scripts/member.js"></script>
+</body>
+</html>

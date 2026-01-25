@@ -58,6 +58,7 @@ export interface IStorage {
   getMemberPoints(memberId: string): Promise<PointsLedger[]>;
   addPoints(entry: InsertPointsLedger): Promise<PointsLedger>;
   getMemberOrderHistory(memberId: string): Promise<Order[]>;
+  getMemberOrderCount(memberId: string): Promise<number>;
   
   // Partner methods
   getPartnerByMemberId(memberId: string): Promise<Partner | undefined>;
@@ -262,6 +263,12 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(orders)
       .where(eq(orders.memberId, memberId))
       .orderBy(desc(orders.createdAt));
+  }
+
+  async getMemberOrderCount(memberId: string): Promise<number> {
+    const result = await db.select({ count: count() }).from(orders)
+      .where(eq(orders.memberId, memberId));
+    return result[0]?.count || 0;
   }
 
   // Partner methods

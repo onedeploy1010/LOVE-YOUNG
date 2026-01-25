@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Brand Colors: Dark Green (#2D5016) and Gold (#D4AF37) */
+    /* Dark Green HSL: 96 57% 20% */
+    /* Gold HSL: 46 65% 52% */
+    
+    --background: 46 30% 98%;
+    --foreground: 96 50% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 96 50% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 96 50% 10%;
+
+    /* Primary is Dark Green */
+    --primary: 96 57% 20%;
+    --primary-foreground: 46 65% 95%;
+
+    /* Secondary is Gold */
+    --secondary: 46 65% 52%;
+    --secondary-foreground: 96 57% 10%;
+
+    --muted: 46 20% 90%;
+    --muted-foreground: 96 20% 40%;
+
+    --accent: 46 65% 52%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 46 20% 85%;
+    --input: 46 20% 85%;
+    --ring: 46 65% 52%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 96 57% 12%;
+    --sidebar-foreground: 46 65% 90%;
+    --sidebar-primary: 46 65% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 96 40% 25%;
+    --sidebar-accent-foreground: 46 65% 90%;
+    --sidebar-border: 96 40% 20%;
+    --sidebar-ring: 46 65% 52%;
+  }
+
+  .dark {
+    --background: 96 57% 8%;
+    --foreground: 46 30% 95%;
+
+    --card: 96 57% 10%;
+    --card-foreground: 46 30% 95%;
+
+    --popover: 96 57% 10%;
+    --popover-foreground: 46 30% 95%;
+
+    --primary: 46 65% 52%;
+    --primary-foreground: 96 57% 10%;
+
+    --secondary: 96 40% 20%;
+    --secondary-foreground: 46 65% 90%;
+
+    --muted: 96 40% 15%;
+    --muted-foreground: 46 20% 65%;
+
+    --accent: 46 65% 52%;
+    --accent-foreground: 96 57% 10%;
+
+    --border: 96 40% 20%;
+    --input: 96 40% 20%;
+    --ring: 46 65% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+    background-image: radial-gradient(circle at 50% 0%, hsla(46, 65%, 52%, 0.05) 0%, transparent 50%);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif tracking-tight;
+  }
+}
+
+@layer components {
+  .gold-gradient {
+    background: linear-gradient(135deg, #D4AF37 0%, #F1D279 50%, #D4AF37 100%);
+  }
+
+  .gold-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #D4AF37 0%, #F1D279 50%, #D4AF37 100%);
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+
+  .luxury-shadow {
+    box-shadow: 0 10px 30px -10px rgba(45, 80, 22, 0.2);
+  }
+
+  .oriental-pattern {
+    background-image: radial-gradient(#D4AF37 0.5px, transparent 0.5px);
+    background-size: 24px 24px;
+    opacity: 0.1;
+  }
+
+  .btn-luxury {
+    @apply relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 active:scale-95;
+  }
+}
+
+/* Custom Animations for High-end feel */
+@keyframes luxury-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-luxury {
+  animation: luxury-fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-secondary/30 rounded-full hover:bg-secondary/50 transition-colors;
+}

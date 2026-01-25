@@ -1,0 +1,285 @@
+{
+  "documents": [],
+  "tables_parsed": [
+    {
+      "original_name": "Love_Young_Google_Sheets_模型",
+      "file_name": "Love_Young_Google_Sheets_模型_parsed.md",
+      "file_path": "/workspace/love_young_html_site/uploaded_files/tables/Love_Young_Google_Sheets_模型_parsed.md",
+      "file_type": "xlsx",
+      "category": "tables_parsed",
+      "summary": "Parsed content from Love_Young_Google_Sheets_模型 (may be incomplete)",
+      "source_id": "2015047060497534976",
+      "note": "Excel parsing is incomplete, use source file for complete analysis"
+    }
+  ],
+  "tables_source_info": [
+    {
+      "original_name": "Love_Young_Google_Sheets_模型",
+      "file_name": "Love_Young_Google_Sheets_模型_source_info.json",
+      "file_path": "/workspace/love_young_html_site/uploaded_files/source_files/Love_Young_Google_Sheets_模型_source_info.json",
+      "file_type": "json",
+      "category": "tables_source_info",
+      "summary": "Source info for Love_Young_Google_Sheets_模型",
+      "source_id": "2015047060497534976"
+    }
+  ],
+  "images": [
+    {
+      "original_name": "love_young_success_metrics_20260106043449_1",
+      "file_name": "love_young_success_metrics_20260106043449_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_success_metrics_20260106043449_1.png",
+      "rel_path": "images/love_young_success_metrics_20260106043449_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_gift_box_design_20260106043236_1",
+      "file_name": "love_young_gift_box_design_20260106043236_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_gift_box_design_20260106043236_1.png",
+      "rel_path": "images/love_young_gift_box_design_20260106043236_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_social_media_template_20260106043302_1",
+      "file_name": "love_young_social_media_template_20260106043302_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_social_media_template_20260106043302_1.png",
+      "rel_path": "images/love_young_social_media_template_20260106043302_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_event_invitation_20260106043314_1",
+      "file_name": "love_young_event_invitation_20260106043314_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_event_invitation_20260106043314_1.png",
+      "rel_path": "images/love_young_event_invitation_20260106043314_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_rwa_promotion_20260106043327_1",
+      "file_name": "love_young_rwa_promotion_20260106043327_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_rwa_promotion_20260106043327_1.png",
+      "rel_path": "images/love_young_rwa_promotion_20260106043327_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_wellness_journey_20260106043338_1",
+      "file_name": "love_young_wellness_journey_20260106043338_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_wellness_journey_20260106043338_1.png",
+      "rel_path": "images/love_young_wellness_journey_20260106043338_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_founders_story_20260106043351_1",
+      "file_name": "love_young_founders_story_20260106043351_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_founders_story_20260106043351_1.png",
+      "rel_path": "images/love_young_founders_story_20260106043351_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_community_building_20260106043405_1",
+      "file_name": "love_young_community_building_20260106043405_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_community_building_20260106043405_1.png",
+      "rel_path": "images/love_young_community_building_20260106043405_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_digital_marketing_20260106043418_1",
+      "file_name": "love_young_digital_marketing_20260106043418_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_digital_marketing_20260106043418_1.png",
+      "rel_path": "images/love_young_digital_marketing_20260106043418_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_event_experience_20260106043435_1",
+      "file_name": "love_young_event_experience_20260106043435_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_event_experience_20260106043435_1.png",
+      "rel_path": "images/love_young_event_experience_20260106043435_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_luxury_gift_box_detailed_20260106045736_1",
+      "file_name": "love_young_luxury_gift_box_detailed_20260106045736_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_luxury_gift_box_detailed_20260106045736_1.png",
+      "rel_path": "images/love_young_luxury_gift_box_detailed_20260106045736_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_brand_storyboard_20260106043504_1",
+      "file_name": "love_young_brand_storyboard_20260106043504_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_brand_storyboard_20260106043504_1.png",
+      "rel_path": "images/love_young_brand_storyboard_20260106043504_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_investment_opportunity_20260106043517_1",
+      "file_name": "love_young_investment_opportunity_20260106043517_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_investment_opportunity_20260106043517_1.png",
+      "rel_path": "images/love_young_investment_opportunity_20260106043517_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_community_impact_20260106043528_1",
+      "file_name": "love_young_community_impact_20260106043528_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_community_impact_20260106043528_1.png",
+      "rel_path": "images/love_young_community_impact_20260106043528_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_wellness_lifestyle_20260106043539_1",
+      "file_name": "love_young_wellness_lifestyle_20260106043539_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_wellness_lifestyle_20260106043539_1.png",
+      "rel_path": "images/love_young_wellness_lifestyle_20260106043539_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_brand_identity_20260106043554_1",
+      "file_name": "love_young_brand_identity_20260106043554_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_brand_identity_20260106043554_1.png",
+      "rel_path": "images/love_young_brand_identity_20260106043554_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_marketing_funnel_20260106043607_1",
+      "file_name": "love_young_marketing_funnel_20260106043607_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_marketing_funnel_20260106043607_1.png",
+      "rel_path": "images/love_young_marketing_funnel_20260106043607_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_ecosystem_20260106043624_1",
+      "file_name": "love_young_ecosystem_20260106043624_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_ecosystem_20260106043624_1.png",
+      "rel_path": "images/love_young_ecosystem_20260106043624_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "love_young_future_vision_20260106043643_1",
+      "file_name": "love_young_future_vision_20260106043643_1.png",
+      "file_path": "/workspace/love_young_html_site/public/images/love_young_future_vision_20260106043643_1.png",
+      "rel_path": "images/love_young_future_vision_20260106043643_1.png",
+      "file_type": "png",
+      "category": "images"
+    },
+    {
+      "original_name": "abac3a74055a8da6b84794a15a39d06b_exif",
+      "file_name": "abac3a74055a8da6b84794a15a39d06b_exif.jpg",
+      "file_path": "/workspace/love_young_html_site/public/images/abac3a74055a8da6b84794a15a39d06b_exif.jpg",
+      "rel_path": "images/abac3a74055a8da6b84794a15a39d06b_exif.jpg",
+      "file_type": "jpg",
+      "category": "images"
+    },
+    {
+      "original_name": "d10ee600af02c0b89d4fc045fcc0631f_exif",
+      "file_name": "d10ee600af02c0b89d4fc045fcc0631f_exif.jpg",
+      "file_path": "/workspace/love_young_html_site/public/images/d10ee600af02c0b89d4fc045fcc0631f_exif.jpg",
+      "rel_path": "images/d10ee600af02c0b89d4fc045fcc0631f_exif.jpg",
+      "file_type": "jpg",
+      "category": "images"
+    },
+    {
+      "original_name": "f646b1a82ca760d86b32ec4a4b32ec73_exif",
+      "file_name": "f646b1a82ca760d86b32ec4a4b32ec73_exif.jpg",
+      "file_path": "/workspace/love_young_html_site/public/images/f646b1a82ca760d86b32ec4a4b32ec73_exif.jpg",
+      "rel_path": "images/f646b1a82ca760d86b32ec4a4b32ec73_exif.jpg",
+      "file_type": "jpg",
+      "category": "images"
+    },
+    {
+      "original_name": "992106ba86b93277d75d0c33c6181580_exif",
+      "file_name": "992106ba86b93277d75d0c33c6181580_exif.jpg",
+      "file_path": "/workspace/love_young_html_site/public/images/992106ba86b93277d75d0c33c6181580_exif.jpg",
+      "rel_path": "images/992106ba86b93277d75d0c33c6181580_exif.jpg",
+      "file_type": "jpg",
+      "category": "images"
+    },
+    {
+      "original_name": "fb4bcb16eb2f57df4db64cf28a93812c_exif",
+      "file_name": "fb4bcb16eb2f57df4db64cf28a93812c_exif.jpg",
+      "file_path": "/workspace/love_young_html_site/public/images/fb4bcb16eb2f57df4db64cf28a93812c_exif.jpg",
+      "rel_path": "images/fb4bcb16eb2f57df4db64cf28a93812c_exif.jpg",
+      "file_type": "jpg",
+      "category": "images"
+    },
+    {
+      "original_name": "c7e3ec675a62f13e1e6bec3c1f772bae_exif",
+      "file_name": "c7e3ec675a62f13e1e6bec3c1f772bae_exif.jpg",
+      "file_path": "/workspace/love_young_html_site/public/images/c7e3ec675a62f13e1e6bec3c1f772bae_exif.jpg",
+      "rel_path": "images/c7e3ec675a62f13e1e6bec3c1f772bae_exif.jpg",
+      "file_type": "jpg",
+      "category": "images"
+    },
+    {
+      "original_name": "1b42077bbcadbcf46360c3724afd1111_exif",
+      "file_name": "1b42077bbcadbcf46360c3724afd1111_exif.jpg",
+      "file_path": "/workspace/love_young_html_site/public/images/1b42077bbcadbcf46360c3724afd1111_exif.jpg",
+      "rel_path": "images/1b42077bbcadbcf46360c3724afd1111_exif.jpg",
+      "file_type": "jpg",
+      "category": "images"
+    }
+  ],
+  "summary": {
+    "total_files": 32,
+    "by_category": {
+      "documents": 0,
+      "tables_parsed": 1,
+      "tables_source_info": 1,
+      "images": 26,
+      "document": 4
+    },
+    "processing_time": null
+  },
+  "document": [
+    {
+      "original_name": "新笔记",
+      "file_name": "新笔记.md",
+      "file_path": "/workspace/love_young_html_site/uploaded_files/documents/新笔记.md",
+      "file_type": "md",
+      "category": "document",
+      "summary": "Processed 新笔记 for coding",
+      "source_id": "2015372089290985472"
+    },
+    {
+      "original_name": "新笔记",
+      "file_name": "新笔记.md",
+      "file_path": "/workspace/love_young_html_site/uploaded_files/documents/新笔记.md",
+      "file_type": "md",
+      "category": "document",
+      "summary": "Processed 新笔记 for coding",
+      "source_id": "2015032060802830336"
+    },
+    {
+      "original_name": "Love_Young完整营销生态策划案__3",
+      "file_name": "Love_Young完整营销生态策划案__3.md",
+      "file_path": "/workspace/love_young_html_site/uploaded_files/documents/Love_Young完整营销生态策划案__3.md",
+      "file_type": "docx",
+      "category": "document",
+      "summary": "Processed Love_Young完整营销生态策划案__3 for coding",
+      "source_id": "2006924501636579328"
+    },
+    {
+      "original_name": "Love_Young_完整营销生态策划案_",
+      "file_name": "Love_Young_完整营销生态策划案_.md",
+      "file_path": "/workspace/love_young_html_site/uploaded_files/documents/Love_Young_完整营销生态策划案_.md",
+      "file_type": "docx",
+      "category": "document",
+      "summary": "Processed Love_Young_完整营销生态策划案_ for coding",
+      "source_id": "2006857186359291904"
+    }
+  ]
+}

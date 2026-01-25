@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>礼盒商城 - Love Young 养乐</title>
+    <meta name="description" content="Love Young精选康养礼盒，汇集全球顶级滋补原料，专为现代女性定制的奢宠之选。">
+    <link rel="stylesheet" href="styles/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="images/love_young_logo_20260125_202545.png" alt="Love Young Logo" class="logo-img">
+                <span class="brand-name">Love Young <span class="chinese-name">养乐</span></span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">首页</a></li>
+                <li><a href="brand.html" class="nav-link">品牌故事</a></li>
+                <li><a href="products.html" class="nav-link active">礼盒商城</a></li>
+                <li><a href="rwa.html" class="nav-link">联合经营人</a></li>
+                <li><a href="member.html" class="nav-link">会员中心</a></li>
+                <li><a href="contact.html" class="nav-link">联系我们</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="btn-login">登录</button>
+                <button class="btn-register">注册</button>
+            </div>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 页面头部 -->
+    <section class="page-hero">
+        <div class="hero-background">
+            <img src="images/gift_box_product_20260125_202546.png" alt="Products Hero" class="hero-bg-img">
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="hero-content">
+            <div class="container">
+                <h1 class="page-title">尊享礼赠 · 养生臻品</h1>
+                <p class="page-subtitle">每一份礼盒，都是对生命的极致礼赞<br>精选全球顶级原料，为现代女性量身定制</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 产品筛选 -->
+    <section class="product-filters">
+        <div class="container">
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-category="all">全部产品</button>
+                <button class="filter-tab" data-category="premium">尊享系列</button>
+                <button class="filter-tab" data-category="classic">经典系列</button>
+                <button class="filter-tab" data-category="seasonal">季节限定</button>
+                <button class="filter-tab" data-category="gift">礼盒套装</button>
+            </div>
+            <div class="filter-sort">
+                <select class="sort-select">
+                    <option value="default">默认排序</option>
+                    <option value="price-low">价格从低到高</option>
+                    <option value="price-high">价格从高到低</option>
+                    <option value="popularity">人气推荐</option>
+                    <option value="newest">最新上架</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- 产品展示 -->
+    <section class="products-showcase">
+        <div class="container">
+            <div class="products-grid">
+                <!-- 尊享系列 -->
+                <div class="product-card premium" data-category="premium gift">
+                    <div class="product-image">
+                        <img src="images/gift_box_product_20260125_202546.png" alt="Love Young 尊享焕颜礼盒">
+                        <div class="product-badge premium">尊享</div>
+                        <div class="product-overlay">
+                            <button class="btn-quick-view">快速预览</button>
+                            <button class="btn-add-cart">加入购物车</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">Love Young 尊享焕颜礼盒</h3>
+                        <p class="product-description">汇集全球顶级滋补原料，专为现代女性定制的奢宠之选</p>
+                        <div class="product-features">
+                            <span>✓ 高浓度燕窝</span>
+                            <span>✓ 深海胶原蛋白</span>
+                            <span>✓ 有机草本萃取</span>
+                        </div>
+                        <div class="product-rating">
+                            <div class="stars">★★★★★</div>
+                            <span class="rating-count">(128 评价)</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="current-price">¥1,999</span>
+                            <span class="original-price">¥2,599</span>
+                            <span class="discount">-23%</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn btn-product">立即购买</button>
+                            <button class="btn-wishlist">♡</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card classic" data-category="classic">
+                    <div class="product-image">
+                        <img src="images/wellness_lifestyle_20260125_202546.png" alt="青春定格膳食套装">
+                        <div class="product-badge hot">热销</div>
+                        <div class="product-overlay">
+                            <button class="btn-quick-view">快速预览</button>
+                            <button class="btn-add-cart">加入购物车</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">青春定格膳食套装</h3>
+                        <p class="product-description">精准营养配方，由内而外激发细胞活力</p>
+                        <div class="product-features">
+                            <span>✓ 零糖添加</span>
+                            <span>✓ 小分子易吸收</span>
+                            <span>✓ 独立包装</span>
+                        </div>
+                        <div class="product-rating">
+                            <div class="stars">★★★★☆</div>
+                            <span class="rating-count">(89 评价)</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="current-price">¥899</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn btn-product">立即购买</button>
+                            <button class="btn-wishlist">♡</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card seasonal" data-category="seasonal gift">
+                    <div class="product-image">
+                        <img src="images/rwa_concept_20260125_202547.png" alt="春季养颜限定礼盒">
+                        <div class="product-badge limited">限定</div>
+                        <div class="product-overlay">
+                            <button class="btn-quick-view">快速预览</button>
+                            <button class="btn-add-cart">加入购物车</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">春季养颜限定礼盒</h3>
+                        <p class="product-description">春季专属配方，唤醒肌肤活力，绽放自然光彩</p>
+                        <div class="product-features">
+                            <span>✓ 樱花精华</span>
+                            <span>✓ 春季时令</span>
+                            <span>✓ 限量发售</span>
+                        </div>
+                        <div class="product-rating">
+                            <div class="stars">★★★★★</div>
+                            <span class="rating-count">(56 评价)</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="current-price">¥1,299</span>
+                            <span class="original-price">¥1,599</span>
+                            <span class="discount">-19%</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn btn-product">立即购买</button>
+                            <button class="btn-wishlist">♡</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card premium" data-category="premium">
+                    <div class="product-image">
+                        <img src="images/gala_event_20260125_202548.png" alt="白金燕窝臻品">
+                        <div class="product-badge premium">白金</div>
+                        <div class="product-overlay">
+                            <button class="btn-quick-view">快速预览</button>
+                            <button class="btn-add-cart">加入购物车</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">白金燕窝臻品</h3>
+                        <p class="product-description">马来西亚顶级燕窝，纯手工挑毛，营养价值极高</p>
+                        <div class="product-features">
+                            <span>✓ 顶级燕窝</span>
+                            <span>✓ 手工挑毛</span>
+                            <span>✓ 溯源认证</span>
+                        </div>
+                        <div class="product-rating">
+                            <div class="stars">★★★★★</div>
+                            <span class="rating-count">(203 评价)</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="current-price">¥3,999</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn btn-product">立即购买</button>
+                            <button class="btn-wishlist">♡</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card classic" data-category="classic">
+                    <div class="product-image">
+                        <img src="images/wellness_lifestyle_20260125_202546.png" alt="花胶养颜汤">
+                        <div class="product-badge">经典</div>
+                        <div class="product-overlay">
+                            <button class="btn-quick-view">快速预览</button>
+                            <button class="btn-add-cart">加入购物车</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">花胶养颜汤</h3>
+                        <p class="product-description">精选深海花胶，搭配传统中药材，滋补养颜</p>
+                        <div class="product-features">
+                            <span>✓ 深海花胶</span>
+                            <span>✓ 中药配方</span>
+                            <span>✓ 即食方便</span>
+                        </div>
+                        <div class="product-rating">
+                            <div class="stars">★★★★☆</div>
+                            <span class="rating-count">(167 评价)</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="current-price">¥699</span>
+                            <span class="original-price">¥899</span>
+                            <span class="discount">-22%</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn btn-product">立即购买</button>
+                            <button class="btn-wishlist">♡</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card gift" data-category="gift">
+                    <div class="product-image">
+                        <img src="images/gift_box_product_20260125_202546.png" alt="母亲节特别礼盒">
+                        <div class="product-badge special">特别</div>
+                        <div class="product-overlay">
+                            <button class="btn-quick-view">快速预览</button>
+                            <button class="btn-add-cart">加入购物车</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">母亲节特别礼盒</h3>
+                        <p class="product-description">为母亲精心准备的健康礼品，表达最深的爱意</p>
+                        <div class="product-features">
+                            <span>✓ 精美包装</span>
+                            <span>✓ 贺卡定制</span>
+                            <span>✓ 免费配送</span>
+                        </div>
+                        <div class="product-rating">
+                            <div class="stars">★★★★★</div>
+                            <span class="rating-count">(94 评价)</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="current-price">¥1,599</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn btn-product">立即购买</button>
+                            <button class="btn-wishlist">♡</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 加载更多 -->
+            <div class="load-more">
+                <button class="btn btn-outline">加载更多产品</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 产品优势 -->
+    <section class="product-advantages">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">为什么选择 Love Young</h2>
+                <p class="section-subtitle">我们的每一个承诺，都是对您健康的保障</p>
+            </div>
+            <div class="advantages-grid">
+                <div class="advantage-item">
+                    <div class="advantage-icon">🌿</div>
+                    <h3>天然纯粹</h3>
+                    <p>严选全球核心产区原料，100%天然无添加，每一份产品都经过严格的质量检测</p>
+                </div>
+                <div class="advantage-item">
+                    <div class="advantage-icon">🔬</div>
+                    <h3>科学配方</h3>
+                    <p>与国际知名营养学家合作，基于现代女性身体需求，精心调配每一款产品</p>
+                </div>
+                <div class="advantage-item">
+                    <div class="advantage-icon">🏆</div>
+                    <h3>品质保证</h3>
+                    <p>通过ISO22000、HACCP等国际认证，建立完善的质量追溯体系</p>
+                </div>
+                <div class="advantage-item">
+                    <div class="advantage-icon">🚚</div>
+                    <h3>贴心服务</h3>
+                    <p>专业营养师1对1指导，全国包邮，7天无理由退换，让您购买无忧</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 用户评价 -->
+    <section class="product-reviews">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">用户真实评价</h2>
+                <p class="section-subtitle">来自真实用户的使用体验分享</p>
+            </div>
+            <div class="reviews-grid">
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <img src="images/wellness_lifestyle_20260125_202546.png" alt="用户头像" class="reviewer-avatar">
+                            <div class="reviewer-details">
+                                <h4 class="reviewer-name">李女士</h4>
+                                <div class="review-rating">★★★★★</div>
+                            </div>
+                        </div>
+                        <div class="review-date">2024-01-15</div>
+                    </div>
+                    <p class="review-text">
+                        "使用Love Young的尊享焕颜礼盒已经三个月了，皮肤状态明显改善，朋友们都说我看起来年轻了好几岁。产品包装也很精美，送人自用都很棒！"
+                    </p>
+                    <div class="review-product">购买产品：尊享焕颜礼盒</div>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <img src="images/gala_event_20260125_202548.png" alt="用户头像" class="reviewer-avatar">
+                            <div class="reviewer-details">
+                                <h4 class="reviewer-name">王女士</h4>
+                                <div class="review-rating">★★★★★</div>
+                            </div>
+                        </div>
+                        <div class="review-date">2024-01-10</div>
+                    </div>
+                    <p class="review-text">
+                        "青春定格膳食套装真的很方便，每天一包，口感也不错。坚持服用后，感觉精神状态好了很多，睡眠质量也有提升。会继续购买的！"
+                    </p>
+                    <div class="review-product">购买产品：青春定格膳食套装</div>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <img src="images/gift_box_product_20260125_202546.png" alt="用户头像" class="reviewer-avatar">
+                            <div class="reviewer-details">
+                                <h4 class="reviewer-name">张女士</h4>
+                                <div class="review-rating">★★★★☆</div>
+                            </div>
+                        </div>
+                        <div class="review-date">2024-01-08</div>
+                    </div>
+                    <p class="review-text">
+                        "白金燕窝臻品的品质确实很好，燕窝很干净，炖煮后口感顺滑。虽然价格不便宜，但是物有所值。客服服务也很专业，会推荐给朋友。"
+                    </p>
+                    <div class="review-product">购买产品：白金燕窝臻品</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 购买保障 -->
+    <section class="purchase-guarantee">
+        <div class="container">
+            <div class="guarantee-content">
+                <h2 class="guarantee-title">Love Young 购买保障</h2>
+                <div class="guarantee-items">
+                    <div class="guarantee-item">
+                        <div class="guarantee-icon">✅</div>
+                        <h4>正品保证</h4>
+                        <p>所有产品均为正品，支持官方验证</p>
+                    </div>
+                    <div class="guarantee-item">
+                        <div class="guarantee-icon">🚚</div>
+                        <h4>全国包邮</h4>
+                        <p>满299元全国免费配送</p>
+                    </div>
+                    <div class="guarantee-item">
+                        <div class="guarantee-icon">🔄</div>
+                        <h4>7天退换</h4>
+                        <p>7天无理由退换货保障</p>
+                    </div>
+                    <div class="guarantee-item">
+                        <div class="guarantee-icon">🛡️</div>
+                        <h4>品质保险</h4>
+                        <p>产品质量保险，安心购买</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="images/love_young_logo_20260125_202545.png" alt="Love Young Logo" class="footer-logo-img">
+                        <h3 class="footer-brand">Love Young 养乐</h3>
+                    </div>
+                    <p class="footer-description">
+                        Love Young 致力于打造高品质生活方式，通过联合经营人模式与优质康养产品，为精英人士提供身心健康与财富增值的双重保障。
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="social-link">📘</a>
+                        <a href="#" class="social-link">📷</a>
+                        <a href="#" class="social-link">🐦</a>
+                        <a href="#" class="social-link">📺</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>快速链接</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">首页</a></li>
+                        <li><a href="brand.html">品牌故事</a></li>
+                        <li><a href="products.html">礼盒商城</a></li>
+                        <li><a href="rwa.html">联合经营人</a></li>
+                        <li><a href="member.html">会员中心</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>核心服务</h4>
+                    <ul class="footer-links">
+                        <li>RWA 联合经营计划</li>
+                        <li>尊享礼盒定制</li>
+                        <li>全球康养基地</li>
+                        <li>会员权益中心</li>
+                        <li>私人管家服务</li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>联系我们</h4>
+                    <div class="contact-info">
+                        <p>📍 上海市静安区南京西路 1266 号恒隆广场</p>
+                        <p>📞 400-820-XXXX</p>
+                        <p>✉️ contact@loveyoung.com</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 Love Young 品牌管理（上海）有限公司. 版权所有</p>
+                <div class="footer-legal">
+                    <a href="#">隐私政策</a>
+                    <a href="#">服务条款</a>
+                    <a href="#">沪ICP备XXXXXXXX号</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="scripts/main.js"></script>
+    <script src="scripts/products.js"></script>
+</body>
+</html>

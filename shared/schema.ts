@@ -206,7 +206,11 @@ export type PartnerTier = typeof partnerTierEnum[number];
 export const partnerStatusEnum = ["pending", "active", "suspended", "expired"] as const;
 export type PartnerStatus = typeof partnerStatusEnum[number];
 
-// 用户角色
+// 用户状态 - 四种状态
+export const userStateEnum = ["user", "member", "partner", "admin"] as const;
+export type UserState = typeof userStateEnum[number];
+
+// 用户角色（用于members表）
 export const userRoleEnum = ["member", "partner", "admin"] as const;
 export type UserRole = typeof userRoleEnum[number];
 

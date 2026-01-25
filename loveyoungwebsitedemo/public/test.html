@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love Young 品牌官网测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #2D5016 0%, #D4AF37 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .logo {
+            width: 200px;
+            height: auto;
+            margin: 20px 0;
+        }
+        .hero {
+            padding: 60px 0;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .feature h3 {
+            color: #D4AF37;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="/images/love_young_main_logo_20260125_121656.png" alt="Love Young Logo" class="logo" onerror="this.style.display='none'">
+        
+        <div class="hero">
+            <h1>Love Young 养乐</h1>
+            <p>重塑女性优雅生命力 - 融合东方养生智慧与现代科技，打造高端康养与财富共赢的生态圈</p>
+            <a href="#" class="btn">选购尊享礼盒</a>
+            <a href="#" class="btn">加入经营人计划</a>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <h3>🌿 天然纯粹</h3>
+                <p>严选全球核心产区原料，100%天然无添加，为您提供最纯净的滋补体验</p>
+            </div>
+            <div class="feature">
+                <h3>💎 RWA赋能</h3>
+                <p>创新RWA数字化资产模式，让每位会员都能参与品牌经营，共享财富增值</p>
+            </div>
+            <div class="feature">
+                <h3>👑 精英圈层</h3>
+                <p>汇聚高端女性社交圈，提供专属沙龙、私人管家等尊贵服务体验</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 60px; padding: 30px; background: rgba(0,0,0,0.2); border-radius: 15px;">
+            <h2>联合经营人计划</h2>
+            <p>三个阶段，不同投资门槛，共享品牌成长红利</p>
+            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px;">
+                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; min-width: 200px;">
+                    <h4 style="color: #D4AF37;">天使经营人</h4>
+                    <p>¥5万起 | 5%年化分红</p>
+                </div>
+                <div style="background: rgba(212,175,55,0.2); padding: 20px; border-radius: 10px; min-width: 200px; border: 2px solid #D4AF37;">
+                    <h4 style="color: #D4AF37;">创始经营人 ⭐</h4>
+                    <p>¥20万起 | 12%年化分红</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; min-width: 200px;">
+                    <h4 style="color: #D4AF37;">战略经营人</h4>
+                    <p>¥100万起 | 25%年化分红</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px; opacity: 0.7;">
+            <p>&copy; 2024 Love Young 品牌管理（上海）有限公司. 版权所有</p>
+        </div>
+    </div>
+
+    <script>
+        console.log('Love Young 品牌官网加载成功');
+        
+        // 检查图片加载
+        const logo = document.querySelector('.logo');
+        if (logo) {
+            logo.onload = function() {
+                console.log('Logo加载成功');
+            };
+            logo.onerror = function() {
+                console.log('Logo加载失败，路径:', this.src);
+                this.style.display = 'none';
+            };
+        }
+        
+        // 添加交互效果
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('功能开发中，敬请期待！');
+            });
+        });
+    </script>
+</body>
+</html>
