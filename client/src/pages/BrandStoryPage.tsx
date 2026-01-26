@@ -670,7 +670,7 @@ export default function BrandStoryPage() {
             >
               <Card className="overflow-hidden h-full">
                 <img 
-                  src="/attached_assets/love_young_community_impact_20260106043528_1_1769380081881.png"
+                  src="/pics/love_young_community_impact_20260106043528_1.png"
                   alt={t("brand.communityWellness.impact.title")}
                   className="w-full h-64 object-cover"
                   data-testid="img-community-impact"
@@ -691,7 +691,7 @@ export default function BrandStoryPage() {
             >
               <Card className="overflow-hidden h-full">
                 <img 
-                  src="/attached_assets/love_young_wellness_lifestyle_20260106043539_1_1769380081885.png"
+                  src="/pics/love_young_wellness_lifestyle_20260106043539_1.png"
                   alt={t("brand.communityWellness.wellnessLife.title")}
                   className="w-full h-64 object-cover"
                   data-testid="img-wellness-lifestyle"
@@ -712,7 +712,7 @@ export default function BrandStoryPage() {
             >
               <Card className="overflow-hidden h-full">
                 <img 
-                  src="/attached_assets/love_young_event_experience_20260106043435_1_1769380063105.png"
+                  src="/pics/love_young_event_experience_20260106043435_1.png"
                   alt={t("brand.communityWellness.brandEvents.title")}
                   className="w-full h-64 object-cover"
                   data-testid="img-event-experience"

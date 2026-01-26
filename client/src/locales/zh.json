@@ -458,9 +458,9 @@
     },
     "network": {
       "you": "您",
-      "gen1": "1代",
-      "gen2": "2代",
-      "gen3": "3代",
+      "gen1": "G1",
+      "gen2": "G2",
+      "gen3": "G3",
       "plusCashback": "+返现"
     },
     "tierSection": {

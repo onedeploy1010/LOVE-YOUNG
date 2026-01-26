@@ -458,9 +458,9 @@
     },
     "network": {
       "you": "You",
-      "gen1": "Gen 1",
-      "gen2": "Gen 2",
-      "gen3": "Gen 3",
+      "gen1": "G1",
+      "gen2": "G2",
+      "gen3": "G3",
       "plusCashback": "+Cashback"
     },
     "tierSection": {
