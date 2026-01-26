@@ -185,11 +185,11 @@ export default function BrandStoryPage() {
             <Card className="max-w-3xl mx-auto bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
               <CardContent className="p-8">
                 <h3 className="text-xl md:text-2xl font-serif text-primary mb-4">{t("brand.foundersSection.summaryTitle")}</h3>
-                <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
                   {FOUNDERS.map((founder, index) => (
-                    <div key={index} className="text-center">
-                      <p className="text-secondary font-medium">{founder.name}</p>
-                      <p className="text-sm text-muted-foreground">{founder.focus}</p>
+                    <div key={index} className="text-center py-2 sm:py-0">
+                      <p className="text-secondary font-medium text-lg sm:text-base">{founder.name}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{founder.focus}</p>
                     </div>
                   ))}
                 </div>
