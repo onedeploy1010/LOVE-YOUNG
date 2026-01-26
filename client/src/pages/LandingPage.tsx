@@ -124,11 +124,11 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.8 }}
-            className="flex flex-col sm:flex-row justify-center gap-4"
+            className="flex flex-col sm:flex-row justify-center items-center gap-4 px-4"
           >
             <Button 
               size="lg"
-              className="bg-secondary text-secondary-foreground rounded-full px-12 text-lg"
+              className="bg-secondary text-secondary-foreground rounded-full px-6 sm:px-8 lg:px-10 text-base sm:text-lg whitespace-nowrap"
               onClick={() => setOrderModalOpen(true)}
               data-testid="button-hero-order"
             >
@@ -138,7 +138,7 @@ export default function LandingPage() {
               <Button 
                 variant="outline"
                 size="lg"
-                className="border-white/70 text-white rounded-full px-12 text-lg bg-transparent"
+                className="border-white/70 text-white rounded-full px-6 sm:px-8 lg:px-10 text-base sm:text-lg bg-transparent whitespace-nowrap"
                 data-testid="button-hero-partner"
               >
                 {t("landing.heroPartnerBtn")}
@@ -661,26 +661,26 @@ export default function LandingPage() {
             </motion.p>
             <motion.div 
               variants={fadeInUp}
-              className="flex flex-col sm:flex-row justify-center gap-4"
+              className="flex flex-col sm:flex-row justify-center items-center gap-4 px-4"
             >
               <Button 
                 size="lg"
-                className="bg-secondary text-secondary-foreground rounded-full px-12 gap-2"
+                className="bg-secondary text-secondary-foreground rounded-full px-6 sm:px-8 gap-2 whitespace-nowrap"
                 onClick={() => setOrderModalOpen(true)}
                 data-testid="button-cta-order"
               >
                 <ShoppingBag className="w-5 h-5" />
-                立即订购
+                {t("landing.orderNow")}
               </Button>
               <Button 
                 variant="outline"
                 size="lg"
-                className="border-white/70 text-white rounded-full px-12 gap-2 bg-transparent"
+                className="border-white/70 text-white rounded-full px-6 sm:px-8 gap-2 bg-transparent whitespace-nowrap"
                 onClick={() => window.open(whatsappLink, "_blank")}
                 data-testid="button-cta-whatsapp"
               >
                 <SiWhatsapp className="w-5 h-5" />
-                WhatsApp 咨询
+                {t("header.whatsapp")}
               </Button>
             </motion.div>
           </motion.div>

@@ -88,13 +88,13 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
             </div>
           </a>
 
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-6">
             {navLinks.map((link) => (
               link.isRoute ? (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                   data-testid={`link-nav-${link.href.replace("/", "")}`}
                 >
                   {link.label}
@@ -103,7 +103,7 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
                 <button
                   key={link.href}
                   onClick={() => scrollToSection(link.href)}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                   data-testid={`link-nav-${link.href.replace("#", "")}`}
                 >
                   {link.label}
