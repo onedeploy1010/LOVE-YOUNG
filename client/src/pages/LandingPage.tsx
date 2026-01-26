@@ -36,7 +36,6 @@ const brandImage = "/pics/love_young_founders_story_20260106043351_1.png";
 const productImage3 = "/pics/love_young_wellness_journey_20260106043338_1.png";
 
 const WHATSAPP_PHONE = "60124017174";
-const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent("您好，我对LOVEYOUNG燕窝花胶产品感兴趣，想了解更多信息。")}`;
 const META_SHOP_LINK = "https://www.facebook.com/loveyoung.birdnest/shop";
 
 const fadeInUp = {
@@ -57,6 +56,8 @@ export default function LandingPage() {
   const [flavorModalOpen, setFlavorModalOpen] = useState(false);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
 
+  const whatsappLink = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(t("landing.whatsappMessage"))}`;
+
   const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products/featured"],
   });
@@ -67,7 +68,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header whatsappLink={WHATSAPP_LINK} metaShopLink={META_SHOP_LINK} />
+      <Header whatsappLink={whatsappLink} metaShopLink={META_SHOP_LINK} />
 
       {/* Hero Section - 逆风启航 */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -99,11 +100,11 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8 }}
-            className="text-4xl md:text-6xl lg:text-8xl font-serif font-bold mb-6"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif font-bold mb-6 leading-tight"
             data-testid="text-hero-title"
           >
-            {t("landing.heroTitle")} <br />
-            <span className="bg-gradient-to-r from-amber-300 via-amber-100 to-amber-300 bg-clip-text text-transparent">
+            <span className="block">{t("landing.heroTitle")}</span>
+            <span className="block bg-gradient-to-r from-amber-300 via-amber-100 to-amber-300 bg-clip-text text-transparent">
               {t("landing.heroTitleSub")}
             </span>
           </motion.h1>
@@ -112,11 +113,11 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="max-w-2xl mx-auto text-lg lg:text-xl font-light mb-10 opacity-90"
+            className="max-w-3xl mx-auto text-base sm:text-lg lg:text-xl font-light mb-10 opacity-90 px-4"
             data-testid="text-hero-description"
           >
-            {t("landing.heroDesc")}<br />
-            {t("landing.heroDescSub")}
+            <span className="block">{t("landing.heroDesc")}</span>
+            <span className="block mt-1">{t("landing.heroDescSub")}</span>
           </motion.p>
           
           <motion.div 
@@ -675,7 +676,7 @@ export default function LandingPage() {
                 variant="outline"
                 size="lg"
                 className="border-white/70 text-white rounded-full px-12 gap-2 bg-transparent"
-                onClick={() => window.open(WHATSAPP_LINK, "_blank")}
+                onClick={() => window.open(whatsappLink, "_blank")}
                 data-testid="button-cta-whatsapp"
               >
                 <SiWhatsapp className="w-5 h-5" />
@@ -686,13 +687,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <Footer whatsappLink={WHATSAPP_LINK} metaShopLink={META_SHOP_LINK} />
-      <WhatsAppButton whatsappLink={WHATSAPP_LINK} />
+      <Footer whatsappLink={whatsappLink} metaShopLink={META_SHOP_LINK} />
+      <WhatsAppButton whatsappLink={whatsappLink} />
       <FlavorModal open={flavorModalOpen} onOpenChange={setFlavorModalOpen} />
       <OrderModal 
         open={orderModalOpen} 
         onOpenChange={setOrderModalOpen} 
-        whatsappLink={WHATSAPP_LINK}
+        whatsappLink={whatsappLink}
         metaShopLink={META_SHOP_LINK}
       />
     </div>

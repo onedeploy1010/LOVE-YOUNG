@@ -200,7 +200,16 @@
   },
   "footer": {
     "tagline": "新鲜不将就",
-    "description": "每日鲜炖燕窝花胶，用心守护您的健康与美丽。",
+    "description": "逆风启航，重定义女性力量。从 Young Love 到 Love Young，我们相信先爱自己，才能更好地爱这个世界。",
+    "brandName": "养乐",
+    "quickLinks": "快速链接",
+    "contactUs": "联系我们",
+    "businessHours": "营业时间",
+    "hoursValue": "周一至周日 9:00-21:00",
+    "clickToChat": "点击咨询",
+    "responseTime": "24小时内响应",
+    "allRightsReserved": "保留所有权利",
+    "slogan": "Against The Wind | 逆风启航",
     "products": "产品系列",
     "birdNest": "即食燕窝系列",
     "fishMaw": "鲜炖花胶系列",
@@ -368,7 +377,179 @@
     "applicationApproved": "申请已通过",
     "applicationRejected": "申请被拒绝",
     "notPartner": "您还不是经营人",
-    "becomePartner": "成为经营人"
+    "becomePartner": "成为经营人",
+    "whatsappMessage": "您好，我想了解联合经营人计划。",
+    "page": {
+      "heroTitle1": "投入 RM1,000",
+      "heroTitle2": "收益",
+      "heroTitle3": "远超2倍",
+      "heroSubtitle": "成为 Love Young 联合经营人，获得 2000 LY 能量值。通过销售和10层推荐网体，LY能量值源源不断补充，收益绵绵不绝。",
+      "heroSubtitleBold": "只要行动，收益无上限！",
+      "applyNow": "立即申请加入",
+      "consultDetails": "咨询计划详情",
+      "minInvestment": "最低投入门槛",
+      "lyPointsObtained": "获得能量值 = 最低可提RM2000",
+      "unlimitedEarnings": "持续行动，收益无上限",
+      "applicationSubmitted": "申请已提交",
+      "applicationSubmittedDesc": "请完成支付后，您的经营人资格将被激活。",
+      "applicationFailed": "申请失败"
+    },
+    "concepts": {
+      "assetTransparency": "底层资产透明",
+      "assetTransparencyDesc": "每一份数字化经营权都锚定真实的燕窝原料、高端滋补品库存等实物资产。",
+      "earningsGuarantee": "收益确权保障",
+      "earningsGuaranteeDesc": "基于LY能量值系统进行收益确权，数据透明，结算高效。",
+      "globalFlow": "全球化流转",
+      "globalFlowDesc": "打破地域限制，参与全球高端康养产业链的布局与分红。"
+    },
+    "dividends": {
+      "title": "双重收益模式",
+      "subtitle": "两种分红方式同时运作，收益叠加。提现时按1:1扣除LY能量值，通过10层网体持续补充。",
+      "method1": "收益方式 1",
+      "method2": "收益方式 2",
+      "cashbackTitle": "返现分红",
+      "cashbackDesc": "通过您的3代推荐网体销售产品，即时获得返现奖励",
+      "rwaTitle": "RWA奖金池分红",
+      "rwaDesc": "平台30%销售额进入奖金池，每10天按RWA令牌比例分配",
+      "gen1": "第1代（您直接推荐）",
+      "gen2": "第2代（推荐人的推荐）",
+      "gen3": "第3代及以上",
+      "cashback50": "50% 返现",
+      "cashback30": "30% 返现",
+      "cashback20": "20% 返现",
+      "cashbackExample": "示例：您的第1代推荐人销售1盒（RM199），您获得 RM99.5 返现",
+      "salesIntoPool": "销售额入池",
+      "distributeByToken": "按令牌分配",
+      "yourDividend": "您的分红",
+      "autoToken": "每位经营人自动获得",
+      "tokenPerSale": "每销售1盒额外获得",
+      "cycleReset": "每10天周期结算后",
+      "tokenReset": "令牌清零重计",
+      "rwaExample": "示例：周期内您销售20盒，持有21令牌。若总令牌550个，奖金池RM29,850，您获得 RM1,140 分红"
+    },
+    "ly": {
+      "title": "LY 能量值：收益的永动机",
+      "subtitle": "提现需扣除等额LY能量值，但通过10层推荐网体持续补充。只要网体活跃，收益源源不断！",
+      "networkTitle": "10层网体 LY补充",
+      "networkSubtitle": "每层销售按比例补充能量值",
+      "totalReplenish": "累计补充：10层网体总计可补充",
+      "ofSales": "的销售额为LY能量值",
+      "cycleTitle": "收益循环示意",
+      "salesGenerate": "销售产生收益",
+      "enterWallet": "进入待提现钱包",
+      "withdrawDeduct": "提现扣除LY",
+      "networkReplenish": "网体补充LY",
+      "keepActive": "只要保持推荐网体活跃，",
+      "neverDry": "LY永不枯竭，收益源源不断！",
+      "whyMoreTitle": "为什么收益远超2倍？",
+      "whyMoreDesc": "投入RM1000获得2000 LY，看似最多提取RM2000。但您的10层网体每有一笔销售，都会按比例补充LY能量值。网体越活跃，LY补充越快，可提取收益自然越多！",
+      "importantNote": "重要提示",
+      "importantNoteDesc": "LY能量值不足时无法提现对应收益。请通过持续经营来补充LY，确保收益可提取。",
+      "level1": "直推",
+      "level2": "二级",
+      "level3": "三级",
+      "level4": "四级",
+      "level5": "五级",
+      "level6": "六级",
+      "level7": "七级",
+      "level8": "八级",
+      "level9": "九级",
+      "level10": "十级"
+    },
+    "network": {
+      "you": "您",
+      "gen1": "1代",
+      "gen2": "2代",
+      "gen3": "3代",
+      "plusCashback": "+返现"
+    },
+    "tierSection": {
+      "title": "选择您的经营人级别",
+      "subtitle": "投入越多，LY能量值越多，可提取收益上限越高",
+      "mostPopular": "最受欢迎",
+      "invest": "投入",
+      "getLyPoints": "获得 LY 能量值",
+      "minWithdraw": "= 最低可提 RM",
+      "consultNow": "立即咨询"
+    },
+    "tierNames": {
+      "phase1": "启航经营人",
+      "phase2": "创始经营人",
+      "phase3": "战略经营人"
+    },
+    "tierFeatures": {
+      "cashback50First5": "首5盒销售50%返现",
+      "cashback30Next5": "6-10盒销售30%返现",
+      "cashback20Rest": "超出部分20%返现",
+      "freeFirstBox": "首盒产品赠送",
+      "photoShoot": "个人形象拍摄",
+      "tenLevelBonus": "10层推荐积分补充",
+      "weight12x": "1.2x 分红权重加成",
+      "factoryVip": "燕窝工厂VIP参观",
+      "microFilm": "品牌微电影参与",
+      "weight15x": "1.5x 分红权重加成",
+      "topPoolPriority": "顶级奖金池优先分配",
+      "intlLaunch": "国际品牌发布会席位",
+      "cobranding": "联名款产品分润",
+      "exclusiveBiz": "专属商业合作空间"
+    },
+    "simulator": {
+      "title": "RWA分红模拟器",
+      "subtitle": "调整参数，预估您的周期分红收益",
+      "mySales": "我的本周期销售",
+      "boxes": "盒",
+      "totalPlatformSales": "全平台总销售",
+      "activePartners": "活跃经营人数",
+      "people": "人",
+      "avgSalesPerPerson": "平均每人销售",
+      "cycleTotalSales": "本周期总销售额",
+      "bonusPool30": "奖金池 (30%)",
+      "myRwaTokens": "我的RWA令牌",
+      "units": "个",
+      "totalPlatformTokens": "全平台总令牌",
+      "myRatio": "我的占比",
+      "estimatedCycleDividend": "预估本周期分红",
+      "withdrawNeedsLy": "* 提现需等额LY能量值"
+    },
+    "ecosystem": {
+      "title": "LOVEYOUNG 品牌生态系统",
+      "desc1": "LOVEYOUNG 构建了一个完整的品牌生态系统，涵盖优质产品、KOL合作、RWA投资、社区建设、数字营销等多个维度。",
+      "desc2": "作为联合经营人，您将成为这个生态系统的重要一员，共同推动品牌发展，分享品牌成长红利。",
+      "modules": "业务模块",
+      "fullSupport": "全方位支持",
+      "imgAlt": "LOVEYOUNG品牌生态系统"
+    },
+    "faqs": {
+      "title": "常见问题",
+      "subtitle": "解答您的疑虑",
+      "q1": "什么是联合经营人？和传统代理有什么区别？",
+      "a1": "联合经营人是品牌的共建伙伴，而非传统的层级代理。我们不设压货要求，所有收益都来自真实的终端产品销售。您分享的每一盒产品都直接从工厂发货，确保品质和新鲜度。",
+      "q2": "投入RM1000真的能获得RM2000以上收益吗？",
+      "a2": "是的！投入RM1000成为启航经营人，您将获得2000 LY能量值。这意味着您最低可以提取RM2000的收益（1:1扣除LY）。但收益远不止2倍——通过您的10层推荐网体，每次有人销售，您都会按比例补充LY能量值，源源不断地解锁更多收益！",
+      "q3": "返现分红和RWA奖金池分红有什么区别？",
+      "a3": "返现分红是您直接销售或3代推荐网体销售产生的即时返现（50%/30%/20%）。RWA奖金池分红是每10天一次的周期性分红，平台将30%销售额放入奖金池，按您持有的RWA令牌比例分配。两种分红提现时都需要扣除等额LY能量值。",
+      "q4": "LY能量值是什么？如何补充？",
+      "a4": "LY能量值是您的收益保障金。每次您的10层推荐网体内有销售，您都会按层级比例获得LY能量值补充（第1层8%，第2层5%...）。只要您的网体持续活跃，LY能量值就源源不断，收益自然绵绵不绝！",
+      "q5": "为什么提现需要扣除LY能量值？",
+      "a5": "LY能量值机制确保收益的可持续性。这个设计鼓励经营人建立稳定的销售网络，通过持续行动来解锁更多收益，而不是一次性套现。只要保持行动，您的收益将远超初始投入！",
+      "q6": "需要囤货吗？",
+      "a6": "完全不需要！所有产品都由工厂直接发货给终端客户，您只需专注于分享和推广。零库存、零风险！"
+    },
+    "cta": {
+      "title": "行动创造无限可能",
+      "subtitle": "投入RM1,000，获得2,000 LY能量值。通过10层网体持续补充，收益不止2倍，",
+      "subtitleBold": "只要行动，就是源源不断！",
+      "becomePartner": "立即成为联合经营人",
+      "whatsappConsult": "WhatsApp 咨询"
+    },
+    "modal": {
+      "title": "申请成为联合经营人",
+      "selectedTier": "您选择了",
+      "referralCodeOptional": "推荐人邀请码（可选）",
+      "referralCodePlaceholder": "输入推荐人8位邀请码",
+      "cancel": "取消",
+      "confirmAndPay": "确认并支付"
+    }
   },
   "admin": {
     "title": "管理后台",
@@ -442,7 +623,162 @@
     "fresh": "新鲜直达",
     "freshDesc": "当日鲜炖，冷链配送，锁住最佳营养和口感",
     "care": "用心关怀",
-    "careDesc": "专业顾问团队，贴心服务每一位顾客"
+    "careDesc": "专业顾问团队，贴心服务每一位顾客",
+    "whatsappMessage": "您好，我想了解 LOVEYOUNG 品牌。",
+    "hero": {
+      "title": "逆风启航",
+      "titleSub": "养乐优选",
+      "description": "LOVEYOUNG 养乐鲜炖，源自马来西亚的高端滋补品牌。我们相信，每一位女性都值得被温柔以待，用最纯净的滋养，唤醒由内而外的优雅力量。"
+    },
+    "foundersSection": {
+      "badge": "品牌人物志",
+      "title": "逆风启航 · 创始人故事",
+      "subtitle": "三种人生路径，同一个方向——健康，不该只是当问题出现时的补救，而应该是生活中被温柔坚持的日常",
+      "summaryTitle": "三种人生路径 · 同一个方向",
+      "summaryText": "她们在各自的人生阶段，都走过不顺、看过现实、经历过选择。最终，她们在同一个理念下汇合——这，就是「逆风启航」真正想传递的品牌精神。"
+    },
+    "founders": {
+      "vivian": {
+        "subtitle": "从一碗花胶燕窝开始的人",
+        "motto": "初心，是把「好东西」坚持做到最好",
+        "story": "Vivian，是最早踏上这条路的人。从最初的朋友圈分享开始，她一步步把花胶燕窝带进更大的社区，走进月子中心、美容院，也走进无数女性的日常生活。",
+        "insight": "她不急着做规模，反而把最多的时间放在产品本身——反复测试口感、研究配方、调整甜度与浓稠度，只为找到既好喝、又对身体真正友善的平衡点。",
+        "belief": "品质，是品牌在逆风中最稳的船。",
+        "focus": "深耕产品"
+      },
+      "agnes": {
+        "subtitle": "看过太多故事后，选择守护健康",
+        "motto": "她相信，真正的财富从来不是数字",
+        "story": "Agnes，是保险行业里的女强人。多年职业生涯，让她见过太多人生的高峰与低谷——有人事业辉煌，却失去健康；有人财富充足，却忽略了自己和家人。",
+        "insight": "这些真实发生在客户身上的故事，让她逐渐明白：身心健康，才是一切保障的根本。她希望，把自己多年对「风险、守护、长期价值」的理解，转化为一种更贴近生活的陪伴。",
+        "belief": "让身边的人，在忙碌与压力中，依然能照顾好自己。",
+        "focus": "理解风险与守护"
+      },
+      "andrey": {
+        "subtitle": "在聚光灯下，更懂得真正的保养",
+        "motto": "美，不该来自焦虑，而来自状态",
+        "story": "Andrey，十几岁便成为职业车模，后来发展为KOL，深耕自媒体领域。她活跃在宴会、派对、时尚与社交场合，见过太多关于「美」的定义——快速的、表面的、被消费的。",
+        "insight": "但她越来越清楚地知道：真正让人保持青春与魅力的，不是外在的堆叠，而是心态稳定、饮食健康、身体轻盈。花胶燕窝，对她而言，不是「补品」，而是一种让身体回到平衡、让生活更从容的日常选择。",
+        "belief": "最好的保养，是不勉强自己。",
+        "focus": "站在潮流与女性生活方式前沿"
+      }
+    },
+    "origin": {
+      "title": "创业初心",
+      "p1": "2020年，三位志同道合的女性在吉隆坡相遇。她们有着共同的经历——在忙碌的生活中忽视了自己的健康，直到身体发出警报才意识到滋补养生的重要性。",
+      "p2": "然而，市场上真正优质、无防腐剂的鲜炖花胶燕窝产品少之又少。这是最健康的滋补方式，却也非常费时去制作。都市女性常常忙于照顾家人和工作，根本无法为自己好好煮上那么一碗。",
+      "p3": "于是，她们决定亲自创建一个品牌，用最严格的标准、最真挚的初心，为每一位忙碌的女性提供最纯净、最便捷的滋养。",
+      "p4": "这就是 LOVEYOUNG 的诞生——先爱自己，才能更好地爱世界。"
+    },
+    "production": {
+      "title": "匠心品质",
+      "p1": "从燕窝与花胶原产地的亲自采购开始，到每一批原料的严谨筛选，我们只选择符合标准的优质食材进入生产流程。",
+      "p2": "所有产品均在 LoveYoung 自有无菌生产基地 完成炖煮与灌装，采用低温慢炖工艺，在确保卫生安全的前提下，最大程度保留食材本身的营养与口感层次。",
+      "p3": "每一瓶鲜炖产品都经过多重质量检测，并通过全程冷链配送，确保送达您手中的，始终是新鲜、安心、值得信赖的品质。",
+      "stat1": "原产地直采",
+      "stat2": "添加剂防腐剂"
+    },
+    "valuesSection": {
+      "subtitle": "我们相信，真正的美丽源自健康，真正的力量源自内心。LOVEYOUNG 不仅是一个品牌，更是一种生活态度。"
+    },
+    "values": {
+      "love": {
+        "title": "以爱为本",
+        "description": "每一份产品都承载着对女性健康的深切关怀，从原料到配方，用心守护每一位顾客。"
+      },
+      "natural": {
+        "title": "天然纯粹",
+        "description": "严选全球优质产区的燕窝与花胶，拒绝添加剂，保留大自然最珍贵的馈赠。"
+      },
+      "quality": {
+        "title": "品质保障",
+        "description": "全程冷链配送，独立包装，每批产品均通过严格质检，确保新鲜与安全。"
+      },
+      "global": {
+        "title": "全球视野",
+        "description": "整合东南亚顶级燕窝资源，引入国际化品质管理体系，打造世界级滋补品牌。"
+      }
+    },
+    "lifestyle": {
+      "title": "优雅生活方式",
+      "subtitle": "LOVEYOUNG 倡导的不仅是产品，更是一种由内而外的优雅生活方式",
+      "wellness": {
+        "title": "健康养生",
+        "description": "每日一瓶鲜炖燕窝，开启元气满满的一天"
+      },
+      "community": {
+        "title": "社群连接",
+        "description": "与志同道合的姐妹分享养生心得"
+      },
+      "events": {
+        "title": "品牌活动",
+        "description": "参与私享沙龙，体验优雅圈层"
+      }
+    },
+    "philosophy": {
+      "title": "逆风启航 · 女性力量",
+      "p1": "\"逆风启航\"不仅是我们的品牌精神，更是对每一位现代女性的致敬。在生活的风浪中，我们相信每一位女性都拥有乘风破浪的勇气。",
+      "p2": "LOVEYOUNG 致力于成为女性成长路上的坚实后盾。无论是职场精英、全职妈妈还是创业者，我们都希望用最优质的滋补产品，为您补充能量，让您在逆境中依然优雅前行。",
+      "stat1": "忠实顾客",
+      "stat2": "年品牌历程",
+      "stat3": "天然成分"
+    },
+    "milestonesSection": {
+      "title": "品牌历程与未来蓝图",
+      "subtitle": "从创立到腾飞，我们的故事才刚刚开始",
+      "futurePlan": "未来规划",
+      "inProgress": "进行中"
+    },
+    "milestones": {
+      "2020": "品牌创立于吉隆坡，专注高端燕窝鲜炖事业",
+      "2022": "建立马来西亚自有燕屋基地，实现原料自主可控",
+      "2024": "创新升级产品线，推出全新口味系列，深受市场好评",
+      "2025": "品牌正式更名为 LOVEYOUNG 养乐，开启全新品牌时代",
+      "2026": "启动\"逆风启航\"计划，推出RWA联合经营人体系",
+      "2027": "计划进军新加坡、香港市场，建立区域分销网络",
+      "2028": "目标推出益生菌、胶原蛋白等新品类，完善健康生态",
+      "2030": "愿景成为东南亚领先的女性健康滋补品牌"
+    },
+    "partnerStories": {
+      "title": "联合经营人故事",
+      "p1": "每一位LOVEYOUNG联合经营人都有属于自己的精彩故事。她们来自不同的背景——有的是全职妈妈，有的是职场白领，有的是资深创业者。但她们都有一个共同点：选择了LOVEYOUNG，选择了逆风启航。",
+      "p2": "我们正在筹备经营人故事博客专栏，将陆续分享这些美丽女性的创业历程、成长心得和成功经验。敬请期待！",
+      "becomePartner": "成为经营人",
+      "learnMore": "了解更多",
+      "alt1": "经营人故事 - Lisa",
+      "alt2": "经营人故事 - Sarah",
+      "alt3": "经营人故事 - Emma"
+    },
+    "futureVision": {
+      "title": "未来愿景",
+      "p1": "LOVEYOUNG 的目标不仅是成为东南亚领先的女性健康滋补品牌，更是要构建一个完整的女性健康生态系统。",
+      "p2": "从燕窝、花胶到益生菌、胶原蛋白，我们将不断丰富产品线，满足女性全方位的健康需求。同时，通过RWA联合经营人计划，让更多女性实现财富与健康的双重丰收。",
+      "goal1": "2027年 进军新加坡、香港市场",
+      "goal2": "2028年 推出全新健康品类",
+      "goal3": "2030年 成为区域领先品牌"
+    },
+    "communityWellness": {
+      "title": "社区活动 · 健康生活",
+      "subtitle": "LOVEYOUNG 不仅是一个品牌，更是一个赋能女性成长的社区",
+      "impact": {
+        "title": "社区影响力",
+        "description": "赋能马来西亚女性，通过LOVEYOUNG学院和公益活动创造积极的社会影响。"
+      },
+      "wellnessLife": {
+        "title": "健康生活方式",
+        "description": "从冥想到瑜伽，从职场到社交，LOVEYOUNG陪伴现代女性的每一个生活场景。"
+      },
+      "brandEvents": {
+        "title": "品牌活动体验",
+        "description": "从接待到参观，从交流到派对，为经营人打造独特的溯源之旅体验。"
+      }
+    },
+    "cta": {
+      "title": "开启您的优雅养生之旅",
+      "description": "每一份 LOVEYOUNG 产品，都是我们对品质的承诺，对健康的坚持，对美丽的追求。",
+      "viewProducts": "浏览产品系列",
+      "whatsapp": "WhatsApp 咨询"
+    }
   },
   "landing": {
     "heroTagline": "Against The Wind",
@@ -452,6 +788,7 @@
     "heroDescSub": "这不仅是一个品牌的逆转，更是每一位女性灵魂的觉醒。",
     "heroOrderBtn": "立即开启滋养",
     "heroPartnerBtn": "加入共建计划",
+    "whatsappMessage": "您好，我对LOVEYOUNG燕窝花胶产品感兴趣，想了解更多信息。",
     "brandTitle": "品牌初衷：",
     "brandTitleSub": "逆转的勇气",
     "brandQuote": "如果连自己都不认真对待，世界也不会。",
@@ -490,5 +827,115 @@
     "ctaDesc": "每一份鲜炖，都是对自己的珍重承诺。",
     "ctaOrderBtn": "WhatsApp 咨询",
     "ctaShopBtn": "前往 Meta 店铺"
+  },
+  "productsPage": {
+    "whatsappMessage": "您好，我想订购 LOVEYOUNG 产品。",
+    "orderMessage": "您好，我想订购 {productName}。",
+    "hero": {
+      "title": "臻选滋补 · 养乐优品",
+      "description": "每一份产品都源自我们对品质的极致追求。从印尼金丝燕盏到深海花胶，我们只选用最优质的原料，为您呈现最纯粹的滋养。",
+      "shopNow": "立即选购",
+      "whatsappConsult": "WhatsApp 咨询"
+    },
+    "categories": {
+      "all": "全部产品",
+      "birdNest": "燕窝系列",
+      "fishMaw": "花胶系列",
+      "giftBox": "礼盒套装"
+    },
+    "badges": {
+      "hot": "热卖",
+      "new": "新品",
+      "save": "省"
+    },
+    "units": {
+      "box": "盒",
+      "set": "套"
+    },
+    "items": {
+      "bnClassic": {
+        "name": "经典原味燕窝",
+        "subtitle": "6罐装礼盒",
+        "feature1": "印尼金丝燕盏",
+        "feature2": "无添加糖",
+        "feature3": "即食便携"
+      },
+      "bnPremium": {
+        "name": "冰糖官燕",
+        "subtitle": "6罐装尊享版",
+        "feature1": "特级燕盏",
+        "feature2": "冰糖慢炖",
+        "feature3": "浓稠口感"
+      },
+      "fmCollagen": {
+        "name": "花胶胶原羹",
+        "subtitle": "6罐装",
+        "feature1": "深海花胶",
+        "feature2": "胶原满满",
+        "feature3": "养颜美容"
+      },
+      "fmMilk": {
+        "name": "牛奶花胶羹",
+        "subtitle": "6罐装",
+        "feature1": "新西兰牛奶",
+        "feature2": "香浓顺滑",
+        "feature3": "营养加倍"
+      },
+      "giftLuxury": {
+        "name": "逆风启航尊享礼盒",
+        "subtitle": "燕窝+花胶组合",
+        "feature1": "精选燕窝3罐",
+        "feature2": "精选花胶3罐",
+        "feature3": "高端礼盒包装"
+      },
+      "giftWellness": {
+        "name": "养生臻选礼盒",
+        "subtitle": "全系列体验装",
+        "feature1": "4种口味各1罐",
+        "feature2": "精美礼袋",
+        "feature3": "送礼首选"
+      }
+    },
+    "benefits": {
+      "natural": {
+        "title": "100% 天然",
+        "description": "严选优质原料，无添加剂"
+      },
+      "quality": {
+        "title": "品质保证",
+        "description": "每批产品均通过质检"
+      },
+      "coldChain": {
+        "title": "冷链配送",
+        "description": "全程冷链，新鲜到家"
+      },
+      "packaging": {
+        "title": "精美包装",
+        "description": "送礼自用两相宜"
+      }
+    },
+    "quality": {
+      "title": "品质溯源 · 匠心制作",
+      "description": "我们的燕窝源自印尼顶级燕屋，每一盏都经过严格挑选。花胶则来自深海野生鱼类，富含天然胶原蛋白。",
+      "imageAlt": "品质保证",
+      "traceability": {
+        "title": "原料溯源",
+        "description": "每批原料均可追溯产地，确保来源安全可靠"
+      },
+      "craftsmanship": {
+        "title": "传统工艺",
+        "description": "采用传统慢炖工艺，保留最完整的营养成分"
+      },
+      "inspection": {
+        "title": "严格质检",
+        "description": "每批产品均通过微生物、重金属等多项检测"
+      }
+    },
+    "cta": {
+      "title": "开启您的滋补之旅",
+      "description": "无论是自用养生还是馈赠亲友，LOVEYOUNG 都是您的优雅之选。",
+      "goToShop": "前往商城选购",
+      "consultWellness": "咨询康养管家"
+    }
   }
 }

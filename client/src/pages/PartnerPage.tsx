@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { useLanguage } from "@/lib/i18n";
 import { 
   CheckCircle,
   Zap,
@@ -42,7 +43,6 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Member, Partner } from "@shared/schema";
 
 const WHATSAPP_PHONE = "60124017174";
-const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent("您好，我想了解联合经营人计划。")}`;
 const META_SHOP_LINK = "https://www.facebook.com/loveyoung.birdnest/shop";
 
 const fadeInUp = {
@@ -165,7 +165,7 @@ const FAQ_ITEMS = [
   }
 ];
 
-function NetworkDiagram() {
+function NetworkDiagram({ t }: { t: (key: string) => string }) {
   const [animatedLevel, setAnimatedLevel] = useState(0);
   
   useEffect(() => {
@@ -183,7 +183,7 @@ function NetworkDiagram() {
           animate={{ scale: animatedLevel === 0 ? [1, 1.1, 1] : 1 }}
           transition={{ duration: 0.5 }}
         >
-          您
+          {t("partner.network.you")}
         </motion.div>
         
         <div className="flex items-center gap-2">
@@ -203,14 +203,14 @@ function NetworkDiagram() {
               }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
             >
-              1代
+              {t("partner.network.gen1")}
             </motion.div>
           ))}
         </div>
         
         <div className="text-center">
           <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-            50% 返现
+            {t("partner.dividends.cashback50")}
           </Badge>
         </div>
         
@@ -226,13 +226,13 @@ function NetworkDiagram() {
               }}
               transition={{ duration: 0.5, delay: i * 0.05 }}
             >
-              2代
+              {t("partner.network.gen2")}
             </motion.div>
           ))}
         </div>
         
         <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/30">
-          30% 返现
+          {t("partner.dividends.cashback30")}
         </Badge>
         
         <div className="flex items-center gap-4 mt-2 flex-wrap justify-center max-w-md">
@@ -247,13 +247,13 @@ function NetworkDiagram() {
               }}
               transition={{ duration: 0.5, delay: i * 0.03 }}
             >
-              3代
+              {t("partner.network.gen3")}
             </motion.div>
           ))}
         </div>
         
         <Badge variant="outline" className="bg-muted text-muted-foreground">
-          20% 返现
+          {t("partner.dividends.cashback20")}
         </Badge>
       </div>
       
@@ -265,7 +265,7 @@ function NetworkDiagram() {
           exit={{ opacity: 0 }}
         >
           <Coins className="w-5 h-5 text-secondary animate-pulse" />
-          <span className="text-sm font-bold text-secondary">+返现</span>
+          <span className="text-sm font-bold text-secondary">{t("partner.network.plusCashback")}</span>
         </motion.div>
       )}
     </div>
@@ -275,6 +275,7 @@ function NetworkDiagram() {
 export default function PartnerPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [referralCode, setReferralCode] = useState("");
   const [calculatorBoxes, setCalculatorBoxes] = useState(10);
@@ -285,6 +286,123 @@ export default function PartnerPage() {
     totalPartners: 50,
     avgSalesPerPartner: 10
   });
+
+  const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(t("partner.whatsappMessage"))}`;
+
+  const PARTNER_TIERS_TRANSLATED = useMemo(() => [
+    {
+      id: "phase1",
+      name: t("partner.tierNames.phase1"),
+      subtitle: "Phase 1",
+      price: 1000,
+      lyPoints: 2000,
+      dividendWeight: "1.0x",
+      icon: Star,
+      features: [
+        t("partner.tierFeatures.cashback50First5"),
+        t("partner.tierFeatures.cashback30Next5"),
+        t("partner.tierFeatures.cashback20Rest"),
+        t("partner.tierFeatures.freeFirstBox"),
+        t("partner.tierFeatures.photoShoot"),
+        t("partner.tierFeatures.tenLevelBonus")
+      ],
+      highlight: false
+    },
+    {
+      id: "phase2",
+      name: t("partner.tierNames.phase2"),
+      subtitle: "Phase 2",
+      price: 1300,
+      lyPoints: 2860,
+      dividendWeight: "1.2x",
+      icon: ShieldCheck,
+      features: [
+        t("partner.tierFeatures.weight12x"),
+        t("partner.tierFeatures.cashback50First5"),
+        t("partner.tierFeatures.cashback30Next5"),
+        t("partner.tierFeatures.factoryVip"),
+        t("partner.tierFeatures.microFilm"),
+        t("partner.tierFeatures.tenLevelBonus")
+      ],
+      highlight: true
+    },
+    {
+      id: "phase3",
+      name: t("partner.tierNames.phase3"),
+      subtitle: "Phase 3",
+      price: 1500,
+      lyPoints: 3750,
+      dividendWeight: "1.5x",
+      icon: Gem,
+      features: [
+        t("partner.tierFeatures.weight15x"),
+        t("partner.tierFeatures.topPoolPriority"),
+        t("partner.tierFeatures.intlLaunch"),
+        t("partner.tierFeatures.cobranding"),
+        t("partner.tierFeatures.exclusiveBiz"),
+        t("partner.tierFeatures.tenLevelBonus")
+      ],
+      highlight: false
+    }
+  ], [t]);
+
+  const CORE_CONCEPTS_TRANSLATED = useMemo(() => [
+    {
+      icon: Building2,
+      title: t("partner.concepts.assetTransparency"),
+      description: t("partner.concepts.assetTransparencyDesc")
+    },
+    {
+      icon: Lock,
+      title: t("partner.concepts.earningsGuarantee"),
+      description: t("partner.concepts.earningsGuaranteeDesc")
+    },
+    {
+      icon: Globe,
+      title: t("partner.concepts.globalFlow"),
+      description: t("partner.concepts.globalFlowDesc")
+    }
+  ], [t]);
+
+  const LY_NETWORK_LEVELS_TRANSLATED = useMemo(() => [
+    { level: 1, percentage: 8, description: t("partner.ly.level1") },
+    { level: 2, percentage: 5, description: t("partner.ly.level2") },
+    { level: 3, percentage: 3, description: t("partner.ly.level3") },
+    { level: 4, percentage: 2, description: t("partner.ly.level4") },
+    { level: 5, percentage: 2, description: t("partner.ly.level5") },
+    { level: 6, percentage: 1, description: t("partner.ly.level6") },
+    { level: 7, percentage: 1, description: t("partner.ly.level7") },
+    { level: 8, percentage: 1, description: t("partner.ly.level8") },
+    { level: 9, percentage: 1, description: t("partner.ly.level9") },
+    { level: 10, percentage: 1, description: t("partner.ly.level10") }
+  ], [t]);
+
+  const FAQ_ITEMS_TRANSLATED = useMemo(() => [
+    {
+      question: t("partner.faqs.q1"),
+      answer: t("partner.faqs.a1")
+    },
+    {
+      question: t("partner.faqs.q2"),
+      answer: t("partner.faqs.a2")
+    },
+    {
+      question: t("partner.faqs.q3"),
+      answer: t("partner.faqs.a3")
+    },
+    {
+      question: t("partner.faqs.q4"),
+      answer: t("partner.faqs.a4")
+    },
+    {
+      question: t("partner.faqs.q5"),
+      answer: t("partner.faqs.a5")
+    },
+    {
+      question: t("partner.faqs.q6"),
+      answer: t("partner.faqs.a6")
+    }
+  ], [t]);
 
   const { data: user } = useQuery<any>({
     queryKey: ["/api/auth/user"],
@@ -307,14 +425,14 @@ export default function PartnerPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/partner/profile"] });
       toast({
-        title: "申请已提交",
-        description: "请完成支付后，您的经营人资格将被激活。",
+        title: t("partner.page.applicationSubmitted"),
+        description: t("partner.page.applicationSubmittedDesc"),
       });
       setSelectedTier(null);
     },
     onError: (error: Error) => {
       toast({
-        title: "申请失败",
+        title: t("partner.page.applicationFailed"),
         description: error.message,
         variant: "destructive",
       });
@@ -384,11 +502,11 @@ export default function PartnerPage() {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-primary mb-6 leading-tight" data-testid="text-partner-title">
-                投入 RM1,000<br />
-                收益<span className="text-secondary font-bold">远超2倍</span>
+                {t("partner.page.heroTitle1")}<br />
+                {t("partner.page.heroTitle2")}<span className="text-secondary font-bold">{t("partner.page.heroTitle3")}</span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed" data-testid="text-partner-subtitle">
-                成为 Love Young 联合经营人，获得 2000 LY 能量值。通过销售和10层推荐网体，LY能量值源源不断补充，收益绵绵不绝。<strong>只要行动，收益无上限！</strong>
+                {t("partner.page.heroSubtitle")}<strong>{t("partner.page.heroSubtitleBold")}</strong>
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button
@@ -397,7 +515,7 @@ export default function PartnerPage() {
                   onClick={() => document.getElementById("tiers")?.scrollIntoView({ behavior: "smooth" })}
                   data-testid="button-apply-now"
                 >
-                  立即申请加入
+                  {t("partner.page.applyNow")}
                 </Button>
                 <Button
                   variant="outline"
@@ -405,7 +523,7 @@ export default function PartnerPage() {
                   onClick={() => window.open(WHATSAPP_LINK, "_blank")}
                   data-testid="button-download-whitepaper"
                 >
-                  咨询计划详情
+                  {t("partner.page.consultDetails")}
                 </Button>
               </div>
             </motion.div>
@@ -424,7 +542,7 @@ export default function PartnerPage() {
               className="p-6"
             >
               <p className="text-5xl font-bold text-primary mb-2">RM 1,000</p>
-              <p className="text-muted-foreground">最低投入门槛</p>
+              <p className="text-muted-foreground">{t("partner.page.minInvestment")}</p>
             </motion.div>
             <motion.div
               initial="hidden"
@@ -435,7 +553,7 @@ export default function PartnerPage() {
               className="p-6"
             >
               <p className="text-5xl font-bold text-secondary mb-2">2,000 LY</p>
-              <p className="text-muted-foreground">获得能量值 = 最低可提RM2000</p>
+              <p className="text-muted-foreground">{t("partner.page.lyPointsObtained")}</p>
             </motion.div>
             <motion.div
               initial="hidden"
@@ -448,7 +566,7 @@ export default function PartnerPage() {
               <p className="text-5xl font-bold text-primary mb-2">
                 <span className="text-secondary">∞</span>
               </p>
-              <p className="text-muted-foreground">持续行动，收益无上限</p>
+              <p className="text-muted-foreground">{t("partner.page.unlimitedEarnings")}</p>
             </motion.div>
           </div>
         </div>
@@ -457,7 +575,7 @@ export default function PartnerPage() {
       <section className="py-20 bg-card" data-testid="section-core-concepts">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-            {CORE_CONCEPTS.map((concept, index) => (
+            {CORE_CONCEPTS_TRANSLATED.map((concept, index) => (
               <motion.div
                 key={index}
                 initial="hidden"
@@ -482,10 +600,10 @@ export default function PartnerPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-serif text-primary mb-4" data-testid="text-dividends-title">
-              双重收益模式
+              {t("partner.dividends.title")}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              两种分红方式同时运作，收益叠加。提现时按1:1扣除LY能量值，通过10层网体持续补充。
+              {t("partner.dividends.subtitle")}
             </p>
           </div>
 
@@ -503,36 +621,36 @@ export default function PartnerPage() {
                       <Gift className="w-7 h-7 text-primary-foreground" />
                     </div>
                     <div>
-                      <Badge className="bg-primary text-primary-foreground mb-1">收益方式 1</Badge>
-                      <CardTitle className="text-2xl font-serif">返现分红</CardTitle>
+                      <Badge className="bg-primary text-primary-foreground mb-1">{t("partner.dividends.method1")}</Badge>
+                      <CardTitle className="text-2xl font-serif">{t("partner.dividends.cashbackTitle")}</CardTitle>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-6">
                   <p className="text-muted-foreground mb-6">
-                    通过您的<strong>3代推荐网体</strong>销售产品，即时获得返现奖励
+                    {t("partner.dividends.cashbackDesc")}
                   </p>
                   
-                  <NetworkDiagram />
+                  <NetworkDiagram t={t} />
 
                   <div className="mt-6 space-y-3">
                     <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg">
-                      <span className="font-medium">第1代（您直接推荐）</span>
-                      <Badge className="bg-primary text-primary-foreground">50% 返现</Badge>
+                      <span className="font-medium">{t("partner.dividends.gen1")}</span>
+                      <Badge className="bg-primary text-primary-foreground">{t("partner.dividends.cashback50")}</Badge>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-secondary/5 rounded-lg">
-                      <span className="font-medium">第2代（推荐人的推荐）</span>
-                      <Badge className="bg-secondary text-secondary-foreground">30% 返现</Badge>
+                      <span className="font-medium">{t("partner.dividends.gen2")}</span>
+                      <Badge className="bg-secondary text-secondary-foreground">{t("partner.dividends.cashback30")}</Badge>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                      <span className="font-medium">第3代及以上</span>
-                      <Badge variant="outline">20% 返现</Badge>
+                      <span className="font-medium">{t("partner.dividends.gen3")}</span>
+                      <Badge variant="outline">{t("partner.dividends.cashback20")}</Badge>
                     </div>
                   </div>
 
                   <div className="mt-6 p-4 bg-secondary/10 rounded-xl border border-secondary/20">
                     <p className="text-sm">
-                      <strong>示例：</strong>您的第1代推荐人销售1盒（RM199），您获得 RM99.5 返现
+                      {t("partner.dividends.cashbackExample")}
                     </p>
                   </div>
                 </CardContent>
@@ -553,14 +671,14 @@ export default function PartnerPage() {
                       <PieChart className="w-7 h-7 text-secondary-foreground" />
                     </div>
                     <div>
-                      <Badge className="bg-secondary text-secondary-foreground mb-1">收益方式 2</Badge>
-                      <CardTitle className="text-2xl font-serif">RWA奖金池分红</CardTitle>
+                      <Badge className="bg-secondary text-secondary-foreground mb-1">{t("partner.dividends.method2")}</Badge>
+                      <CardTitle className="text-2xl font-serif">{t("partner.dividends.rwaTitle")}</CardTitle>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-6">
                   <p className="text-muted-foreground mb-6">
-                    平台<strong>30%销售额</strong>进入奖金池，每<strong>10天</strong>按RWA令牌比例分配
+                    {t("partner.dividends.rwaDesc")}
                   </p>
 
                   <div className="relative py-6">
@@ -570,7 +688,7 @@ export default function PartnerPage() {
                           <BarChart3 className="w-8 h-8 text-primary" />
                         </div>
                         <p className="text-2xl font-bold text-primary">30%</p>
-                        <p className="text-xs text-muted-foreground">销售额入池</p>
+                        <p className="text-xs text-muted-foreground">{t("partner.dividends.salesIntoPool")}</p>
                       </div>
                       <ArrowRight className="w-6 h-6 text-muted-foreground" />
                       <div className="text-center">
@@ -578,37 +696,37 @@ export default function PartnerPage() {
                           <Coins className="w-8 h-8 text-secondary" />
                         </div>
                         <p className="text-2xl font-bold text-secondary">RWA</p>
-                        <p className="text-xs text-muted-foreground">按令牌分配</p>
+                        <p className="text-xs text-muted-foreground">{t("partner.dividends.distributeByToken")}</p>
                       </div>
                       <ArrowRight className="w-6 h-6 text-muted-foreground" />
                       <div className="text-center">
                         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
                           <Wallet className="w-8 h-8 text-primary" />
                         </div>
-                        <p className="text-2xl font-bold text-primary">现金</p>
-                        <p className="text-xs text-muted-foreground">进入钱包</p>
+                        <p className="text-2xl font-bold text-primary">{t("partner.dividends.yourDividend")}</p>
+                        <p className="text-xs text-muted-foreground">{t("partner.dividends.yourDividend")}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 bg-secondary/5 rounded-lg">
-                      <span className="text-sm">每位经营人自动获得</span>
-                      <span className="font-bold text-secondary">1 RWA 令牌</span>
+                      <span className="text-sm">{t("partner.dividends.autoToken")}</span>
+                      <span className="font-bold text-secondary">1 RWA</span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-secondary/5 rounded-lg">
-                      <span className="text-sm">每销售1盒额外获得</span>
-                      <span className="font-bold text-secondary">+1 RWA 令牌</span>
+                      <span className="text-sm">{t("partner.dividends.tokenPerSale")}</span>
+                      <span className="font-bold text-secondary">+1 RWA</span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg">
-                      <span className="text-sm">每10天周期结算后</span>
-                      <span className="font-bold text-primary">令牌清零重计</span>
+                      <span className="text-sm">{t("partner.dividends.cycleReset")}</span>
+                      <span className="font-bold text-primary">{t("partner.dividends.tokenReset")}</span>
                     </div>
                   </div>
 
                   <div className="mt-6 p-4 bg-primary/10 rounded-xl border border-primary/20">
                     <p className="text-sm">
-                      <strong>示例：</strong>周期内您销售20盒，持有21令牌。若总令牌550个，奖金池RM29,850，您获得 RM1,140 分红
+                      {t("partner.dividends.rwaExample")}
                     </p>
                   </div>
                 </CardContent>
@@ -622,10 +740,10 @@ export default function PartnerPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-serif mb-4" data-testid="text-ly-title">
-              LY 能量值：收益的永动机
+              {t("partner.ly.title")}
             </h2>
             <p className="opacity-80 max-w-2xl mx-auto">
-              提现需扣除等额LY能量值，但通过<strong>10层推荐网体</strong>持续补充。只要网体活跃，收益源源不断！
+              {t("partner.ly.subtitle")}
             </p>
           </div>
 
@@ -642,13 +760,13 @@ export default function PartnerPage() {
                     <Users className="w-6 h-6 text-secondary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold">10层网体 LY补充</h3>
-                    <p className="text-sm opacity-70">每层销售按比例补充能量值</p>
+                    <h3 className="text-xl font-bold">{t("partner.ly.networkTitle")}</h3>
+                    <p className="text-sm opacity-70">{t("partner.ly.networkSubtitle")}</p>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  {LY_NETWORK_LEVELS.map((level) => (
+                  {LY_NETWORK_LEVELS_TRANSLATED.map((level) => (
                     <div key={level.level} className="flex items-center gap-3" data-testid={`ly-level-${level.level}`}>
                       <div className="w-7 h-7 rounded-full bg-secondary/20 flex items-center justify-center text-xs font-bold text-secondary">
                         {level.level}
@@ -673,7 +791,7 @@ export default function PartnerPage() {
 
                 <div className="mt-6 p-4 bg-secondary/20 rounded-xl">
                   <p className="text-sm">
-                    <strong>累计补充：</strong>10层网体总计可补充 <span className="text-secondary font-bold">25%</span> 的销售额为LY能量值
+                    {t("partner.ly.totalReplenish")} <span className="text-secondary font-bold">25%</span> {t("partner.ly.ofSales")}
                   </p>
                 </div>
               </Card>
@@ -689,24 +807,24 @@ export default function PartnerPage() {
               <Card className="p-6 bg-primary-foreground/10 border-primary-foreground/20">
                 <div className="flex items-center gap-3 mb-4">
                   <Repeat className="w-8 h-8 text-secondary" />
-                  <h3 className="text-xl font-bold">收益循环示意</h3>
+                  <h3 className="text-xl font-bold">{t("partner.ly.cycleTitle")}</h3>
                 </div>
                 <div className="flex flex-col items-center gap-4 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="px-4 py-2 bg-secondary/20 rounded-lg font-medium">销售产生收益</div>
+                    <div className="px-4 py-2 bg-secondary/20 rounded-lg font-medium">{t("partner.ly.salesGenerate")}</div>
                     <ArrowRight className="w-5 h-5" />
-                    <div className="px-4 py-2 bg-secondary/20 rounded-lg font-medium">进入待提现钱包</div>
+                    <div className="px-4 py-2 bg-secondary/20 rounded-lg font-medium">{t("partner.ly.enterWallet")}</div>
                   </div>
                   <ArrowDown className="w-5 h-5" />
                   <div className="flex items-center gap-3">
-                    <div className="px-4 py-2 bg-secondary rounded-lg font-medium text-secondary-foreground">提现扣除LY</div>
+                    <div className="px-4 py-2 bg-secondary rounded-lg font-medium text-secondary-foreground">{t("partner.ly.withdrawDeduct")}</div>
                     <ArrowRight className="w-5 h-5" />
-                    <div className="px-4 py-2 bg-secondary rounded-lg font-medium text-secondary-foreground">网体补充LY</div>
+                    <div className="px-4 py-2 bg-secondary rounded-lg font-medium text-secondary-foreground">{t("partner.ly.networkReplenish")}</div>
                   </div>
                   <ArrowUpRight className="w-5 h-5 text-secondary" />
                   <p className="text-sm opacity-80 text-center">
-                    只要保持推荐网体活跃，<br />
-                    <span className="text-secondary font-bold text-lg">LY永不枯竭，收益源源不断！</span>
+                    {t("partner.ly.keepActive")}<br />
+                    <span className="text-secondary font-bold text-lg">{t("partner.ly.neverDry")}</span>
                   </p>
                 </div>
               </Card>
@@ -715,9 +833,9 @@ export default function PartnerPage() {
                 <div className="flex items-start gap-4">
                   <Info className="w-6 h-6 text-secondary flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-bold mb-2">为什么收益远超2倍？</h4>
+                    <h4 className="font-bold mb-2">{t("partner.ly.whyMoreTitle")}</h4>
                     <p className="text-sm opacity-80">
-                      投入RM1000获得2000 LY，看似最多提取RM2000。但您的10层网体每有一笔销售，都会按比例补充LY能量值。<strong>网体越活跃，LY补充越快，可提取收益自然越多！</strong>
+                      {t("partner.ly.whyMoreDesc")}
                     </p>
                   </div>
                 </div>
@@ -727,9 +845,9 @@ export default function PartnerPage() {
                 <div className="flex items-start gap-4">
                   <AlertTriangle className="w-6 h-6 text-destructive flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-bold text-foreground mb-2">重要提示</h4>
+                    <h4 className="font-bold text-foreground mb-2">{t("partner.ly.importantNote")}</h4>
                     <p className="text-sm text-foreground/80">
-                      LY能量值不足时<strong>无法提现</strong>对应收益。请通过持续经营来补充LY，确保收益可提取。
+                      {t("partner.ly.importantNoteDesc")}
                     </p>
                   </div>
                 </div>
@@ -743,13 +861,13 @@ export default function PartnerPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-serif text-primary mb-4" data-testid="text-tiers-title">
-              选择您的经营人级别
+              {t("partner.tierSection.title")}
             </h2>
-            <p className="text-muted-foreground">投入越多，LY能量值越多，可提取收益上限越高</p>
+            <p className="text-muted-foreground">{t("partner.tierSection.subtitle")}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {PARTNER_TIERS.map((tier, index) => (
+            {PARTNER_TIERS_TRANSLATED.map((tier, index) => (
               <motion.div
                 key={tier.id}
                 initial="hidden"
@@ -770,7 +888,7 @@ export default function PartnerPage() {
                   {tier.highlight && (
                     <div className="absolute -top-0 left-0 right-0">
                       <Badge className="w-full rounded-none bg-secondary text-secondary-foreground justify-center py-1">
-                        最受欢迎
+                        {t("partner.tierSection.mostPopular")}
                       </Badge>
                     </div>
                   )}
@@ -787,14 +905,14 @@ export default function PartnerPage() {
 
                   <CardContent className="flex-1 p-6">
                     <div className="text-center mb-6">
-                      <div className="text-sm text-muted-foreground uppercase tracking-widest">投入</div>
+                      <div className="text-sm text-muted-foreground uppercase tracking-widest">{t("partner.tierSection.invest")}</div>
                       <div className="text-3xl font-bold text-foreground mt-1">RM {tier.price.toLocaleString()}</div>
                     </div>
 
                     <div className="p-4 rounded-xl bg-secondary/10 border border-secondary/20 text-center mb-6">
-                      <p className="text-xs text-muted-foreground">获得 LY 能量值</p>
+                      <p className="text-xs text-muted-foreground">{t("partner.tierSection.getLyPoints")}</p>
                       <p className="text-3xl font-bold text-secondary">{tier.lyPoints.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground mt-1">= 最低可提 RM {tier.lyPoints.toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t("partner.tierSection.minWithdraw")}{tier.lyPoints.toLocaleString()}</p>
                     </div>
 
                     <ul className="space-y-3">
@@ -816,7 +934,7 @@ export default function PartnerPage() {
                       onClick={() => handleJoin(tier.id)}
                       data-testid={`button-join-${tier.id}`}
                     >
-                      立即咨询
+                      {t("partner.tierSection.consultNow")}
                       <ArrowRight className="ml-2 w-4 h-4" />
                     </Button>
                   </CardFooter>
@@ -831,9 +949,9 @@ export default function PartnerPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-serif text-primary mb-4" data-testid="text-simulator-title">
-              RWA分红模拟器
+              {t("partner.simulator.title")}
             </h2>
-            <p className="text-muted-foreground">调整参数，预估您的周期分红收益</p>
+            <p className="text-muted-foreground">{t("partner.simulator.subtitle")}</p>
           </div>
 
           <Card className="p-6 md:p-8 max-w-4xl mx-auto">
@@ -841,7 +959,7 @@ export default function PartnerPage() {
               <div className="space-y-6">
                 <div>
                   <Label className="mb-2 block">
-                    我的本周期销售: <span className="text-secondary font-bold">{rwaSimulator.mySales} 盒</span>
+                    {t("partner.simulator.mySales")}: <span className="text-secondary font-bold">{rwaSimulator.mySales} {t("partner.simulator.boxes")}</span>
                   </Label>
                   <Slider
                     value={[rwaSimulator.mySales]}
@@ -855,7 +973,7 @@ export default function PartnerPage() {
                 </div>
                 <div>
                   <Label className="mb-2 block">
-                    全平台总销售: <span className="text-secondary font-bold">{rwaSimulator.totalPoolSales} 盒</span>
+                    {t("partner.simulator.totalPlatformSales")}: <span className="text-secondary font-bold">{rwaSimulator.totalPoolSales} {t("partner.simulator.boxes")}</span>
                   </Label>
                   <Slider
                     value={[rwaSimulator.totalPoolSales]}
@@ -869,7 +987,7 @@ export default function PartnerPage() {
                 </div>
                 <div>
                   <Label className="mb-2 block">
-                    活跃经营人数: <span className="text-secondary font-bold">{rwaSimulator.totalPartners} 人</span>
+                    {t("partner.simulator.activePartners")}: <span className="text-secondary font-bold">{rwaSimulator.totalPartners} {t("partner.simulator.people")}</span>
                   </Label>
                   <Slider
                     value={[rwaSimulator.totalPartners]}
@@ -883,7 +1001,7 @@ export default function PartnerPage() {
                 </div>
                 <div>
                   <Label className="mb-2 block">
-                    平均每人销售: <span className="text-secondary font-bold">{rwaSimulator.avgSalesPerPartner} 盒</span>
+                    {t("partner.simulator.avgSalesPerPerson")}: <span className="text-secondary font-bold">{rwaSimulator.avgSalesPerPartner} {t("partner.simulator.boxes")}</span>
                   </Label>
                   <Slider
                     value={[rwaSimulator.avgSalesPerPartner]}
@@ -900,36 +1018,36 @@ export default function PartnerPage() {
               <div className="space-y-4">
                 <div className="p-4 rounded-xl bg-muted">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-muted-foreground">本周期总销售额</span>
+                    <span className="text-muted-foreground">{t("partner.simulator.cycleTotalSales")}</span>
                     <span className="font-bold">RM {rwaCalculation.totalSalesAmount.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">奖金池 (30%)</span>
+                    <span className="text-muted-foreground">{t("partner.simulator.bonusPool30")}</span>
                     <span className="font-bold text-secondary">RM {rwaCalculation.bonusPool.toLocaleString()}</span>
                   </div>
                 </div>
 
                 <div className="p-4 rounded-xl bg-muted">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-muted-foreground">我的RWA令牌</span>
-                    <span className="font-bold">{rwaCalculation.myTokens} 个</span>
+                    <span className="text-muted-foreground">{t("partner.simulator.myRwaTokens")}</span>
+                    <span className="font-bold">{rwaCalculation.myTokens} {t("partner.simulator.units")}</span>
                   </div>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-muted-foreground">全平台总令牌</span>
-                    <span className="font-bold">{rwaCalculation.totalTokens.toLocaleString()} 个</span>
+                    <span className="text-muted-foreground">{t("partner.simulator.totalPlatformTokens")}</span>
+                    <span className="font-bold">{rwaCalculation.totalTokens.toLocaleString()} {t("partner.simulator.units")}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">我的占比</span>
+                    <span className="text-muted-foreground">{t("partner.simulator.myRatio")}</span>
                     <span className="font-bold text-secondary">{(rwaCalculation.myShare * 100).toFixed(2)}%</span>
                   </div>
                 </div>
 
                 <div className="p-6 rounded-xl bg-secondary/10 border border-secondary/30">
-                  <p className="text-sm text-muted-foreground mb-2">预估本周期分红</p>
+                  <p className="text-sm text-muted-foreground mb-2">{t("partner.simulator.estimatedCycleDividend")}</p>
                   <p className="text-4xl font-bold text-secondary" data-testid="text-rwa-dividend">
                     RM {rwaCalculation.myDividend.toFixed(2)}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-2">* 提现需等额LY能量值</p>
+                  <p className="text-xs text-muted-foreground mt-2">{t("partner.simulator.withdrawNeedsLy")}</p>
                 </div>
               </div>
             </div>
@@ -948,7 +1066,7 @@ export default function PartnerPage() {
             >
               <img 
                 src="/attached_assets/love_young_ecosystem_20260106043624_1_1769380035812.png"
-                alt="LOVEYOUNG品牌生态系统"
+                alt={t("partner.ecosystem.imgAlt")}
                 className="rounded-2xl shadow-xl w-full"
                 data-testid="img-ecosystem"
               />
@@ -961,22 +1079,22 @@ export default function PartnerPage() {
               className="space-y-6"
             >
               <h2 className="text-3xl md:text-4xl font-serif text-primary" data-testid="text-ecosystem-title">
-                LOVEYOUNG 品牌生态系统
+                {t("partner.ecosystem.title")}
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                LOVEYOUNG 构建了一个完整的品牌生态系统，涵盖优质产品、KOL合作、RWA投资、社区建设、数字营销等多个维度。
+                {t("partner.ecosystem.desc1")}
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                作为联合经营人，您将成为这个生态系统的重要一员，共同推动品牌发展，分享品牌成长红利。
+                {t("partner.ecosystem.desc2")}
               </p>
               <div className="grid grid-cols-2 gap-4 pt-4">
                 <div className="p-4 rounded-xl bg-background border">
                   <p className="text-2xl font-bold text-secondary">5+</p>
-                  <p className="text-sm text-muted-foreground">业务模块</p>
+                  <p className="text-sm text-muted-foreground">{t("partner.ecosystem.modules")}</p>
                 </div>
                 <div className="p-4 rounded-xl bg-background border">
                   <p className="text-2xl font-bold text-secondary">360°</p>
-                  <p className="text-sm text-muted-foreground">全方位支持</p>
+                  <p className="text-sm text-muted-foreground">{t("partner.ecosystem.fullSupport")}</p>
                 </div>
               </div>
             </motion.div>
@@ -988,13 +1106,13 @@ export default function PartnerPage() {
         <div className="max-w-3xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-serif text-primary mb-4" data-testid="text-faq-title">
-              常见问题
+              {t("partner.faqs.title")}
             </h2>
-            <p className="text-muted-foreground">解答您的疑虑</p>
+            <p className="text-muted-foreground">{t("partner.faqs.subtitle")}</p>
           </div>
 
           <Accordion type="single" collapsible className="w-full">
-            {FAQ_ITEMS.map((item, index) => (
+            {FAQ_ITEMS_TRANSLATED.map((item, index) => (
               <AccordionItem key={index} value={`item-${index}`} data-testid={`faq-item-${index}`}>
                 <AccordionTrigger className="text-left" data-testid={`faq-trigger-${index}`}>
                   {item.question}
@@ -1011,10 +1129,10 @@ export default function PartnerPage() {
       <section className="py-20 bg-secondary/10" data-testid="section-cta">
         <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-serif text-primary mb-6" data-testid="text-cta-title">
-            行动创造无限可能
+            {t("partner.cta.title")}
           </h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            投入RM1,000，获得2,000 LY能量值。通过10层网体持续补充，收益不止2倍，<strong>只要行动，就是源源不断！</strong>
+            {t("partner.cta.subtitle")}<strong>{t("partner.cta.subtitleBold")}</strong>
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button
@@ -1023,7 +1141,7 @@ export default function PartnerPage() {
               onClick={() => document.getElementById("tiers")?.scrollIntoView({ behavior: "smooth" })}
               data-testid="button-final-cta"
             >
-              立即成为联合经营人
+              {t("partner.cta.becomePartner")}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             <Button
@@ -1034,7 +1152,7 @@ export default function PartnerPage() {
               data-testid="button-contact-whatsapp"
             >
               <MessageCircle className="w-5 h-5" />
-              WhatsApp 咨询
+              {t("partner.cta.whatsappConsult")}
             </Button>
           </div>
         </div>
@@ -1044,19 +1162,19 @@ export default function PartnerPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" data-testid="modal-join">
           <Card className="w-full max-w-md p-6">
             <h3 className="text-xl font-bold text-foreground mb-4">
-              申请成为联合经营人
+              {t("partner.modal.title")}
             </h3>
             <p className="text-muted-foreground mb-6">
-              您选择了 {PARTNER_TIERS.find(t => t.id === selectedTier)?.name}
-              (RM {PARTNER_TIERS.find(t => t.id === selectedTier)?.price.toLocaleString()})
+              {t("partner.modal.selectedTier")} {PARTNER_TIERS_TRANSLATED.find(tier => tier.id === selectedTier)?.name}
+              (RM {PARTNER_TIERS_TRANSLATED.find(tier => tier.id === selectedTier)?.price.toLocaleString()})
             </p>
 
             <div className="space-y-4 mb-6">
               <div>
-                <Label htmlFor="referralCode">推荐人邀请码（可选）</Label>
+                <Label htmlFor="referralCode">{t("partner.modal.referralCodeOptional")}</Label>
                 <Input
                   id="referralCode"
-                  placeholder="输入推荐人8位邀请码"
+                  placeholder={t("partner.modal.referralCodePlaceholder")}
                   value={referralCode}
                   onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
                   maxLength={8}
@@ -1072,7 +1190,7 @@ export default function PartnerPage() {
                 onClick={() => setSelectedTier(null)}
                 data-testid="button-cancel-join"
               >
-                取消
+                {t("partner.modal.cancel")}
               </Button>
               <Button
                 className="flex-1 bg-secondary text-secondary-foreground"
@@ -1080,7 +1198,7 @@ export default function PartnerPage() {
                 disabled={joinPartnerMutation.isPending}
                 data-testid="button-confirm-join"
               >
-                {joinPartnerMutation.isPending ? "提交中..." : "提交申请"}
+                {joinPartnerMutation.isPending ? "..." : t("partner.modal.confirmAndPay")}
               </Button>
             </div>
           </Card>

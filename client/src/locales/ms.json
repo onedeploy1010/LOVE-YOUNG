@@ -200,7 +200,16 @@
   },
   "footer": {
     "tagline": "Segar, Tiada Kompromi",
-    "description": "Sarang burung dan pundi ikan rebus segar harian, menjaga kesihatan dan kecantikan anda.",
+    "description": "Belayar Menentang Angin, Mentakrifkan Semula Kuasa Wanita. Dari Young Love ke Love Young, kami percaya mencintai diri sendiri dahulu untuk mencintai dunia dengan lebih baik.",
+    "brandName": "Love Young",
+    "quickLinks": "Pautan Pantas",
+    "contactUs": "Hubungi Kami",
+    "businessHours": "Waktu Perniagaan",
+    "hoursValue": "Isn-Ahd 9:00PG-9:00MLM",
+    "clickToChat": "Klik untuk Berbual",
+    "responseTime": "Respons dalam 24 jam",
+    "allRightsReserved": "Hak Cipta Terpelihara",
+    "slogan": "Against The Wind | Belayar Menentang Angin",
     "products": "Produk",
     "birdNest": "Siri Sarang Burung",
     "fishMaw": "Siri Pundi Ikan",
@@ -368,7 +377,179 @@
     "applicationApproved": "Permohonan Diluluskan",
     "applicationRejected": "Permohonan Ditolak",
     "notPartner": "Anda belum menjadi rakan kongsi",
-    "becomePartner": "Jadi Rakan Kongsi"
+    "becomePartner": "Jadi Rakan Kongsi",
+    "whatsappMessage": "Helo, saya ingin mengetahui tentang Program Rakan Kongsi.",
+    "page": {
+      "heroTitle1": "Labur RM1,000",
+      "heroTitle2": "Pendapatan",
+      "heroTitle3": "Melebihi 2x Ganda",
+      "heroSubtitle": "Jadi Rakan Kongsi Love Young dan terima 2000 Mata LY. Melalui jualan dan rangkaian rujukan 10 peringkat, Mata LY diisi semula berterusan, pendapatan tidak pernah berhenti.",
+      "heroSubtitleBold": "Ambil tindakan, pendapatan tanpa had!",
+      "applyNow": "Mohon Sekarang",
+      "consultDetails": "Tanya Butiran Program",
+      "minInvestment": "Pelaburan Minimum",
+      "lyPointsObtained": "Mata LY = Minimum RM2000 Boleh Dikeluarkan",
+      "unlimitedEarnings": "Terus Bekerja, Pendapatan Tanpa Had",
+      "applicationSubmitted": "Permohonan Dihantar",
+      "applicationSubmittedDesc": "Lengkapkan pembayaran untuk mengaktifkan status rakan kongsi anda.",
+      "applicationFailed": "Permohonan Gagal"
+    },
+    "concepts": {
+      "assetTransparency": "Ketelusan Aset",
+      "assetTransparencyDesc": "Setiap hak operasi digital disandarkan kepada bahan mentah sarang burung sebenar, inventori produk kesihatan premium dan aset fizikal lain.",
+      "earningsGuarantee": "Perlindungan Pendapatan",
+      "earningsGuaranteeDesc": "Pendapatan dijamin melalui sistem Mata LY dengan data telus dan penyelesaian cekap.",
+      "globalFlow": "Peredaran Global",
+      "globalFlowDesc": "Pecahkan batasan geografi dan sertai susun atur rantaian industri kesejahteraan premium global dan dividen."
+    },
+    "dividends": {
+      "title": "Model Pendapatan Dwi",
+      "subtitle": "Dua kaedah dividen beroperasi serentak, pendapatan bertindan. Pengeluaran memotong Mata LY 1:1, diisi semula berterusan melalui rangkaian 10 peringkat.",
+      "method1": "Kaedah Pendapatan 1",
+      "method2": "Kaedah Pendapatan 2",
+      "cashbackTitle": "Dividen Cashback",
+      "cashbackDesc": "Jual produk melalui rangkaian rujukan 3 generasi anda, dapatkan ganjaran cashback segera",
+      "rwaTitle": "Dividen Kolam Bonus RWA",
+      "rwaDesc": "30% jualan platform masuk kolam bonus, diagihkan setiap 10 hari mengikut nisbah token RWA",
+      "gen1": "Generasi 1 (Rujukan Langsung Anda)",
+      "gen2": "Generasi 2 (Rujukan daripada Rujukan)",
+      "gen3": "Generasi 3 dan Seterusnya",
+      "cashback50": "50% Cashback",
+      "cashback30": "30% Cashback",
+      "cashback20": "20% Cashback",
+      "cashbackExample": "Contoh: Rujukan gen 1 anda jual 1 kotak (RM199), anda dapat RM99.5 cashback",
+      "salesIntoPool": "Jualan ke Kolam",
+      "distributeByToken": "Agih Mengikut Token",
+      "yourDividend": "Dividen Anda",
+      "autoToken": "Setiap rakan kongsi auto terima",
+      "tokenPerSale": "Setiap kotak dijual dapat",
+      "cycleReset": "Selepas setiap kitaran 10 hari",
+      "tokenReset": "Token set semula ke sifar",
+      "rwaExample": "Contoh: Anda jual 20 kotak dalam kitaran, pegang 21 token. Jika jumlah token 550 dan kolam bonus RM29,850, anda dapat dividen RM1,140"
+    },
+    "ly": {
+      "title": "Mata LY: Enjin Pendapatan Berterusan",
+      "subtitle": "Pengeluaran memerlukan potongan Mata LY sama, tetapi diisi semula berterusan melalui rangkaian rujukan 10 peringkat. Selagi rangkaian aktif, pendapatan tidak pernah berhenti!",
+      "networkTitle": "Pengisian Semula LY Rangkaian 10 Peringkat",
+      "networkSubtitle": "Setiap peringkat mengisi mata secara berkadaran",
+      "totalReplenish": "Jumlah Pengisian: Rangkaian 10 peringkat boleh mengisi sehingga",
+      "ofSales": "jualan sebagai Mata LY",
+      "cycleTitle": "Gambarajah Kitaran Pendapatan",
+      "salesGenerate": "Jualan Jana Pendapatan",
+      "enterWallet": "Masuk Dompet Pengeluaran",
+      "withdrawDeduct": "Pengeluaran Potong LY",
+      "networkReplenish": "Rangkaian Isi Semula LY",
+      "keepActive": "Kekalkan rangkaian rujukan anda aktif,",
+      "neverDry": "LY tidak pernah kering, pendapatan tidak pernah berhenti!",
+      "whyMoreTitle": "Mengapa Pendapatan Melebihi 2x?",
+      "whyMoreDesc": "Labur RM1000 untuk dapat 2000 LY, nampak macam maksimum pengeluaran RM2000. Tetapi setiap jualan dalam rangkaian 10 peringkat anda mengisi semula Mata LY secara berkadaran. Lebih aktif rangkaian anda, lebih cepat LY diisi, lebih banyak pendapatan boleh dikeluarkan!",
+      "importantNote": "Nota Penting",
+      "importantNoteDesc": "Tidak boleh mengeluarkan pendapatan sepadan apabila Mata LY tidak mencukupi. Teruskan beroperasi untuk mengisi semula LY dan pastikan pendapatan boleh dikeluarkan.",
+      "level1": "Langsung",
+      "level2": "Peringkat 2",
+      "level3": "Peringkat 3",
+      "level4": "Peringkat 4",
+      "level5": "Peringkat 5",
+      "level6": "Peringkat 6",
+      "level7": "Peringkat 7",
+      "level8": "Peringkat 8",
+      "level9": "Peringkat 9",
+      "level10": "Peringkat 10"
+    },
+    "network": {
+      "you": "Anda",
+      "gen1": "Gen 1",
+      "gen2": "Gen 2",
+      "gen3": "Gen 3",
+      "plusCashback": "+Cashback"
+    },
+    "tierSection": {
+      "title": "Pilih Peringkat Rakan Kongsi Anda",
+      "subtitle": "Pelaburan lebih tinggi, lebih banyak Mata LY, had pengeluaran lebih tinggi",
+      "mostPopular": "Paling Popular",
+      "invest": "Labur",
+      "getLyPoints": "Dapat Mata LY",
+      "minWithdraw": "= Min Keluarkan RM",
+      "consultNow": "Tanya Sekarang"
+    },
+    "tierNames": {
+      "phase1": "Rakan Pelancaran",
+      "phase2": "Rakan Pengasas",
+      "phase3": "Rakan Strategik"
+    },
+    "tierFeatures": {
+      "cashback50First5": "50% cashback 5 kotak pertama",
+      "cashback30Next5": "30% cashback kotak 6-10",
+      "cashback20Rest": "20% cashback selebihnya",
+      "freeFirstBox": "Produk kotak pertama percuma",
+      "photoShoot": "Sesi foto peribadi",
+      "tenLevelBonus": "Bonus rujukan 10 peringkat",
+      "weight12x": "Bonus berat dividen 1.2x",
+      "factoryVip": "Lawatan kilang VIP",
+      "microFilm": "Penyertaan filem mikro jenama",
+      "weight15x": "Bonus berat dividen 1.5x",
+      "topPoolPriority": "Keutamaan kolam bonus teratas",
+      "intlLaunch": "Tempat acara pelancaran antarabangsa",
+      "cobranding": "Keuntungan produk jenama bersama",
+      "exclusiveBiz": "Kolaborasi perniagaan eksklusif"
+    },
+    "simulator": {
+      "title": "Simulator Dividen RWA",
+      "subtitle": "Laraskan parameter untuk anggaran pendapatan dividen kitaran anda",
+      "mySales": "Jualan Kitaran Saya",
+      "boxes": "kotak",
+      "totalPlatformSales": "Jumlah Jualan Platform",
+      "activePartners": "Rakan Kongsi Aktif",
+      "people": "orang",
+      "avgSalesPerPerson": "Purata Jualan Setiap Orang",
+      "cycleTotalSales": "Jumlah Jualan Kitaran",
+      "bonusPool30": "Kolam Bonus (30%)",
+      "myRwaTokens": "Token RWA Saya",
+      "units": "unit",
+      "totalPlatformTokens": "Jumlah Token Platform",
+      "myRatio": "Nisbah Saya",
+      "estimatedCycleDividend": "Anggaran Dividen Kitaran",
+      "withdrawNeedsLy": "* Pengeluaran memerlukan Mata LY sama"
+    },
+    "ecosystem": {
+      "title": "Ekosistem Jenama LOVEYOUNG",
+      "desc1": "LOVEYOUNG telah membina ekosistem jenama lengkap meliputi produk premium, kolaborasi KOL, pelaburan RWA, pembinaan komuniti, pemasaran digital dan banyak lagi.",
+      "desc2": "Sebagai rakan kongsi, anda menjadi bahagian penting ekosistem ini, bersama-sama memacu pembangunan jenama dan berkongsi dividen pertumbuhan.",
+      "modules": "Modul Perniagaan",
+      "fullSupport": "Sokongan Penuh",
+      "imgAlt": "Ekosistem Jenama LOVEYOUNG"
+    },
+    "faqs": {
+      "title": "Soalan Lazim",
+      "subtitle": "Menjawab Kebimbangan Anda",
+      "q1": "Apa itu Rakan Kongsi? Bagaimana ia berbeza daripada ejen tradisional?",
+      "a1": "Rakan Kongsi adalah pembina bersama jenama, bukan ejen berperingkat tradisional. Kami tiada keperluan inventori, semua pendapatan datang daripada jualan produk akhir sebenar. Setiap kotak yang anda kongsi dihantar terus dari kilang, memastikan kualiti dan kesegaran.",
+      "q2": "Bolehkah melabur RM1000 benar-benar dapat lebih daripada RM2000?",
+      "a2": "Ya! Labur RM1000 untuk jadi Rakan Pelancaran dan terima 2000 Mata LY. Ini bermakna anda boleh keluarkan minimum RM2000 (potongan LY 1:1). Tetapi pendapatan melebihi 2x—melalui rangkaian rujukan 10 peringkat anda, setiap jualan mengisi semula Mata LY anda secara berkadaran, terus membuka lebih banyak pendapatan!",
+      "q3": "Apa beza dividen cashback dan dividen kolam RWA?",
+      "a3": "Dividen cashback adalah cashback segera daripada jualan langsung anda atau jualan rangkaian 3 generasi (50%/30%/20%). Dividen kolam RWA adalah dividen berkala setiap 10 hari—platform masukkan 30% jualan ke kolam bonus, diagihkan mengikut nisbah token RWA anda. Kedua-duanya memerlukan Mata LY sama untuk pengeluaran.",
+      "q4": "Apa itu Mata LY? Bagaimana untuk isi semula?",
+      "a4": "Mata LY adalah deposit jaminan pendapatan anda. Setiap jualan dalam rangkaian rujukan 10 peringkat anda mengisi semula Mata LY mengikut peratusan peringkat (Peringkat 1: 8%, Peringkat 2: 5%...). Selagi rangkaian anda kekal aktif, Mata LY mengalir berterusan, dan pendapatan terus datang!",
+      "q5": "Mengapa pengeluaran memerlukan potongan Mata LY?",
+      "a5": "Mekanisme LY memastikan kelestarian pendapatan. Reka bentuk ini menggalakkan rakan kongsi membina rangkaian jualan stabil, membuka lebih banyak pendapatan melalui tindakan berterusan berbanding pengeluaran tunai sekali. Terus ambil tindakan, dan pendapatan anda akan jauh melebihi pelaburan awal!",
+      "q6": "Adakah saya perlu stok inventori?",
+      "a6": "Sama sekali tidak! Semua produk dihantar terus dari kilang kepada pelanggan akhir. Anda hanya fokus pada berkongsi dan mempromosi. Sifar inventori, sifar risiko!"
+    },
+    "cta": {
+      "title": "Tindakan Mencipta Kemungkinan Tanpa Had",
+      "subtitle": "Labur RM1,000, dapat 2,000 Mata LY. Diisi semula berterusan melalui rangkaian 10 peringkat, pendapatan melebihi 2x,",
+      "subtitleBold": "Terus ambil tindakan, pendapatan tidak pernah berhenti!",
+      "becomePartner": "Jadi Rakan Kongsi Sekarang",
+      "whatsappConsult": "Tanya WhatsApp"
+    },
+    "modal": {
+      "title": "Mohon Jadi Rakan Kongsi",
+      "selectedTier": "Anda pilih",
+      "referralCodeOptional": "Kod Rujukan (Pilihan)",
+      "referralCodePlaceholder": "Masukkan kod rujukan 8 digit",
+      "cancel": "Batal",
+      "confirmAndPay": "Sahkan & Bayar"
+    }
   },
   "admin": {
     "title": "Panel Admin",
@@ -442,7 +623,162 @@
     "fresh": "Penghantaran Segar",
     "freshDesc": "Masakan segar harian, penghantaran rantai sejuk, mengunci nutrisi",
     "care": "Perkhidmatan Penyayang",
-    "careDesc": "Pasukan perunding profesional, perkhidmatan penyayang untuk setiap pelanggan"
+    "careDesc": "Pasukan perunding profesional, perkhidmatan penyayang untuk setiap pelanggan",
+    "whatsappMessage": "Helo, saya ingin mengetahui lebih lanjut tentang jenama LOVEYOUNG.",
+    "hero": {
+      "title": "Belayar Menentang Angin",
+      "titleSub": "Pilihan Premium",
+      "description": "LOVEYOUNG Rebusan Segar, jenama penyubur premium dari Malaysia. Kami percaya setiap wanita layak dilayan dengan kelembutan, membangkitkan kekuatan elegan dari dalam dengan penyuburan paling tulen."
+    },
+    "foundersSection": {
+      "badge": "Kisah Jenama",
+      "title": "Belayar Menentang Angin · Kisah Pengasas",
+      "subtitle": "Tiga laluan kehidupan, satu arah — kesihatan tidak seharusnya hanya menjadi ubat apabila masalah timbul, tetapi komitmen harian yang lembut",
+      "summaryTitle": "Tiga Laluan Kehidupan · Satu Arah",
+      "summaryText": "Mereka semua pernah melalui cabaran, menghadapi realiti, dan membuat pilihan pada tahap kehidupan yang berbeza. Akhirnya, mereka bersatu di bawah falsafah yang sama — inilah semangat sebenar 'Belayar Menentang Angin'."
+    },
+    "founders": {
+      "vivian": {
+        "subtitle": "Orang yang bermula dengan semangkuk pundi ikan dan sarang burung",
+        "motto": "Tetap setia pada misi kami — menjadikan 'perkara baik' yang terbaik",
+        "story": "Vivian adalah yang pertama memulakan perjalanan ini. Dari berkongsi di media sosial, dia secara beransur-ansur membawa pundi ikan dan sarang burung ke komuniti yang lebih besar, pusat lepas bersalin, salon kecantikan, dan ke dalam kehidupan harian wanita yang tidak terkira.",
+        "insight": "Dia tidak tergesa-gesa untuk berkembang. Sebaliknya, dia menghabiskan sebahagian besar masanya pada produk itu sendiri — menguji rasa, menyelidik formula, menyesuaikan kemanisan dan konsistensi — semuanya untuk mencari keseimbangan sempurna antara lazat dan benar-benar menyuburkan.",
+        "belief": "Kualiti adalah kapal paling stabil dalam ribut.",
+        "focus": "Kecemerlangan Produk"
+      },
+      "agnes": {
+        "subtitle": "Selepas melihat terlalu banyak kisah, dia memilih untuk melindungi kesihatan",
+        "motto": "Dia percaya kekayaan sebenar tidak pernah tentang angka",
+        "story": "Agnes adalah wanita yang kuat dalam industri insurans. Pengalaman kerjaya bertahun-tahun menunjukkan kepadanya banyak kejayaan dan kegagalan — ada yang mencapai kerjaya cemerlang tetapi kehilangan kesihatan; ada yang mempunyai kekayaan melimpah tetapi mengabaikan diri sendiri dan keluarga.",
+        "insight": "Kisah-kisah sebenar dari pelanggan ini membuatnya secara beransur-ansur memahami: kesihatan fizikal dan mental adalah asas semua perlindungan. Dia berharap dapat mengubah pemahaman bertahun-tahun tentang 'risiko, perlindungan, dan nilai jangka panjang' menjadi teman yang lebih memeluk kehidupan.",
+        "belief": "Membantu mereka di sekeliling kita menjaga diri sendiri, walaupun di tengah-tengah kehidupan sibuk dan tertekan.",
+        "focus": "Memahami Risiko & Perlindungan"
+      },
+      "andrey": {
+        "subtitle": "Di bawah lampu sorot, dia memahami kesejahteraan sebenar",
+        "motto": "Kecantikan tidak seharusnya datang dari kebimbangan, tetapi dari keadaan diri",
+        "story": "Andrey menjadi model kereta profesional semasa remaja, kemudian berkembang menjadi KOL dalam media sosial. Aktif di majlis gala, pesta, fesyen dan acara sosial, dia telah melihat terlalu banyak definisi 'kecantikan' — cepat, dangkal, digunakan.",
+        "insight": "Tetapi dia semakin jelas: apa yang benar-benar menjaga orang muda dan menawan bukan penambahan luaran, tetapi minda yang stabil, makan yang sihat, dan badan yang ringan. Baginya, pundi ikan dan sarang burung bukan 'suplemen', tetapi pilihan harian yang membawa tubuh kembali ke keseimbangan dan menjadikan kehidupan lebih anggun.",
+        "belief": "Penjagaan diri terbaik adalah tidak memaksa diri sendiri.",
+        "focus": "Memimpin Trend Gaya Hidup Wanita"
+      }
+    },
+    "origin": {
+      "title": "Permulaan Kami",
+      "p1": "Pada tahun 2020, tiga wanita yang sehaluan bertemu di Kuala Lumpur. Mereka berkongsi pengalaman yang sama — mengabaikan kesihatan sendiri dalam kehidupan sibuk sehingga badan menghantar isyarat amaran, membuatkan mereka sedar kepentingan penyuburan kesejahteraan.",
+      "p2": "Walau bagaimanapun, produk pundi ikan dan sarang burung rebus segar yang benar-benar berkualiti tinggi dan tanpa pengawet jarang di pasaran. Ini adalah cara paling sihat untuk menyubur, namun sangat memakan masa untuk disediakan. Wanita bandar yang sering sibuk menjaga keluarga dan kerja tidak dapat membuat semangkuk yang betul untuk diri sendiri.",
+      "p3": "Jadi mereka memutuskan untuk mencipta jenama sendiri, menggunakan standard paling ketat dan niat paling ikhlas untuk menyediakan penyuburan paling tulen dan paling mudah untuk setiap wanita sibuk.",
+      "p4": "Inilah kelahiran LOVEYOUNG — sayangi diri sendiri dahulu, kemudian sayangi dunia dengan lebih baik."
+    },
+    "production": {
+      "title": "Kerajinan & Kualiti",
+      "p1": "Dari memperoleh sarang burung dan pundi ikan secara peribadi di tempat asalnya hingga saringan ketat setiap kelompok, kami hanya memilih bahan berkualiti yang memenuhi standard kami untuk pengeluaran.",
+      "p2": "Semua produk dimasak dan dibungkus di kemudahan pengeluaran steril milik LoveYoung, menggunakan teknik rebusan perlahan suhu rendah untuk mengekalkan lapisan nutrisi dan rasa bahan sambil memastikan kebersihan dan keselamatan.",
+      "p3": "Setiap botol produk rebus segar menjalani pemeriksaan kualiti berganda dan dihantar melalui logistik rantai sejuk penuh, memastikan apa yang sampai kepada anda sentiasa segar, selamat, dan kualiti yang boleh dipercayai.",
+      "stat1": "Terus dari Sumber",
+      "stat2": "Bahan Tambahan & Pengawet"
+    },
+    "valuesSection": {
+      "subtitle": "Kami percaya kecantikan sebenar datang dari kesihatan, kekuatan sebenar datang dari dalam. LOVEYOUNG bukan sekadar jenama, tetapi cara hidup."
+    },
+    "values": {
+      "love": {
+        "title": "Cinta di Teras",
+        "description": "Setiap produk membawa penjagaan mendalam untuk kesihatan wanita, dari bahan hingga formula, melindungi setiap pelanggan dengan hati."
+      },
+      "natural": {
+        "title": "Semula Jadi & Tulen",
+        "description": "Memilih dengan teliti sarang burung dan pundi ikan dari kawasan terbaik dunia, menolak bahan tambahan, memelihara hadiah paling berharga alam semula jadi."
+      },
+      "quality": {
+        "title": "Kualiti Terjamin",
+        "description": "Penghantaran rantai sejuk penuh, pembungkusan individu, setiap kelompok lulus pemeriksaan kualiti ketat, memastikan kesegaran dan keselamatan."
+      },
+      "global": {
+        "title": "Visi Global",
+        "description": "Mengintegrasikan sumber sarang burung teratas Asia Tenggara, memperkenalkan sistem pengurusan kualiti antarabangsa, mencipta jenama penyubur kelas dunia."
+      }
+    },
+    "lifestyle": {
+      "title": "Gaya Hidup Elegan",
+      "subtitle": "LOVEYOUNG menganjurkan bukan sekadar produk, tetapi gaya hidup elegan dari dalam",
+      "wellness": {
+        "title": "Kesihatan & Kesejahteraan",
+        "description": "Sebotol sarang burung rebus segar setiap hari, memulakan hari anda penuh dengan tenaga"
+      },
+      "community": {
+        "title": "Hubungan Komuniti",
+        "description": "Kongsi pandangan kesejahteraan dengan adik-beradik yang sehaluan"
+      },
+      "events": {
+        "title": "Acara Jenama",
+        "description": "Sertai salon eksklusif, alami lingkungan elegan"
+      }
+    },
+    "philosophy": {
+      "title": "Belayar Menentang Angin · Kuasa Wanita",
+      "p1": "'Belayar Menentang Angin' bukan sekadar semangat jenama kami, tetapi penghormatan kepada setiap wanita moden. Dalam ribut kehidupan, kami percaya setiap wanita mempunyai keberanian untuk menunggang ombak.",
+      "p2": "LOVEYOUNG komited menjadi sokongan kukuh untuk perjalanan pertumbuhan wanita. Sama ada anda elit kerjaya, ibu suri rumah, atau usahawan, kami berharap dapat mengisi semula tenaga anda dengan produk penyubur terbaik, membantu anda bergerak ke hadapan dengan anggun walaupun dalam kesukaran.",
+      "stat1": "Pelanggan Setia",
+      "stat2": "Tahun Perjalanan Jenama",
+      "stat3": "Bahan Semula Jadi"
+    },
+    "milestonesSection": {
+      "title": "Perjalanan Jenama & Pelan Masa Depan",
+      "subtitle": "Dari penubuhan hingga melesat, kisah kami baru bermula",
+      "futurePlan": "Pelan Masa Depan",
+      "inProgress": "Sedang Berlangsung"
+    },
+    "milestones": {
+      "2020": "Jenama ditubuhkan di Kuala Lumpur, fokus pada sarang burung rebus segar premium",
+      "2022": "Menubuhkan pangkalan rumah burung walit sendiri di Malaysia, mencapai kawalan bahan mentah sendiri",
+      "2024": "Naik taraf barisan produk inovatif, melancarkan siri rasa baru, diterima baik oleh pasaran",
+      "2025": "Jenama secara rasmi dinamakan semula kepada LOVEYOUNG, membuka era jenama baru",
+      "2026": "Melancarkan program 'Belayar Menentang Angin', memperkenalkan sistem rakan kongsi RWA",
+      "2027": "Merancang untuk memasuki pasaran Singapura dan Hong Kong, menubuhkan rangkaian pengedaran serantau",
+      "2028": "Sasaran melancarkan probiotik, kolagen dan kategori baru lain, melengkapkan ekosistem kesihatan",
+      "2030": "Visi menjadi jenama penyubur kesihatan wanita terkemuka Asia Tenggara"
+    },
+    "partnerStories": {
+      "title": "Kisah Rakan Kongsi",
+      "p1": "Setiap rakan kongsi LOVEYOUNG mempunyai kisah menakjubkan mereka sendiri. Mereka datang dari latar belakang berbeza — ada yang ibu suri rumah, ada yang profesional pejabat, ada yang usahawan berpengalaman. Tetapi mereka semua mempunyai satu persamaan: mereka memilih LOVEYOUNG, mereka memilih untuk belayar menentang angin.",
+      "p2": "Kami sedang menyediakan ruangan blog kisah rakan kongsi, di mana kami akan berkongsi perjalanan keusahawanan wanita cantik ini, pandangan pertumbuhan, dan pengalaman kejayaan. Nantikan!",
+      "becomePartner": "Jadi Rakan Kongsi",
+      "learnMore": "Ketahui Lebih",
+      "alt1": "Kisah Rakan Kongsi - Lisa",
+      "alt2": "Kisah Rakan Kongsi - Sarah",
+      "alt3": "Kisah Rakan Kongsi - Emma"
+    },
+    "futureVision": {
+      "title": "Visi Masa Depan",
+      "p1": "Matlamat LOVEYOUNG bukan sahaja menjadi jenama penyubur kesihatan wanita terkemuka Asia Tenggara, tetapi juga membina ekosistem kesihatan wanita yang lengkap.",
+      "p2": "Dari sarang burung dan pundi ikan hingga probiotik dan kolagen, kami akan terus memperkayakan barisan produk untuk memenuhi keperluan kesihatan wanita secara menyeluruh. Melalui program rakan kongsi RWA, kami membantu lebih ramai wanita mencapai kekayaan dan kesihatan.",
+      "goal1": "2027: Memasuki pasaran Singapura & Hong Kong",
+      "goal2": "2028: Melancarkan kategori kesihatan baru",
+      "goal3": "2030: Menjadi jenama terkemuka serantau"
+    },
+    "communityWellness": {
+      "title": "Acara Komuniti · Kehidupan Sihat",
+      "subtitle": "LOVEYOUNG bukan sekadar jenama, tetapi komuniti yang memperkasakan pertumbuhan wanita",
+      "impact": {
+        "title": "Impak Komuniti",
+        "description": "Memperkasakan wanita Malaysia, mencipta impak sosial positif melalui Akademi LOVEYOUNG dan aktiviti amal."
+      },
+      "wellnessLife": {
+        "title": "Gaya Hidup Kesejahteraan",
+        "description": "Dari meditasi hingga yoga, dari tempat kerja hingga kehidupan sosial, LOVEYOUNG menemani wanita moden dalam setiap senario kehidupan."
+      },
+      "brandEvents": {
+        "title": "Pengalaman Acara Jenama",
+        "description": "Dari penerimaan hingga lawatan, dari pertukaran hingga pesta, mencipta pengalaman perjalanan asal yang unik untuk rakan kongsi."
+      }
+    },
+    "cta": {
+      "title": "Mulakan Perjalanan Kesejahteraan Elegan Anda",
+      "description": "Setiap produk LOVEYOUNG adalah komitmen kami kepada kualiti, kegigihan kami pada kesihatan, usaha kami untuk kecantikan.",
+      "viewProducts": "Layari Produk",
+      "whatsapp": "Pertanyaan WhatsApp"
+    }
   },
   "landing": {
     "heroTagline": "Against The Wind",
@@ -452,6 +788,7 @@
     "heroDescSub": "Ini bukan sekadar pembalikan jenama, tetapi kebangkitan jiwa setiap wanita.",
     "heroOrderBtn": "Mulakan Perjalanan Anda",
     "heroPartnerBtn": "Sertai Program Kami",
+    "whatsappMessage": "Hai, saya berminat dengan produk Sarang Burung dan Pundi Ikan LOVEYOUNG. Saya ingin mengetahui lebih lanjut.",
     "brandTitle": "Asal Usul Jenama:",
     "brandTitleSub": "Keberanian untuk Berbalik",
     "brandQuote": "Jika anda tidak mengambil serius diri sendiri, dunia juga tidak akan.",
@@ -490,5 +827,115 @@
     "ctaDesc": "Setiap rebusan segar adalah komitmen berharga kepada diri anda.",
     "ctaOrderBtn": "Pertanyaan WhatsApp",
     "ctaShopBtn": "Lawati Kedai Meta"
+  },
+  "productsPage": {
+    "whatsappMessage": "Helo, saya ingin memesan produk LOVEYOUNG.",
+    "orderMessage": "Helo, saya ingin memesan {productName}.",
+    "hero": {
+      "title": "Pilihan Premium · Penyuburan Berkualiti",
+      "description": "Setiap produk mencerminkan usaha gigih kami terhadap kualiti. Dari sarang burung walit emas Indonesia hingga pundi ikan laut dalam, kami hanya memilih bahan terbaik untuk membawa anda penyuburan paling tulen.",
+      "shopNow": "Beli Sekarang",
+      "whatsappConsult": "Pertanyaan WhatsApp"
+    },
+    "categories": {
+      "all": "Semua Produk",
+      "birdNest": "Siri Sarang Burung",
+      "fishMaw": "Siri Pundi Ikan",
+      "giftBox": "Set Hadiah"
+    },
+    "badges": {
+      "hot": "Panas",
+      "new": "Baru",
+      "save": "Jimat"
+    },
+    "units": {
+      "box": "kotak",
+      "set": "set"
+    },
+    "items": {
+      "bnClassic": {
+        "name": "Sarang Burung Original Klasik",
+        "subtitle": "Kotak Hadiah 6 Balang",
+        "feature1": "Burung Walit Emas Indonesia",
+        "feature2": "Tanpa Gula Tambahan",
+        "feature3": "Sedia Dimakan"
+      },
+      "bnPremium": {
+        "name": "Sarang Imperial Gula Batu",
+        "subtitle": "Edisi Premium 6 Balang",
+        "feature1": "Sarang Premium",
+        "feature2": "Rebusan Gula Batu Perlahan",
+        "feature3": "Tekstur Kaya & Pekat"
+      },
+      "fmCollagen": {
+        "name": "Rebusan Kolagen Pundi Ikan",
+        "subtitle": "Pek 6 Balang",
+        "feature1": "Pundi Ikan Laut Dalam",
+        "feature2": "Kaya Kolagen",
+        "feature3": "Kecantikan & Penyuburan"
+      },
+      "fmMilk": {
+        "name": "Rebusan Susu Pundi Ikan",
+        "subtitle": "Pek 6 Balang",
+        "feature1": "Susu New Zealand",
+        "feature2": "Kaya & Berkrim",
+        "feature3": "Nutrisi Tambahan"
+      },
+      "giftLuxury": {
+        "name": "Kotak Mewah Belayar Menentang Angin",
+        "subtitle": "Kombo Sarang Burung + Pundi Ikan",
+        "feature1": "3 Balang Sarang Premium",
+        "feature2": "3 Balang Pundi Ikan Premium",
+        "feature3": "Pembungkusan Hadiah Mewah"
+      },
+      "giftWellness": {
+        "name": "Kotak Hadiah Premium Kesejahteraan",
+        "subtitle": "Sampler Siri Penuh",
+        "feature1": "4 Perisa, 1 Balang Setiap",
+        "feature2": "Beg Hadiah Elegan",
+        "feature3": "Sempurna untuk Hadiah"
+      }
+    },
+    "benefits": {
+      "natural": {
+        "title": "100% Semula Jadi",
+        "description": "Bahan premium, tanpa bahan tambahan"
+      },
+      "quality": {
+        "title": "Kualiti Terjamin",
+        "description": "Setiap kelompok lulus pemeriksaan kualiti"
+      },
+      "coldChain": {
+        "title": "Penghantaran Rantai Sejuk",
+        "description": "Rantai sejuk penuh, segar ke pintu anda"
+      },
+      "packaging": {
+        "title": "Pembungkusan Elegan",
+        "description": "Sempurna untuk hadiah atau kegunaan sendiri"
+      }
+    },
+    "quality": {
+      "title": "Ketertelusuran Asal · Kerajinan",
+      "description": "Sarang burung kami datang dari rumah burung walit terbaik Indonesia, setiap sarang dipilih dengan teliti. Pundi ikan diperoleh dari ikan liar laut dalam, kaya dengan kolagen semula jadi.",
+      "imageAlt": "Jaminan Kualiti",
+      "traceability": {
+        "title": "Ketertelusuran Bahan",
+        "description": "Setiap kelompok boleh dijejaki ke asal, memastikan sumber yang selamat dan boleh dipercayai"
+      },
+      "craftsmanship": {
+        "title": "Kerajinan Tradisional",
+        "description": "Teknik rebusan perlahan tradisional mengekalkan kandungan nutrisi lengkap"
+      },
+      "inspection": {
+        "title": "Kawalan Kualiti Ketat",
+        "description": "Setiap kelompok lulus ujian mikrob, logam berat dan pelbagai ujian"
+      }
+    },
+    "cta": {
+      "title": "Mulakan Perjalanan Penyuburan Anda",
+      "description": "Sama ada untuk kesejahteraan peribadi atau menghadiahkan orang tersayang, LOVEYOUNG adalah pilihan elegan anda.",
+      "goToShop": "Pergi ke Kedai",
+      "consultWellness": "Rujuk Penasihat Kesejahteraan"
+    }
   }
 }
