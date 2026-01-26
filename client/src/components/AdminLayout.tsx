@@ -1,11 +1,13 @@
 import { Link, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useTranslation } from "@/lib/i18n";
 import {
   Home,
   LayoutDashboard,
@@ -39,32 +41,35 @@ interface UserStateResponse {
   partner: Partner | null;
 }
 
-const coreItems = [
-  { path: "/admin", label: "控制台", icon: LayoutDashboard },
-  { path: "/admin/partners", label: "经营人管理", icon: Users },
-  { path: "/admin/orders", label: "订单管理", icon: ShoppingCart },
-  { path: "/admin/products", label: "产品管理", icon: Package },
-  { path: "/admin/members", label: "会员管理", icon: Users },
-  { path: "/admin/bonus-pool", label: "奖金池管理", icon: PiggyBank },
+const getCoreItems = (t: (key: string) => string) => [
+  { path: "/admin", label: t("admin.menu.dashboard"), icon: LayoutDashboard },
+  { path: "/admin/partners", label: t("admin.menu.partners"), icon: Users },
+  { path: "/admin/orders", label: t("admin.menu.orders"), icon: ShoppingCart },
+  { path: "/admin/products", label: t("admin.menu.products"), icon: Package },
+  { path: "/admin/members", label: t("admin.menu.members"), icon: Users },
+  { path: "/admin/bonus-pool", label: t("admin.menu.bonusPool"), icon: PiggyBank },
 ];
 
-const erpItems = [
-  { path: "/admin/inventory", label: "库存管理", icon: Boxes },
-  { path: "/admin/purchase", label: "采购管理", icon: ClipboardCheck },
-  { path: "/admin/logistics", label: "物流追踪", icon: Thermometer },
-  { path: "/admin/bills", label: "账单管理", icon: FileText },
-  { path: "/admin/finance", label: "财务报表", icon: DollarSign },
+const getErpItems = (t: (key: string) => string) => [
+  { path: "/admin/inventory", label: t("admin.menu.inventory"), icon: Boxes },
+  { path: "/admin/purchase", label: t("admin.menu.purchase"), icon: ClipboardCheck },
+  { path: "/admin/logistics", label: t("admin.menu.logistics"), icon: Thermometer },
+  { path: "/admin/bills", label: t("admin.menu.bills"), icon: FileText },
+  { path: "/admin/finance", label: t("admin.menu.finance"), icon: DollarSign },
 ];
-
-const allItems = [...coreItems, ...erpItems];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
 
   const { data: userState, isLoading } = useQuery<UserStateResponse>({
     queryKey: ["/api/auth/state"],
   });
+
+  const coreItems = useMemo(() => getCoreItems(t), [t]);
+  const erpItems = useMemo(() => getErpItems(t), [t]);
+  const allItems = useMemo(() => [...coreItems, ...erpItems], [coreItems, erpItems]);
 
   const isActive = (path: string) => location === path;
 
@@ -88,10 +93,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="p-8 max-w-md text-center">
           <Shield className="w-12 h-12 mx-auto text-primary mb-4" />
-          <h1 className="text-2xl font-bold mb-4">请先登录</h1>
-          <p className="text-muted-foreground mb-6">您需要管理员权限才能访问此页面</p>
+          <h1 className="text-2xl font-bold mb-4">{t("admin.pleaseLogin")}</h1>
+          <p className="text-muted-foreground mb-6">{t("admin.adminRequired")}</p>
           <Button onClick={() => window.location.href = "/api/login"} data-testid="button-login">
-            登录
+            {t("admin.login")}
           </Button>
         </Card>
       </div>
@@ -122,10 +127,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <Shield className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
-            <p className="font-medium">{user?.firstName || "管理员"}</p>
+            <p className="font-medium">{user?.firstName || t("admin.adminRole")}</p>
             <Badge className="bg-primary text-primary-foreground gap-1 text-xs">
               <Shield className="w-3 h-3" />
-              管理员
+              {t("admin.adminRole")}
             </Badge>
           </div>
         </div>
@@ -133,7 +138,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       
       <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
         <div>
-          <p className="text-xs text-muted-foreground mb-2 px-2">管理后台</p>
+          <p className="text-xs text-muted-foreground mb-2 px-2">{t("admin.adminPanel")}</p>
           <div className="space-y-1">
             {coreItems.map((item) => {
               const Icon = item.icon;
@@ -157,7 +162,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </div>
 
         <div>
-          <p className="text-xs text-muted-foreground mb-2 px-2">ERP系统</p>
+          <p className="text-xs text-muted-foreground mb-2 px-2">{t("admin.erpSystem")}</p>
           <div className="space-y-1">
             {erpItems.map((item) => {
               const Icon = item.icon;
@@ -182,16 +187,19 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       </nav>
 
       <div className="p-4 border-t space-y-2">
+        <div className="mb-3">
+          <LanguageSwitcher />
+        </div>
         <Link href="/member">
           <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-back-member">
             <ArrowLeft className="w-4 h-4" />
-            返回会员中心
+            {t("admin.backToMember")}
           </Button>
         </Link>
         <Link href="/">
           <Button variant="ghost" className="w-full justify-start gap-2" data-testid="button-back-home">
             <Home className="w-4 h-4" />
-            返回首页
+            {t("admin.backToHome")}
           </Button>
         </Link>
       </div>
@@ -220,7 +228,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
             <div className="hidden lg:flex items-center gap-2 ml-4">
               <Shield className="w-5 h-5 text-secondary" />
-              <span className="text-sm font-medium">管理后台</span>
+              <span className="text-sm font-medium">{t("admin.adminPanel")}</span>
               {currentPage && (
                 <>
                   <ChevronRight className="w-4 h-4 text-primary-foreground/60" />
@@ -231,10 +239,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </div>
 
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <Link href="/member" className="hidden sm:block">
               <Button variant="ghost" size="sm" className="text-primary-foreground gap-2" data-testid="button-header-member">
                 <ArrowLeft className="w-4 h-4" />
-                会员中心
+                {t("admin.memberCenter")}
               </Button>
             </Link>
 
@@ -246,7 +255,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 </AvatarFallback>
               </Avatar>
               <span className="hidden md:block text-sm font-medium" data-testid="text-admin-name">
-                {user?.firstName || "管理员"}
+                {user?.firstName || t("admin.adminRole")}
               </span>
             </div>
 
