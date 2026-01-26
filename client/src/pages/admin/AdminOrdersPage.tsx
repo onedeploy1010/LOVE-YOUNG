@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,20 +19,21 @@ const mockOrders = [
   { id: "LY20260121005", customer: "钱七", total: 452, status: "cancelled", items: 2, date: "2026-01-21" },
 ];
 
-const getStatusConfig = (status: string) => {
-  switch (status) {
-    case "pending": return { label: "待付款", icon: Clock, color: "text-yellow-500", bg: "bg-yellow-500/10" };
-    case "processing": return { label: "备货中", icon: Package, color: "text-blue-500", bg: "bg-blue-500/10" };
-    case "shipped": return { label: "配送中", icon: Truck, color: "text-primary", bg: "bg-primary/10" };
-    case "delivered": return { label: "已完成", icon: CheckCircle, color: "text-green-500", bg: "bg-green-500/10" };
-    case "cancelled": return { label: "已取消", icon: XCircle, color: "text-muted-foreground", bg: "bg-muted" };
-    default: return { label: "未知", icon: Clock, color: "text-muted-foreground", bg: "bg-muted" };
-  }
-};
-
 export default function AdminOrdersPage() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case "pending": return { label: t("admin.ordersPage.pendingPayment"), icon: Clock, color: "text-yellow-500", bg: "bg-yellow-500/10" };
+      case "processing": return { label: t("admin.ordersPage.preparing"), icon: Package, color: "text-blue-500", bg: "bg-blue-500/10" };
+      case "shipped": return { label: t("admin.ordersPage.shipping"), icon: Truck, color: "text-primary", bg: "bg-primary/10" };
+      case "delivered": return { label: t("admin.ordersPage.completed"), icon: CheckCircle, color: "text-green-500", bg: "bg-green-500/10" };
+      case "cancelled": return { label: t("admin.ordersPage.cancelled"), icon: XCircle, color: "text-muted-foreground", bg: "bg-muted" };
+      default: return { label: t("admin.ordersPage.unknown"), icon: Clock, color: "text-muted-foreground", bg: "bg-muted" };
+    }
+  };
 
   const filteredOrders = mockOrders.filter(order => {
     const matchesSearch = searchQuery === "" || 
@@ -52,33 +54,33 @@ export default function AdminOrdersPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-orders-title">订单管理</h1>
-          <p className="text-muted-foreground">处理与跟踪客户订单</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-orders-title">{t("admin.ordersPage.title")}</h1>
+          <p className="text-muted-foreground">{t("admin.ordersPage.subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold">{stats.total}</p>
-              <p className="text-sm text-muted-foreground">总订单</p>
+              <p className="text-sm text-muted-foreground">{t("admin.ordersPage.totalOrders")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-yellow-500">{stats.pending}</p>
-              <p className="text-sm text-muted-foreground">待付款</p>
+              <p className="text-sm text-muted-foreground">{t("admin.ordersPage.pendingPayment")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-blue-500">{stats.processing}</p>
-              <p className="text-sm text-muted-foreground">备货中</p>
+              <p className="text-sm text-muted-foreground">{t("admin.ordersPage.preparing")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-primary">{stats.shipped}</p>
-              <p className="text-sm text-muted-foreground">配送中</p>
+              <p className="text-sm text-muted-foreground">{t("admin.ordersPage.shipping")}</p>
             </CardContent>
           </Card>
         </div>
@@ -88,12 +90,12 @@ export default function AdminOrdersPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <CardTitle className="flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5 text-primary" />
-                订单列表
+                {t("admin.ordersPage.orderList")}
               </CardTitle>
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="搜索订单号或客户..."
+                  placeholder={t("admin.ordersPage.searchPlaceholder")}
                   className="pl-9"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -105,18 +107,18 @@ export default function AdminOrdersPage() {
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="all" data-testid="tab-all">全部</TabsTrigger>
-                <TabsTrigger value="pending" data-testid="tab-pending">待付款</TabsTrigger>
-                <TabsTrigger value="processing" data-testid="tab-processing">备货中</TabsTrigger>
-                <TabsTrigger value="shipped" data-testid="tab-shipped">配送中</TabsTrigger>
-                <TabsTrigger value="delivered" data-testid="tab-delivered">已完成</TabsTrigger>
+                <TabsTrigger value="all" data-testid="tab-all">{t("admin.ordersPage.tabAll")}</TabsTrigger>
+                <TabsTrigger value="pending" data-testid="tab-pending">{t("admin.ordersPage.pendingPayment")}</TabsTrigger>
+                <TabsTrigger value="processing" data-testid="tab-processing">{t("admin.ordersPage.preparing")}</TabsTrigger>
+                <TabsTrigger value="shipped" data-testid="tab-shipped">{t("admin.ordersPage.shipping")}</TabsTrigger>
+                <TabsTrigger value="delivered" data-testid="tab-delivered">{t("admin.ordersPage.completed")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value={activeTab} className="mt-4">
                 {filteredOrders.length === 0 ? (
                   <div className="text-center py-12">
                     <ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <p className="text-muted-foreground">暂无订单</p>
+                    <p className="text-muted-foreground">{t("admin.ordersPage.noOrders")}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -140,7 +142,7 @@ export default function AdminOrdersPage() {
                               </div>
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                 <span>{order.customer}</span>
-                                <span>{order.items} 件商品</span>
+                                <span>{order.items} {t("admin.ordersPage.items")}</span>
                                 <span>{order.date}</span>
                               </div>
                             </div>
@@ -149,7 +151,7 @@ export default function AdminOrdersPage() {
                             <span className="font-bold text-primary">RM {order.total}</span>
                             <Button variant="outline" size="sm" className="gap-1" data-testid={`button-view-${order.id}`}>
                               <Eye className="w-4 h-4" />
-                              详情
+                              {t("admin.ordersPage.viewDetails")}
                             </Button>
                           </div>
                         </div>

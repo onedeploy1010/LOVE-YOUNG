@@ -14,7 +14,11 @@ const languages: { value: Language; label: string; flag: string }[] = [
   { value: "ms", label: "Bahasa Melayu", flag: "MY" },
 ];
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  testId?: string;
+}
+
+export function LanguageSwitcher({ testId = "button-language-switcher" }: LanguageSwitcherProps) {
   const { language, setLanguage } = useLanguage();
 
   return (
@@ -24,7 +28,7 @@ export function LanguageSwitcher() {
           variant="ghost"
           size="sm"
           className="gap-1.5 px-2"
-          data-testid="button-language-switcher"
+          data-testid={testId}
         >
           <Globe className="w-4 h-4" />
           <span className="text-xs font-medium">{languageLabels[language]}</span>

@@ -188,7 +188,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
       <div className="p-4 border-t space-y-2">
         <div className="mb-3">
-          <LanguageSwitcher />
+          <LanguageSwitcher testId="button-language-switcher-sidebar" />
         </div>
         <Link href="/member">
           <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-back-member">
@@ -239,7 +239,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            <LanguageSwitcher />
+            <LanguageSwitcher testId="button-language-switcher-header" />
             <Link href="/member" className="hidden sm:block">
               <Button variant="ghost" size="sm" className="text-primary-foreground gap-2" data-testid="button-header-member">
                 <ArrowLeft className="w-4 h-4" />

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useTranslation } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ import {
 import type { Partner } from "@shared/schema";
 
 export default function AdminPartnersPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -29,10 +31,10 @@ export default function AdminPartnersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/partners"] });
-      toast({ title: "激活成功", description: "经营人账户已激活" });
+      toast({ title: t("admin.partnersPage.activateSuccess"), description: t("admin.partnersPage.activateSuccessDesc") });
     },
     onError: (error: Error) => {
-      toast({ title: "激活失败", description: error.message, variant: "destructive" });
+      toast({ title: t("admin.partnersPage.activateFailed"), description: error.message, variant: "destructive" });
     }
   });
 
@@ -54,8 +56,8 @@ export default function AdminPartnersPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-partners-title">经营人管理</h1>
-          <p className="text-muted-foreground">审核和管理联合经营人</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-partners-title">{t("admin.partnersPage.title")}</h1>
+          <p className="text-muted-foreground">{t("admin.partnersPage.subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -66,7 +68,7 @@ export default function AdminPartnersPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.total}</p>
-                <p className="text-sm text-muted-foreground">总经营人</p>
+                <p className="text-sm text-muted-foreground">{t("admin.partnersPage.totalPartners")}</p>
               </div>
             </CardContent>
           </Card>
@@ -77,7 +79,7 @@ export default function AdminPartnersPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-green-500">{stats.active}</p>
-                <p className="text-sm text-muted-foreground">已激活</p>
+                <p className="text-sm text-muted-foreground">{t("admin.partnersPage.activated")}</p>
               </div>
             </CardContent>
           </Card>
@@ -88,7 +90,7 @@ export default function AdminPartnersPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-yellow-500">{stats.pending}</p>
-                <p className="text-sm text-muted-foreground">待审核</p>
+                <p className="text-sm text-muted-foreground">{t("admin.partnersPage.pendingReview")}</p>
               </div>
             </CardContent>
           </Card>
@@ -99,12 +101,12 @@ export default function AdminPartnersPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <CardTitle className="flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-primary" />
-                经营人列表
+                {t("admin.partnersPage.partnerList")}
               </CardTitle>
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="搜索ID或推荐码..."
+                  placeholder={t("admin.partnersPage.searchPlaceholder")}
                   className="pl-9"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -116,9 +118,9 @@ export default function AdminPartnersPage() {
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="all" data-testid="tab-all">全部 ({stats.total})</TabsTrigger>
-                <TabsTrigger value="pending" data-testid="tab-pending">待审核 ({stats.pending})</TabsTrigger>
-                <TabsTrigger value="active" data-testid="tab-active">已激活 ({stats.active})</TabsTrigger>
+                <TabsTrigger value="all" data-testid="tab-all">{t("admin.partnersPage.tabAll")} ({stats.total})</TabsTrigger>
+                <TabsTrigger value="pending" data-testid="tab-pending">{t("admin.partnersPage.tabPending")} ({stats.pending})</TabsTrigger>
+                <TabsTrigger value="active" data-testid="tab-active">{t("admin.partnersPage.tabActive")} ({stats.active})</TabsTrigger>
               </TabsList>
 
               <TabsContent value={activeTab} className="mt-4">
@@ -129,7 +131,7 @@ export default function AdminPartnersPage() {
                 ) : filteredPartners.length === 0 ? (
                   <div className="text-center py-12">
                     <Users className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <p className="text-muted-foreground">暂无经营人</p>
+                    <p className="text-muted-foreground">{t("admin.partnersPage.noPartners")}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -147,13 +149,13 @@ export default function AdminPartnersPage() {
                             <div className="flex items-center gap-2">
                               <span className="font-mono text-sm">{partner.referralCode}</span>
                               <Badge variant={partner.status === "active" ? "default" : "outline"}>
-                                {partner.status === "active" ? "已激活" : "待审核"}
+                                {partner.status === "active" ? t("admin.partnersPage.activated") : t("admin.partnersPage.pendingReview")}
                               </Badge>
                             </div>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <span>LY: {partner.lyBalance}</span>
                               <span>RWA: {partner.rwaTokens}</span>
-                              <span>套餐: Phase {partner.tier === "phase1" ? 1 : partner.tier === "phase2" ? 2 : 3}</span>
+                              <span>{t("admin.partnersPage.package")}: Phase {partner.tier === "phase1" ? 1 : partner.tier === "phase2" ? 2 : 3}</span>
                             </div>
                           </div>
                         </div>
@@ -171,12 +173,12 @@ export default function AdminPartnersPage() {
                               ) : (
                                 <CheckCircle className="w-4 h-4" />
                               )}
-                              激活
+                              {t("admin.partnersPage.activate")}
                             </Button>
                           )}
                           <Button variant="outline" size="sm" className="gap-1" data-testid={`button-view-${partner.id}`}>
                             <Eye className="w-4 h-4" />
-                            详情
+                            {t("admin.partnersPage.viewDetails")}
                           </Button>
                         </div>
                       </div>

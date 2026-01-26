@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,18 +17,19 @@ const mockMembers = [
   { id: "4", name: "赵六", email: "zhaoliu@example.com", phone: "+60 12-345 6792", role: "admin", points: 0, orders: 0 },
 ];
 
-const getRoleBadge = (role: string) => {
-  switch (role) {
-    case "member": return { label: "会员", icon: Star, variant: "secondary" as const };
-    case "partner": return { label: "经营人", icon: Crown, variant: "default" as const };
-    case "admin": return { label: "管理员", icon: Shield, variant: "destructive" as const };
-    default: return { label: "用户", icon: Users, variant: "outline" as const };
-  }
-};
-
 export default function AdminMembersPage() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+
+  const getRoleBadge = (role: string) => {
+    switch (role) {
+      case "member": return { label: t("admin.membersPage.roleMember"), icon: Star, variant: "secondary" as const };
+      case "partner": return { label: t("admin.membersPage.rolePartner"), icon: Crown, variant: "default" as const };
+      case "admin": return { label: t("admin.membersPage.roleAdmin"), icon: Shield, variant: "destructive" as const };
+      default: return { label: t("admin.membersPage.roleUser"), icon: Users, variant: "outline" as const };
+    }
+  };
 
   const filteredMembers = mockMembers.filter(member => {
     const matchesSearch = searchQuery === "" || 
@@ -47,8 +49,8 @@ export default function AdminMembersPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-members-title">会员管理</h1>
-          <p className="text-muted-foreground">查看与管理所有会员</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-members-title">{t("admin.membersPage.title")}</h1>
+          <p className="text-muted-foreground">{t("admin.membersPage.subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -59,7 +61,7 @@ export default function AdminMembersPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.total}</p>
-                <p className="text-sm text-muted-foreground">总用户</p>
+                <p className="text-sm text-muted-foreground">{t("admin.membersPage.totalUsers")}</p>
               </div>
             </CardContent>
           </Card>
@@ -70,7 +72,7 @@ export default function AdminMembersPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-secondary">{stats.members}</p>
-                <p className="text-sm text-muted-foreground">普通会员</p>
+                <p className="text-sm text-muted-foreground">{t("admin.membersPage.regularMembers")}</p>
               </div>
             </CardContent>
           </Card>
@@ -81,7 +83,7 @@ export default function AdminMembersPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-primary">{stats.partners}</p>
-                <p className="text-sm text-muted-foreground">经营人</p>
+                <p className="text-sm text-muted-foreground">{t("admin.membersPage.partners")}</p>
               </div>
             </CardContent>
           </Card>
@@ -92,12 +94,12 @@ export default function AdminMembersPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-primary" />
-                会员列表
+                {t("admin.membersPage.memberList")}
               </CardTitle>
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="搜索姓名或邮箱..."
+                  placeholder={t("admin.membersPage.searchPlaceholder")}
                   className="pl-9"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -109,17 +111,17 @@ export default function AdminMembersPage() {
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="all" data-testid="tab-all">全部</TabsTrigger>
-                <TabsTrigger value="member" data-testid="tab-member">会员</TabsTrigger>
-                <TabsTrigger value="partner" data-testid="tab-partner">经营人</TabsTrigger>
-                <TabsTrigger value="admin" data-testid="tab-admin">管理员</TabsTrigger>
+                <TabsTrigger value="all" data-testid="tab-all">{t("admin.membersPage.tabAll")}</TabsTrigger>
+                <TabsTrigger value="member" data-testid="tab-member">{t("admin.membersPage.tabMember")}</TabsTrigger>
+                <TabsTrigger value="partner" data-testid="tab-partner">{t("admin.membersPage.tabPartner")}</TabsTrigger>
+                <TabsTrigger value="admin" data-testid="tab-admin">{t("admin.membersPage.tabAdmin")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value={activeTab} className="mt-4">
                 {filteredMembers.length === 0 ? (
                   <div className="text-center py-12">
                     <Users className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <p className="text-muted-foreground">暂无会员</p>
+                    <p className="text-muted-foreground">{t("admin.membersPage.noMembers")}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -155,12 +157,12 @@ export default function AdminMembersPage() {
                           </div>
                           <div className="flex items-center gap-4">
                             <div className="text-right hidden md:block">
-                              <p className="text-sm">{member.points} 积分</p>
-                              <p className="text-xs text-muted-foreground">{member.orders} 订单</p>
+                              <p className="text-sm">{member.points} {t("admin.membersPage.points")}</p>
+                              <p className="text-xs text-muted-foreground">{member.orders} {t("admin.membersPage.orders")}</p>
                             </div>
                             <Button variant="outline" size="sm" className="gap-1" data-testid={`button-view-${member.id}`}>
                               <Eye className="w-4 h-4" />
-                              详情
+                              {t("admin.membersPage.viewDetails")}
                             </Button>
                           </div>
                         </div>
