@@ -177,7 +177,10 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className={isScrolled ? "" : "text-white bg-white/20 hover:bg-white/30"}
+                className={isScrolled 
+                  ? "text-foreground" 
+                  : "text-primary bg-white/90 shadow-md hover:bg-white border border-primary/20"
+                }
                 data-testid="button-mobile-menu"
               >
                 <Menu className="w-5 h-5" />
