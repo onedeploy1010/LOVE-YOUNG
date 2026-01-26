@@ -126,16 +126,16 @@ const CORE_CONCEPTS = [
 ];
 
 const LY_NETWORK_LEVELS = [
-  { level: 1, percentage: 8, description: "直推" },
-  { level: 2, percentage: 5, description: "二级" },
-  { level: 3, percentage: 3, description: "三级" },
-  { level: 4, percentage: 2, description: "四级" },
-  { level: 5, percentage: 2, description: "五级" },
-  { level: 6, percentage: 1, description: "六级" },
-  { level: 7, percentage: 1, description: "七级" },
-  { level: 8, percentage: 1, description: "八级" },
-  { level: 9, percentage: 1, description: "九级" },
-  { level: 10, percentage: 1, description: "十级" }
+  { level: 1, percentage: 20, description: "直推" },
+  { level: 2, percentage: 15, description: "二级" },
+  { level: 3, percentage: 10, description: "三级" },
+  { level: 4, percentage: 10, description: "四级" },
+  { level: 5, percentage: 10, description: "五级" },
+  { level: 6, percentage: 5, description: "六级" },
+  { level: 7, percentage: 5, description: "七级" },
+  { level: 8, percentage: 5, description: "八级" },
+  { level: 9, percentage: 5, description: "九级" },
+  { level: 10, percentage: 5, description: "十级" }
 ];
 
 const FAQ_ITEMS = [
@@ -306,7 +306,9 @@ export default function PartnerPage() {
         t("partner.tierFeatures.photoShoot"),
         t("partner.tierFeatures.tenLevelBonus")
       ],
-      highlight: false
+      highlight: true,
+      disabled: false,
+      badge: t("landing.hotSelling") + " · " + t("landing.only50Slots")
     },
     {
       id: "phase2",
@@ -324,7 +326,9 @@ export default function PartnerPage() {
         t("partner.tierFeatures.microFilm"),
         t("partner.tierFeatures.tenLevelBonus")
       ],
-      highlight: true
+      highlight: false,
+      disabled: true,
+      badge: t("landing.comingSoon")
     },
     {
       id: "phase3",
@@ -342,7 +346,9 @@ export default function PartnerPage() {
         t("partner.tierFeatures.exclusiveBiz"),
         t("partner.tierFeatures.tenLevelBonus")
       ],
-      highlight: false
+      highlight: false,
+      disabled: true,
+      badge: t("landing.comingSoon")
     }
   ], [t]);
 
@@ -365,16 +371,16 @@ export default function PartnerPage() {
   ], [t]);
 
   const LY_NETWORK_LEVELS_TRANSLATED = useMemo(() => [
-    { level: 1, percentage: 8, description: t("partner.ly.level1") },
-    { level: 2, percentage: 5, description: t("partner.ly.level2") },
-    { level: 3, percentage: 3, description: t("partner.ly.level3") },
-    { level: 4, percentage: 2, description: t("partner.ly.level4") },
-    { level: 5, percentage: 2, description: t("partner.ly.level5") },
-    { level: 6, percentage: 1, description: t("partner.ly.level6") },
-    { level: 7, percentage: 1, description: t("partner.ly.level7") },
-    { level: 8, percentage: 1, description: t("partner.ly.level8") },
-    { level: 9, percentage: 1, description: t("partner.ly.level9") },
-    { level: 10, percentage: 1, description: t("partner.ly.level10") }
+    { level: 1, percentage: 20, description: t("partner.ly.level1") },
+    { level: 2, percentage: 15, description: t("partner.ly.level2") },
+    { level: 3, percentage: 10, description: t("partner.ly.level3") },
+    { level: 4, percentage: 10, description: t("partner.ly.level4") },
+    { level: 5, percentage: 10, description: t("partner.ly.level5") },
+    { level: 6, percentage: 5, description: t("partner.ly.level6") },
+    { level: 7, percentage: 5, description: t("partner.ly.level7") },
+    { level: 8, percentage: 5, description: t("partner.ly.level8") },
+    { level: 9, percentage: 5, description: t("partner.ly.level9") },
+    { level: 10, percentage: 5, description: t("partner.ly.level10") }
   ], [t]);
 
   const FAQ_ITEMS_TRANSLATED = useMemo(() => [
@@ -776,7 +782,7 @@ export default function PartnerPage() {
                           <motion.div 
                             className="h-full bg-secondary rounded-full flex items-center justify-end pr-2"
                             initial={{ width: 0 }}
-                            whileInView={{ width: `${level.percentage * 10}%` }}
+                            whileInView={{ width: `${level.percentage * 5}%` }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8, delay: level.level * 0.05 }}
                           >
@@ -791,7 +797,7 @@ export default function PartnerPage() {
 
                 <div className="mt-6 p-4 bg-secondary/20 rounded-xl">
                   <p className="text-sm">
-                    {t("partner.ly.totalReplenish")} <span className="text-secondary font-bold">25%</span> {t("partner.ly.ofSales")}
+                    {t("partner.ly.totalReplenish")} <span className="text-secondary font-bold">100%</span> {t("partner.ly.ofSales")}
                   </p>
                 </div>
               </Card>
@@ -881,47 +887,73 @@ export default function PartnerPage() {
                   className={`h-full flex flex-col relative overflow-hidden ${
                     tier.highlight 
                       ? "border-2 border-secondary shadow-lg" 
-                      : "border"
+                      : tier.disabled
+                        ? "border border-muted-foreground/20 opacity-60"
+                        : "border"
                   }`}
                   data-testid={`card-tier-${tier.id}`}
                 >
-                  {tier.highlight && (
+                  {tier.badge && (
                     <div className="absolute -top-0 left-0 right-0">
-                      <Badge className="w-full rounded-none bg-secondary text-secondary-foreground justify-center py-1">
-                        {t("partner.tierSection.mostPopular")}
+                      <Badge className={`w-full rounded-none justify-center py-1 ${
+                        tier.highlight 
+                          ? "bg-secondary text-secondary-foreground animate-pulse" 
+                          : "bg-muted-foreground/50 text-muted-foreground"
+                      }`}>
+                        {tier.badge}
                       </Badge>
                     </div>
                   )}
 
-                  <CardHeader className={`text-center ${tier.highlight ? "pt-10" : ""} ${tier.highlight ? "bg-secondary/5" : "bg-muted/30"}`}>
+                  <CardHeader className={`text-center pt-10 ${
+                    tier.highlight ? "bg-secondary/5" : tier.disabled ? "bg-muted/20" : "bg-muted/30"
+                  }`}>
                     <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-                      tier.highlight ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground"
+                      tier.highlight 
+                        ? "bg-secondary text-secondary-foreground" 
+                        : tier.disabled
+                          ? "bg-muted text-muted-foreground"
+                          : "bg-primary text-primary-foreground"
                     }`}>
                       <tier.icon className="w-8 h-8" />
                     </div>
-                    <CardTitle className="text-2xl font-serif">{tier.name}</CardTitle>
-                    <Badge variant="outline" className="mx-auto mt-2">{tier.subtitle}</Badge>
+                    <CardTitle className={`text-2xl font-serif ${tier.disabled ? "text-muted-foreground" : ""}`}>
+                      {tier.name}
+                    </CardTitle>
+                    <Badge variant="outline" className={`mx-auto mt-2 ${tier.disabled ? "opacity-50" : ""}`}>
+                      {tier.subtitle}
+                    </Badge>
                   </CardHeader>
 
                   <CardContent className="flex-1 p-6">
                     <div className="text-center mb-6">
                       <div className="text-sm text-muted-foreground uppercase tracking-widest">{t("partner.tierSection.invest")}</div>
-                      <div className="text-3xl font-bold text-foreground mt-1">RM {tier.price.toLocaleString()}</div>
+                      <div className={`text-3xl font-bold mt-1 ${tier.disabled ? "text-muted-foreground" : "text-foreground"}`}>
+                        RM {tier.price.toLocaleString()}
+                      </div>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-secondary/10 border border-secondary/20 text-center mb-6">
+                    <div className={`p-4 rounded-xl text-center mb-6 ${
+                      tier.disabled 
+                        ? "bg-muted/30 border border-muted-foreground/20" 
+                        : "bg-secondary/10 border border-secondary/20"
+                    }`}>
                       <p className="text-xs text-muted-foreground">{t("partner.tierSection.getLyPoints")}</p>
-                      <p className="text-3xl font-bold text-secondary">{tier.lyPoints.toLocaleString()}</p>
+                      <p className={`text-3xl font-bold ${tier.disabled ? "text-muted-foreground" : "text-secondary"}`}>
+                        {tier.lyPoints.toLocaleString()}
+                      </p>
                       <p className="text-xs text-muted-foreground mt-1">{t("partner.tierSection.minWithdraw")}{tier.lyPoints.toLocaleString()}</p>
                     </div>
 
                     <ul className="space-y-3">
                       {tier.features.map((feature, idx) => (
                         <li key={idx} className="flex items-start gap-3 text-sm">
-                          <div className="mt-0.5 shrink-0 w-4 h-4 rounded-full bg-secondary/20 flex items-center justify-center">
-                            <CheckCircle className="w-3 h-3 text-secondary" />
+                          <div className={`mt-0.5 shrink-0 w-4 h-4 rounded-full flex items-center justify-center ${
+                            tier.disabled ? "bg-muted-foreground/20" : "bg-secondary/20"
+                          }`}>
+                            <CheckCircle className={`w-3 h-3 ${tier.disabled ? "text-muted-foreground/50" : "text-secondary"}`} />
                           </div>
-                          <span className="text-muted-foreground">{feature}</span>
+                          <span className={tier.disabled ? "text-muted-foreground/60" : "text-muted-foreground"}>{feature}</span>
                         </li>
                       ))}
                     </ul>
@@ -930,12 +962,13 @@ export default function PartnerPage() {
                   <CardFooter className="p-6 pt-0">
                     <Button
                       className={`w-full ${tier.highlight ? "bg-secondary text-secondary-foreground" : ""}`}
-                      variant={tier.highlight ? "default" : "outline"}
-                      onClick={() => handleJoin(tier.id)}
+                      variant={tier.highlight ? "default" : tier.disabled ? "secondary" : "outline"}
+                      onClick={() => !tier.disabled && handleJoin(tier.id)}
+                      disabled={tier.disabled}
                       data-testid={`button-join-${tier.id}`}
                     >
-                      {t("partner.tierSection.consultNow")}
-                      <ArrowRight className="ml-2 w-4 h-4" />
+                      {tier.disabled ? t("landing.waitingToOpen") : t("partner.tierSection.consultNow")}
+                      {!tier.disabled && <ArrowRight className="ml-2 w-4 h-4" />}
                     </Button>
                   </CardFooter>
                 </Card>

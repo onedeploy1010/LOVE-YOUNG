@@ -34,8 +34,10 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useTranslation } from "@/lib/i18n";
 
 export default function AdminDashboardPage() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [activeSection, setActiveSection] = useState("dashboard");
 
@@ -65,10 +67,10 @@ export default function AdminDashboardPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="p-8 max-w-md text-center">
-          <h1 className="text-2xl font-bold mb-4">请先登录</h1>
-          <p className="text-muted-foreground mb-6">您需要管理员权限才能访问此页面</p>
+          <h1 className="text-2xl font-bold mb-4">{t("admin.loginRequired")}</h1>
+          <p className="text-muted-foreground mb-6">{t("admin.loginRequiredDesc")}</p>
           <Button onClick={() => window.location.href = "/api/login"} data-testid="button-login">
-            登录
+            {t("admin.login")}
           </Button>
         </Card>
       </div>
@@ -80,10 +82,10 @@ export default function AdminDashboardPage() {
   //   return (
   //     <div className="min-h-screen bg-background flex items-center justify-center">
   //       <Card className="p-8 max-w-md text-center">
-  //         <h1 className="text-2xl font-bold mb-4">权限不足</h1>
-  //         <p className="text-muted-foreground mb-6">您没有管理员权限</p>
+  //         <h1 className="text-2xl font-bold mb-4">{t("admin.insufficientPermission")}</h1>
+  //         <p className="text-muted-foreground mb-6">{t("admin.noAdminPermission")}</p>
   //         <Button onClick={() => setLocation("/")} data-testid="button-go-home">
-  //           返回首页
+  //           {t("admin.goHome")}
   //         </Button>
   //       </Card>
   //     </div>
@@ -91,17 +93,17 @@ export default function AdminDashboardPage() {
   // }
 
   const menuItems = [
-    { id: "dashboard", label: "控制台", icon: LayoutDashboard },
-    { id: "partners", label: "经营人管理", icon: Users },
-    { id: "orders", label: "订单管理", icon: ShoppingCart },
-    { id: "inventory", label: "库存管理", icon: Boxes },
-    { id: "production", label: "生产管理", icon: Factory },
-    { id: "hygiene", label: "卫生检查", icon: ClipboardCheck },
-    { id: "coldchain", label: "冷链物流", icon: Thermometer },
-    { id: "finance", label: "财务管理", icon: DollarSign },
-    { id: "bonuspool", label: "奖金池管理", icon: Wallet },
-    { id: "reports", label: "报表分析", icon: BarChart3 },
-    { id: "settings", label: "系统设置", icon: Settings },
+    { id: "dashboard", label: t("admin.dashboard"), icon: LayoutDashboard },
+    { id: "partners", label: t("admin.partners"), icon: Users },
+    { id: "orders", label: t("admin.orders"), icon: ShoppingCart },
+    { id: "inventory", label: t("admin.inventory"), icon: Boxes },
+    { id: "production", label: t("admin.production"), icon: Factory },
+    { id: "hygiene", label: t("admin.hygiene"), icon: ClipboardCheck },
+    { id: "coldchain", label: t("admin.coldchain"), icon: Thermometer },
+    { id: "finance", label: t("admin.finance"), icon: DollarSign },
+    { id: "bonuspool", label: t("admin.bonusPool"), icon: Wallet },
+    { id: "reports", label: t("admin.reports"), icon: BarChart3 },
+    { id: "settings", label: t("admin.settings"), icon: Settings },
   ];
 
   return (
@@ -148,7 +150,7 @@ export default function AdminDashboardPage() {
               </h1>
             </div>
             <Button variant="outline" size="sm" onClick={() => setLocation("/")} data-testid="button-back-home">
-              返回前台
+              {t("admin.backToFront")}
             </Button>
           </header>
 
@@ -172,6 +174,7 @@ export default function AdminDashboardPage() {
 }
 
 function DashboardContent() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6" data-testid="section-dashboard">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -183,7 +186,7 @@ function DashboardContent() {
             <TrendingUp className="w-5 h-5 text-green-500" />
           </div>
           <div className="text-3xl font-bold mb-1">0</div>
-          <div className="text-sm text-muted-foreground">活跃经营人</div>
+          <div className="text-sm text-muted-foreground">{t("admin.activePartners")}</div>
         </Card>
 
         <Card className="p-6">
@@ -194,7 +197,7 @@ function DashboardContent() {
             <TrendingUp className="w-5 h-5 text-green-500" />
           </div>
           <div className="text-3xl font-bold mb-1">0</div>
-          <div className="text-sm text-muted-foreground">本月订单</div>
+          <div className="text-sm text-muted-foreground">{t("admin.monthlyOrders")}</div>
         </Card>
 
         <Card className="p-6">
@@ -205,7 +208,7 @@ function DashboardContent() {
             <TrendingUp className="w-5 h-5 text-green-500" />
           </div>
           <div className="text-3xl font-bold mb-1">RM 0</div>
-          <div className="text-sm text-muted-foreground">本月销售额</div>
+          <div className="text-sm text-muted-foreground">{t("admin.monthlySales")}</div>
         </Card>
 
         <Card className="p-6">
@@ -216,22 +219,22 @@ function DashboardContent() {
             <TrendingUp className="w-5 h-5 text-green-500" />
           </div>
           <div className="text-3xl font-bold mb-1">RM 0</div>
-          <div className="text-sm text-muted-foreground">当前奖金池</div>
+          <div className="text-sm text-muted-foreground">{t("admin.currentBonusPool")}</div>
         </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6">
-          <h3 className="text-lg font-bold mb-4">最近订单</h3>
+          <h3 className="text-lg font-bold mb-4">{t("admin.recentOrders")}</h3>
           <div className="text-center py-8 text-muted-foreground">
-            暂无订单数据
+            {t("admin.noOrderData")}
           </div>
         </Card>
 
         <Card className="p-6">
-          <h3 className="text-lg font-bold mb-4">待处理事项</h3>
+          <h3 className="text-lg font-bold mb-4">{t("admin.pendingItems")}</h3>
           <div className="text-center py-8 text-muted-foreground">
-            暂无待处理事项
+            {t("admin.noPendingItems")}
           </div>
         </Card>
       </div>
@@ -240,15 +243,16 @@ function DashboardContent() {
 }
 
 function PartnersContent() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6" data-testid="section-partners">
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold">经营人列表</h3>
-          <Button size="sm">添加经营人</Button>
+          <h3 className="text-lg font-bold">{t("admin.partnerList")}</h3>
+          <Button size="sm">{t("admin.addPartner")}</Button>
         </div>
         <div className="text-center py-8 text-muted-foreground">
-          暂无经营人数据
+          {t("admin.noPartnerData")}
         </div>
       </Card>
     </div>
@@ -256,15 +260,16 @@ function PartnersContent() {
 }
 
 function OrdersContent() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6" data-testid="section-orders">
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold">订单列表</h3>
-          <Button size="sm">新建订单</Button>
+          <h3 className="text-lg font-bold">{t("admin.orderList")}</h3>
+          <Button size="sm">{t("admin.createOrder")}</Button>
         </div>
         <div className="text-center py-8 text-muted-foreground">
-          暂无订单数据
+          {t("admin.noOrderData")}
         </div>
       </Card>
     </div>
@@ -272,19 +277,20 @@ function OrdersContent() {
 }
 
 function InventoryContent() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6" data-testid="section-inventory">
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold">库存管理</h3>
+          <h3 className="text-lg font-bold">{t("admin.inventoryManagement")}</h3>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline">入库</Button>
-            <Button size="sm" variant="outline">出库</Button>
-            <Button size="sm">添加物料</Button>
+            <Button size="sm" variant="outline">{t("admin.stockIn")}</Button>
+            <Button size="sm" variant="outline">{t("admin.stockOut")}</Button>
+            <Button size="sm">{t("admin.addMaterial")}</Button>
           </div>
         </div>
         <div className="text-center py-8 text-muted-foreground">
-          暂无库存数据
+          {t("admin.noInventoryData")}
         </div>
       </Card>
     </div>
@@ -292,15 +298,16 @@ function InventoryContent() {
 }
 
 function ProductionContent() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6" data-testid="section-production">
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold">生产批次</h3>
-          <Button size="sm">创建批次</Button>
+          <h3 className="text-lg font-bold">{t("admin.productionBatch")}</h3>
+          <Button size="sm">{t("admin.createBatch")}</Button>
         </div>
         <div className="text-center py-8 text-muted-foreground">
-          暂无生产数据
+          {t("admin.noProductionData")}
         </div>
       </Card>
     </div>
@@ -308,15 +315,16 @@ function ProductionContent() {
 }
 
 function HygieneContent() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6" data-testid="section-hygiene">
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold">卫生检查记录</h3>
-          <Button size="sm">添加检查</Button>
+          <h3 className="text-lg font-bold">{t("admin.hygieneRecords")}</h3>
+          <Button size="sm">{t("admin.addInspection")}</Button>
         </div>
         <div className="text-center py-8 text-muted-foreground">
-          暂无检查记录
+          {t("admin.noInspectionData")}
         </div>
       </Card>
     </div>
@@ -324,15 +332,16 @@ function HygieneContent() {
 }
 
 function ColdChainContent() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6" data-testid="section-coldchain">
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold">冷链物流追踪</h3>
-          <Button size="sm">添加运单</Button>
+          <h3 className="text-lg font-bold">{t("admin.coldChainTracking")}</h3>
+          <Button size="sm">{t("admin.addWaybill")}</Button>
         </div>
         <div className="text-center py-8 text-muted-foreground">
-          暂无物流数据
+          {t("admin.noLogisticsData")}
         </div>
       </Card>
     </div>
@@ -340,30 +349,31 @@ function ColdChainContent() {
 }
 
 function FinanceContent() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6" data-testid="section-finance">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-6">
-          <h4 className="text-sm text-muted-foreground mb-2">本月收入</h4>
+          <h4 className="text-sm text-muted-foreground mb-2">{t("admin.monthlyIncome")}</h4>
           <div className="text-2xl font-bold text-green-600">RM 0</div>
         </Card>
         <Card className="p-6">
-          <h4 className="text-sm text-muted-foreground mb-2">本月支出</h4>
+          <h4 className="text-sm text-muted-foreground mb-2">{t("admin.monthlyExpenses")}</h4>
           <div className="text-2xl font-bold text-red-600">RM 0</div>
         </Card>
         <Card className="p-6">
-          <h4 className="text-sm text-muted-foreground mb-2">净利润</h4>
+          <h4 className="text-sm text-muted-foreground mb-2">{t("admin.netProfit")}</h4>
           <div className="text-2xl font-bold">RM 0</div>
         </Card>
       </div>
 
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold">账单记录</h3>
-          <Button size="sm">添加账单</Button>
+          <h3 className="text-lg font-bold">{t("admin.billRecords")}</h3>
+          <Button size="sm">{t("admin.addBill")}</Button>
         </div>
         <div className="text-center py-8 text-muted-foreground">
-          暂无账单数据
+          {t("admin.noBillData")}
         </div>
       </Card>
     </div>
@@ -371,31 +381,32 @@ function FinanceContent() {
 }
 
 function BonusPoolContent() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6" data-testid="section-bonuspool">
       <Card className="p-6">
-        <h3 className="text-lg font-bold mb-4">RWA 奖金池周期管理</h3>
+        <h3 className="text-lg font-bold mb-4">{t("admin.rwaBonusPoolCycle")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="p-4 bg-muted rounded-lg text-center">
-            <div className="text-sm text-muted-foreground mb-1">当前周期</div>
-            <div className="text-2xl font-bold">第 1 周期</div>
+            <div className="text-sm text-muted-foreground mb-1">{t("admin.currentCycle")}</div>
+            <div className="text-2xl font-bold">{t("admin.cycleNumber", { number: 1 })}</div>
           </div>
           <div className="p-4 bg-muted rounded-lg text-center">
-            <div className="text-sm text-muted-foreground mb-1">奖金池总额</div>
+            <div className="text-sm text-muted-foreground mb-1">{t("admin.totalPoolAmount")}</div>
             <div className="text-2xl font-bold text-amber-600">RM 0</div>
           </div>
           <div className="p-4 bg-muted rounded-lg text-center">
-            <div className="text-sm text-muted-foreground mb-1">总令牌数</div>
+            <div className="text-sm text-muted-foreground mb-1">{t("admin.totalTokens")}</div>
             <div className="text-2xl font-bold">0</div>
           </div>
         </div>
-        <Button>结算当前周期</Button>
+        <Button>{t("admin.settleCycle")}</Button>
       </Card>
 
       <Card className="p-6">
-        <h3 className="text-lg font-bold mb-4">历史周期记录</h3>
+        <h3 className="text-lg font-bold mb-4">{t("admin.historyCycles")}</h3>
         <div className="text-center py-8 text-muted-foreground">
-          暂无历史记录
+          {t("admin.noHistoryData")}
         </div>
       </Card>
     </div>
@@ -403,19 +414,20 @@ function BonusPoolContent() {
 }
 
 function ReportsContent() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6" data-testid="section-reports">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-6">
-          <h3 className="text-lg font-bold mb-4">销售报表</h3>
+          <h3 className="text-lg font-bold mb-4">{t("admin.salesReport")}</h3>
           <div className="h-48 flex items-center justify-center text-muted-foreground">
-            图表区域
+            {t("admin.chartArea")}
           </div>
         </Card>
         <Card className="p-6">
-          <h3 className="text-lg font-bold mb-4">经营人增长</h3>
+          <h3 className="text-lg font-bold mb-4">{t("admin.partnerGrowth")}</h3>
           <div className="h-48 flex items-center justify-center text-muted-foreground">
-            图表区域
+            {t("admin.chartArea")}
           </div>
         </Card>
       </div>
@@ -424,31 +436,32 @@ function ReportsContent() {
 }
 
 function SettingsContent() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6" data-testid="section-settings">
       <Card className="p-6">
-        <h3 className="text-lg font-bold mb-4">系统设置</h3>
+        <h3 className="text-lg font-bold mb-4">{t("admin.systemSettings")}</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between py-3 border-b">
             <div>
-              <div className="font-medium">返现比例设置</div>
-              <div className="text-sm text-muted-foreground">配置不同阶段的返现比例</div>
+              <div className="font-medium">{t("admin.cashbackRatioSettings")}</div>
+              <div className="text-sm text-muted-foreground">{t("admin.cashbackRatioDesc")}</div>
             </div>
-            <Button variant="outline" size="sm">配置</Button>
+            <Button variant="outline" size="sm">{t("admin.configure")}</Button>
           </div>
           <div className="flex items-center justify-between py-3 border-b">
             <div>
-              <div className="font-medium">奖金池分红周期</div>
-              <div className="text-sm text-muted-foreground">当前设置：10天/周期</div>
+              <div className="font-medium">{t("admin.bonusPoolCycleSetting")}</div>
+              <div className="text-sm text-muted-foreground">{t("admin.bonusPoolCycleDesc")}</div>
             </div>
-            <Button variant="outline" size="sm">修改</Button>
+            <Button variant="outline" size="sm">{t("admin.modify")}</Button>
           </div>
           <div className="flex items-center justify-between py-3 border-b">
             <div>
-              <div className="font-medium">推荐奖励比例</div>
-              <div className="text-sm text-muted-foreground">10层推荐奖励配置</div>
+              <div className="font-medium">{t("admin.referralRewardRatio")}</div>
+              <div className="text-sm text-muted-foreground">{t("admin.referralRewardDesc")}</div>
             </div>
-            <Button variant="outline" size="sm">配置</Button>
+            <Button variant="outline" size="sm">{t("admin.configure")}</Button>
           </div>
         </div>
       </Card>

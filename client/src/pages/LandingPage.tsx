@@ -377,96 +377,98 @@ export default function LandingPage() {
             variants={staggerContainer}
             className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-20"
           >
-            {/* Phase 1 */}
-            <motion.div variants={fadeInUp}>
-              <Card className="p-8 text-center hover:shadow-2xl transition-all bg-card/80 backdrop-blur border border-amber-400/20">
-                <div className="w-16 h-16 bg-emerald-900 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-6">
+            {/* Phase 1 - Featured / HOT SELLING */}
+            <motion.div variants={fadeInUp} className="lg:scale-105 z-10">
+              <Card className="p-8 text-center bg-gradient-to-br from-emerald-900 to-emerald-950 text-white shadow-2xl relative">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white animate-pulse">
+                  {t("landing.hotSelling")} · {t("landing.only50Slots")}
+                </Badge>
+                <div className="w-16 h-16 bg-amber-400 text-emerald-900 rounded-full flex items-center justify-center mx-auto mb-6">
                   <UserPlus className="w-8 h-8" />
                 </div>
                 <h3 className="text-xl font-bold mb-4">{t("landing.phase1Title")}</h3>
-                <p className="text-sm text-muted-foreground mb-6">{t("landing.phase1Desc")}</p>
+                <p className="text-sm opacity-80 mb-6">{t("landing.phase1Desc")}</p>
                 <ul className="text-left text-sm space-y-3 mb-8">
                   <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-amber-500" />
+                    <CheckCircle className="w-4 h-4 text-amber-400" />
                     {t("landing.phase1Feature1")}
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-amber-500" />
+                    <CheckCircle className="w-4 h-4 text-amber-400" />
                     {t("landing.phase1Feature2")}
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-amber-500" />
+                    <CheckCircle className="w-4 h-4 text-amber-400" />
                     {t("landing.phase1Feature3")}
                   </li>
                 </ul>
                 <Link href="/partner">
-                  <Button className="w-full bg-secondary text-secondary-foreground rounded-full" data-testid="button-phase1-join">
-                    {t("landing.joinNow")}
-                  </Button>
-                </Link>
-              </Card>
-            </motion.div>
-
-            {/* Phase 2 - Featured */}
-            <motion.div variants={fadeInUp} className="lg:scale-105 z-10">
-              <Card className="p-8 text-center bg-gradient-to-br from-emerald-900 to-emerald-950 text-white shadow-2xl relative">
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white">
-                  HOT SELLING
-                </Badge>
-                <div className="w-16 h-16 bg-amber-400 text-emerald-900 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <TrendingUp className="w-8 h-8" />
-                </div>
-                <h3 className="text-xl font-bold mb-4">{t("landing.phase2Title")}</h3>
-                <p className="text-sm opacity-80 mb-6">{t("landing.phase2Desc")}</p>
-                <ul className="text-left text-sm space-y-3 mb-8">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-amber-400" />
-                    {t("landing.phase2Feature1")}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-amber-400" />
-                    {t("landing.phase2Feature2")}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-amber-400" />
-                    {t("landing.phase2Feature3")}
-                  </li>
-                </ul>
-                <Link href="/partner">
-                  <Button className="w-full bg-secondary text-secondary-foreground rounded-full border-none" data-testid="button-phase2-apply">
+                  <Button className="w-full bg-secondary text-secondary-foreground rounded-full border-none" data-testid="button-phase1-join">
                     {t("landing.limitedApply")}
                   </Button>
                 </Link>
               </Card>
             </motion.div>
 
-            {/* Phase 3 */}
+            {/* Phase 2 - Coming Soon / Disabled */}
             <motion.div variants={fadeInUp}>
-              <Card className="p-8 text-center hover:shadow-2xl transition-all bg-card/80 backdrop-blur border border-amber-400/20">
-                <div className="w-16 h-16 bg-emerald-900 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Card className="p-8 text-center bg-muted/50 backdrop-blur border border-muted-foreground/20 opacity-60 relative">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-muted-foreground/50 text-muted-foreground">
+                  {t("landing.comingSoon")}
+                </Badge>
+                <div className="w-16 h-16 bg-muted text-muted-foreground rounded-full flex items-center justify-center mx-auto mb-6">
+                  <TrendingUp className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-bold mb-4 text-muted-foreground">{t("landing.phase2Title")}</h3>
+                <p className="text-sm text-muted-foreground/70 mb-6">{t("landing.phase2Desc")}</p>
+                <ul className="text-left text-sm space-y-3 mb-8 text-muted-foreground/70">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
+                    {t("landing.phase2Feature1")}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
+                    {t("landing.phase2Feature2")}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
+                    {t("landing.phase2Feature3")}
+                  </li>
+                </ul>
+                <Button className="w-full rounded-full" variant="secondary" disabled data-testid="button-phase2-apply">
+                  {t("landing.waitingToOpen")}
+                </Button>
+              </Card>
+            </motion.div>
+
+            {/* Phase 3 - Coming Soon / Disabled */}
+            <motion.div variants={fadeInUp}>
+              <Card className="p-8 text-center bg-muted/50 backdrop-blur border border-muted-foreground/20 opacity-60 relative">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-muted-foreground/50 text-muted-foreground">
+                  {t("landing.comingSoon")}
+                </Badge>
+                <div className="w-16 h-16 bg-muted text-muted-foreground rounded-full flex items-center justify-center mx-auto mb-6">
                   <Globe className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold mb-4">{t("landing.phase3Title")}</h3>
-                <p className="text-sm text-muted-foreground mb-6">{t("landing.phase3Desc")}</p>
-                <ul className="text-left text-sm space-y-3 mb-8">
+                <h3 className="text-xl font-bold mb-4 text-muted-foreground">{t("landing.phase3Title")}</h3>
+                <p className="text-sm text-muted-foreground/70 mb-6">{t("landing.phase3Desc")}</p>
+                <ul className="text-left text-sm space-y-3 mb-8 text-muted-foreground/70">
                   <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-amber-500" />
+                    <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
                     {t("landing.phase3Feature1")}
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-amber-500" />
+                    <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
                     {t("landing.phase3Feature2")}
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-amber-500" />
+                    <CheckCircle className="w-4 h-4 text-muted-foreground/50" />
                     {t("landing.phase3Feature3")}
                   </li>
                 </ul>
-                <Link href="/partner">
-                  <Button className="w-full bg-secondary text-secondary-foreground rounded-full" data-testid="button-phase3-contact">
-                    {t("landing.learnMore")}
-                  </Button>
-                </Link>
+                <Button className="w-full rounded-full" variant="secondary" disabled data-testid="button-phase3-contact">
+                  {t("landing.waitingToOpen")}
+                </Button>
               </Card>
             </motion.div>
           </motion.div>
@@ -512,19 +514,23 @@ export default function LandingPage() {
                     <div className="text-xl font-bold text-amber-400">20%</div>
                   </div>
                   <div className="p-3 border border-white/10 rounded-lg">
-                    <div className="text-xs opacity-50 uppercase">{t("landing.tier2to4")}</div>
+                    <div className="text-xs opacity-50 uppercase">{t("landing.tier2")}</div>
+                    <div className="text-xl font-bold text-amber-400">15%</div>
+                  </div>
+                  <div className="p-3 border border-white/10 rounded-lg">
+                    <div className="text-xs opacity-50 uppercase">{t("landing.tier3to5")}</div>
                     <div className="text-xl font-bold text-amber-400">10% ea</div>
                   </div>
                   <div className="p-3 border border-white/10 rounded-lg">
-                    <div className="text-xs opacity-50 uppercase">{t("landing.tier5to10")}</div>
+                    <div className="text-xs opacity-50 uppercase">{t("landing.tier6to10")}</div>
                     <div className="text-xl font-bold text-amber-400">5% ea</div>
                   </div>
-                  <div className="p-3 border border-white/10 rounded-lg">
-                    <div className="text-xs opacity-50 uppercase">{t("landing.totalReferral")}</div>
-                    <div className="text-xl font-bold text-amber-400">80% LY</div>
-                  </div>
                 </div>
-                <p className="mt-6 text-xs italic opacity-60">
+                <div className="mt-4 p-3 border border-amber-400/30 rounded-lg bg-amber-400/10 text-center">
+                  <div className="text-xs opacity-70 uppercase">{t("landing.totalReferral")}</div>
+                  <div className="text-2xl font-bold text-amber-400">100% LY</div>
+                </div>
+                <p className="mt-4 text-xs italic opacity-60">
                   {t("landing.lyNetworkNote")}
                 </p>
               </div>
