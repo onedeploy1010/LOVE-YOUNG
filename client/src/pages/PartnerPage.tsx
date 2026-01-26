@@ -177,9 +177,9 @@ function NetworkDiagram({ t }: { t: (key: string) => string }) {
 
   return (
     <div className="relative py-8">
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-3 sm:gap-4">
         <motion.div 
-          className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground font-bold text-lg shadow-lg"
+          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground font-bold text-sm sm:text-lg shadow-lg"
           animate={{ scale: animatedLevel === 0 ? [1, 1.1, 1] : 1 }}
           transition={{ duration: 0.5 }}
         >
@@ -190,11 +190,11 @@ function NetworkDiagram({ t }: { t: (key: string) => string }) {
           <div className="w-0.5 h-8 bg-secondary/50" />
         </div>
         
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6 flex-wrap justify-center max-w-xs sm:max-w-none">
           {[1, 2, 3].map((i) => (
             <motion.div
               key={i}
-              className={`w-14 h-14 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${
+              className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shadow-md ${
                 animatedLevel === 1 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
               }`}
               animate={{ 
@@ -214,11 +214,11 @@ function NetworkDiagram({ t }: { t: (key: string) => string }) {
           </Badge>
         </div>
         
-        <div className="flex items-center gap-8 mt-2">
+        <div className="flex items-center gap-2 sm:gap-4 mt-2 flex-wrap justify-center max-w-xs sm:max-w-md">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <motion.div
               key={i}
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shadow ${
+              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs font-bold shadow ${
                 animatedLevel === 2 ? "bg-secondary/80 text-secondary-foreground" : "bg-muted/80 text-muted-foreground"
               }`}
               animate={{ 
@@ -235,11 +235,11 @@ function NetworkDiagram({ t }: { t: (key: string) => string }) {
           {t("partner.dividends.cashback30")}
         </Badge>
         
-        <div className="flex items-center gap-4 mt-2 flex-wrap justify-center max-w-md">
+        <div className="flex items-center gap-2 sm:gap-4 mt-2 flex-wrap justify-center max-w-xs sm:max-w-md">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
             <motion.div
               key={i}
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+              className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-medium ${
                 animatedLevel === 3 ? "bg-muted-foreground/20 text-foreground" : "bg-muted/50 text-muted-foreground"
               }`}
               animate={{ 
@@ -259,7 +259,7 @@ function NetworkDiagram({ t }: { t: (key: string) => string }) {
       
       {animatedLevel > 0 && (
         <motion.div
-          className="absolute top-1/2 right-4 flex items-center gap-2"
+          className="hidden sm:flex absolute top-1/2 right-4 items-center gap-2"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0 }}
