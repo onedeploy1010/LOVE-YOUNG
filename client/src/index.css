@@ -1557,11 +1557,11 @@
   font-weight: 800;
   letter-spacing: 0.15em;
   background: linear-gradient(135deg, 
-    #ffffff 0%, 
-    #f5f5f5 25%,
+    #064e3b 0%, 
+    #065f46 25%,
     #d4af37 50%, 
-    #f5f5f5 75%,
-    #ffffff 100%);
+    #065f46 75%,
+    #064e3b 100%);
   background-size: 300% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1593,9 +1593,9 @@
   font-weight: 500;
   letter-spacing: 0.15em;
   background: linear-gradient(90deg, 
-    rgba(255,255,255,0.9) 0%,
+    #064e3b 0%,
     #d4af37 50%,
-    rgba(255,255,255,0.9) 100%);
+    #064e3b 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
