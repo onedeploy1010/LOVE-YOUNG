@@ -267,14 +267,14 @@ export default function LandingPage() {
                 <div className="relative h-72 overflow-hidden">
                   <img 
                     src={productImage1} 
-                    alt="旋转绽放礼盒" 
+                    alt={t("landing.productCard1Name")} 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                   <Badge className="absolute top-4 right-4 bg-amber-500 text-white">Premium</Badge>
                 </div>
                 <div className="p-6">
-                  <h3 className="font-serif text-2xl text-amber-400 mb-2">旋转绽放·圆形尊享礼盒</h3>
-                  <p className="text-sm opacity-70 mb-4">创新多层旋转结构，朱红与墨绿的东方韵味。内含6罐高浓度鲜炖花胶燕窝。</p>
+                  <h3 className="font-serif text-2xl text-amber-400 mb-2">{t("landing.productCard1Name")}</h3>
+                  <p className="text-sm opacity-70 mb-4">{t("landing.productCard1Desc")}</p>
                   <div className="flex justify-between items-center">
                     <span className="text-2xl font-bold">RM 488</span>
                     <Button 
@@ -283,7 +283,7 @@ export default function LandingPage() {
                       onClick={() => setOrderModalOpen(true)}
                       data-testid="button-product-1-order"
                     >
-                      立即预定
+                      {t("landing.bookNow")}
                     </Button>
                   </div>
                 </div>
@@ -296,15 +296,15 @@ export default function LandingPage() {
                 <div className="relative h-72 overflow-hidden">
                   <img 
                     src={productImage2} 
-                    alt="经典定制系列" 
+                    alt={t("landing.productCard2Name")} 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="font-serif text-2xl text-amber-400 mb-2">逆风启航·经典定制系列</h3>
-                  <p className="text-sm opacity-70 mb-4">定制化12种口味随心搭配。人参、红枣、枸杞等天然辅料，0添加更安心。</p>
+                  <h3 className="font-serif text-2xl text-amber-400 mb-2">{t("landing.productCard2Name")}</h3>
+                  <p className="text-sm opacity-70 mb-4">{t("landing.productCard2Desc")}</p>
                   <div className="flex justify-between items-center">
-                    <span className="text-2xl font-bold">RM 388 <small className="text-xs opacity-50">起</small></span>
+                    <span className="text-2xl font-bold">RM 388 <small className="text-xs opacity-50">{t("landing.productCard2PriceFrom")}</small></span>
                     <Button 
                       variant="outline"
                       size="sm" 
@@ -312,7 +312,7 @@ export default function LandingPage() {
                       onClick={() => setFlavorModalOpen(true)}
                       data-testid="button-product-2-flavors"
                     >
-                      了解口味
+                      {t("landing.viewFlavors")}
                     </Button>
                   </div>
                 </div>
@@ -325,24 +325,24 @@ export default function LandingPage() {
                 <div className="relative h-72 overflow-hidden">
                   <img 
                     src={productImage3} 
-                    alt="季节限定" 
+                    alt={t("landing.productCard3Name")} 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-emerald-900/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-amber-400 font-bold tracking-widest uppercase border-2 border-amber-400 p-4">Coming Soon</span>
+                    <span className="text-amber-400 font-bold tracking-widest uppercase border-2 border-amber-400 p-4">{t("landing.comingSoon")}</span>
                   </div>
                 </div>
                 <div className="p-6">
-                  <h3 className="font-serif text-2xl text-amber-400 mb-2">季节限定·春樱花胶</h3>
-                  <p className="text-sm opacity-70 mb-4">即将发布。针对亚洲女性换季需求研发，赋予肌肤春日般的新生光采。</p>
+                  <h3 className="font-serif text-2xl text-amber-400 mb-2">{t("landing.productCard3Name")}</h3>
+                  <p className="text-sm opacity-70 mb-4">{t("landing.productCard3Desc")}</p>
                   <div className="flex justify-between items-center">
-                    <span className="text-2xl font-bold">Coming Soon</span>
+                    <span className="text-2xl font-bold">{t("landing.comingSoon")}</span>
                     <Button 
                       size="sm" 
                       className="opacity-50 rounded-full px-6"
                       disabled
                     >
-                      敬请期待
+                      {t("landing.comingSoon")}
                     </Button>
                   </div>
                 </div>
@@ -363,10 +363,10 @@ export default function LandingPage() {
             className="text-center mb-20"
           >
             <h2 className="text-3xl lg:text-5xl font-serif font-bold mb-4" data-testid="text-rwa-title">
-              RWA 联合经营人计划
+              {t("landing.partnerSectionTitle")}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              打破传统代理模式。我们不招投资者，只寻找品牌共建人。
+              {t("landing.partnerSectionSubtitle")}
             </p>
           </motion.div>
 
@@ -383,25 +383,25 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-emerald-900 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-6">
                   <UserPlus className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold mb-4">Phase 1: RM 1,000</h3>
-                <p className="text-sm text-muted-foreground mb-6">获得 2,000 LY 能量值，首盒产品赠送，及品牌共建权益。</p>
+                <h3 className="text-xl font-bold mb-4">{t("landing.phase1Title")}</h3>
+                <p className="text-sm text-muted-foreground mb-6">{t("landing.phase1Desc")}</p>
                 <ul className="text-left text-sm space-y-3 mb-8">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-amber-500" />
-                    50% 首5盒销售返现
+                    {t("landing.phase1Feature1")}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-amber-500" />
-                    30% 全球奖金池分红权
+                    {t("landing.phase1Feature2")}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-amber-500" />
-                    个人高端写真拍摄
+                    {t("landing.phase1Feature3")}
                   </li>
                 </ul>
                 <Link href="/partner">
                   <Button className="w-full bg-secondary text-secondary-foreground rounded-full" data-testid="button-phase1-join">
-                    立即加入
+                    {t("landing.joinNow")}
                   </Button>
                 </Link>
               </Card>
@@ -416,25 +416,25 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-amber-400 text-emerald-900 rounded-full flex items-center justify-center mx-auto mb-6">
                   <TrendingUp className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold mb-4">Phase 2: RM 1,300</h3>
-                <p className="text-sm opacity-80 mb-6">获得更高级别分红权重及社交名媛活动入场券。</p>
+                <h3 className="text-xl font-bold mb-4">{t("landing.phase2Title")}</h3>
+                <p className="text-sm opacity-80 mb-6">{t("landing.phase2Desc")}</p>
                 <ul className="text-left text-sm space-y-3 mb-8">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-amber-400" />
-                    1.2x 分红权重
+                    {t("landing.phase2Feature1")}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-amber-400" />
-                    燕窝工厂VIP参观权
+                    {t("landing.phase2Feature2")}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-amber-400" />
-                    微电影拍摄参与机会
+                    {t("landing.phase2Feature3")}
                   </li>
                 </ul>
                 <Link href="/partner">
                   <Button className="w-full bg-secondary text-secondary-foreground rounded-full border-none" data-testid="button-phase2-apply">
-                    限额申请
+                    {t("landing.limitedApply")}
                   </Button>
                 </Link>
               </Card>
@@ -446,25 +446,25 @@ export default function LandingPage() {
                 <div className="w-16 h-16 bg-emerald-900 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Globe className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold mb-4">Phase 3: RM 1,500</h3>
-                <p className="text-sm text-muted-foreground mb-6">面向成熟企业家。提供品牌联名及深度商业合作空间。</p>
+                <h3 className="text-xl font-bold mb-4">{t("landing.phase3Title")}</h3>
+                <p className="text-sm text-muted-foreground mb-6">{t("landing.phase3Desc")}</p>
                 <ul className="text-left text-sm space-y-3 mb-8">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-amber-500" />
-                    顶级奖金池分配
+                    {t("landing.phase3Feature1")}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-amber-500" />
-                    国际品牌发布会席位
+                    {t("landing.phase3Feature2")}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-amber-500" />
-                    联名款产品收益分润
+                    {t("landing.phase3Feature3")}
                   </li>
                 </ul>
                 <Link href="/partner">
                   <Button className="w-full bg-secondary text-secondary-foreground rounded-full" data-testid="button-phase3-contact">
-                    咨询合作
+                    {t("landing.learnMore")}
                   </Button>
                 </Link>
               </Card>
@@ -481,22 +481,22 @@ export default function LandingPage() {
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <h3 className="text-2xl lg:text-3xl font-serif font-bold mb-6">透明的收益逻辑</h3>
+                <h3 className="text-2xl lg:text-3xl font-serif font-bold mb-6">{t("landing.revenueLogicTitle")}</h3>
                 <p className="text-muted-foreground mb-8">
-                  Love Young 拒绝"资金盘"。每一分收益都来自真实的终端产品销售。我们用 LY (Energy) 记录你的贡献。
+                  {t("landing.revenueLogicDesc")}
                 </p>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-4 bg-background rounded-xl">
-                    <span className="font-bold">销售返现 (Cashback)</span>
+                    <span className="font-bold">{t("landing.salesCashback")}</span>
                     <span className="text-amber-500 font-bold">50% / 30%</span>
                   </div>
                   <div className="flex justify-between items-center p-4 bg-background rounded-xl">
-                    <span className="font-bold">全球奖金池 (Pool)</span>
-                    <span className="text-amber-500 font-bold">销售额的 30%</span>
+                    <span className="font-bold">{t("landing.globalPool")}</span>
+                    <span className="text-amber-500 font-bold">{t("landing.salesPercentage")}</span>
                   </div>
                   <div className="flex justify-between items-center p-4 bg-background rounded-xl">
-                    <span className="font-bold">分红周期</span>
-                    <span className="text-amber-500 font-bold">每 10 天结算</span>
+                    <span className="font-bold">{t("landing.dividendCycle")}</span>
+                    <span className="text-amber-500 font-bold">{t("landing.every10Days")}</span>
                   </div>
                 </div>
               </div>
@@ -504,28 +504,28 @@ export default function LandingPage() {
               <div className="bg-emerald-900 rounded-2xl p-8 text-white">
                 <h4 className="text-xl font-bold mb-4 flex items-center gap-2">
                   <Network className="text-amber-400" />
-                  10层积分补充系统
+                  {t("landing.lyNetworkTitle")}
                 </h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 border border-white/10 rounded-lg">
-                    <div className="text-xs opacity-50 uppercase">Tier 1 (直推)</div>
+                    <div className="text-xs opacity-50 uppercase">{t("landing.tier1Direct")}</div>
                     <div className="text-xl font-bold text-amber-400">20%</div>
                   </div>
                   <div className="p-3 border border-white/10 rounded-lg">
-                    <div className="text-xs opacity-50 uppercase">Tier 2-4</div>
+                    <div className="text-xs opacity-50 uppercase">{t("landing.tier2to4")}</div>
                     <div className="text-xl font-bold text-amber-400">10% ea</div>
                   </div>
                   <div className="p-3 border border-white/10 rounded-lg">
-                    <div className="text-xs opacity-50 uppercase">Tier 5-10</div>
+                    <div className="text-xs opacity-50 uppercase">{t("landing.tier5to10")}</div>
                     <div className="text-xl font-bold text-amber-400">5% ea</div>
                   </div>
                   <div className="p-3 border border-white/10 rounded-lg">
-                    <div className="text-xs opacity-50 uppercase">Total Referral</div>
+                    <div className="text-xs opacity-50 uppercase">{t("landing.totalReferral")}</div>
                     <div className="text-xl font-bold text-amber-400">80% LY</div>
                   </div>
                 </div>
                 <p className="mt-6 text-xs italic opacity-60">
-                  * LY 能量值用于解锁现金分红，通过推荐网体销售可持续自动补充。
+                  {t("landing.lyNetworkNote")}
                 </p>
               </div>
             </div>
@@ -544,9 +544,9 @@ export default function LandingPage() {
               variants={fadeInUp}
               className="lg:w-1/3 text-white"
             >
-              <h2 className="text-3xl lg:text-4xl font-serif font-bold mb-6">实时管理后台</h2>
+              <h2 className="text-3xl lg:text-4xl font-serif font-bold mb-6">{t("landing.dashboardTitle")}</h2>
               <p className="opacity-70 mb-10">
-                可视化追踪你的能量值、RWA 权重及 10 层共建网络。每一个数字都见证了你的成长。
+                {t("landing.dashboardDesc")}
               </p>
               <div className="space-y-6">
                 <div className="flex gap-4">
@@ -554,8 +554,8 @@ export default function LandingPage() {
                     <BarChart3 className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold">动态分红追踪</h4>
-                    <p className="text-sm opacity-50">实时查看奖金池累积情况。</p>
+                    <h4 className="font-bold">{t("landing.dividendCycle")}</h4>
+                    <p className="text-sm opacity-50">{t("landing.every10Days")}</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -563,8 +563,8 @@ export default function LandingPage() {
                     <Zap className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold">能量值消耗预警</h4>
-                    <p className="text-sm opacity-50">自动提醒 LY 补充，确保分红不间断。</p>
+                    <h4 className="font-bold">{t("landing.lyEnergy")}</h4>
+                    <p className="text-sm opacity-50">{t("landing.lyNetworkNote")}</p>
                   </div>
                 </div>
               </div>
@@ -574,7 +574,7 @@ export default function LandingPage() {
                   size="lg"
                   className="mt-10 bg-secondary text-secondary-foreground rounded-full gap-2" data-testid="button-dashboard-learn-more"
                 >
-                  了解更多
+                  {t("landing.dashboardCta")}
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
@@ -594,8 +594,8 @@ export default function LandingPage() {
                       LY
                     </div>
                     <div>
-                      <p className="font-bold text-emerald-900">Love Young Dashboard</p>
-                      <p className="text-xs text-gray-500">经营人管理中心</p>
+                      <p className="font-bold text-emerald-900">{t("landing.dashboardBrandName")}</p>
+                      <p className="text-xs text-gray-500">{t("landing.dashboardSubtitle")}</p>
                     </div>
                   </div>
                   <Badge className="bg-emerald-100 text-emerald-800">Phase 2</Badge>
@@ -603,33 +603,33 @@ export default function LandingPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
                   <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-3 sm:p-4 rounded-xl">
-                    <p className="text-xs text-emerald-600 uppercase">LY 能量值</p>
+                    <p className="text-xs text-emerald-600 uppercase">{t("landing.lyEnergy")}</p>
                     <p className="text-xl sm:text-2xl font-bold text-emerald-900">2,580</p>
-                    <p className="text-xs text-emerald-500">+120 本周</p>
+                    <p className="text-xs text-emerald-500">+120 {t("landing.thisWeek")}</p>
                   </div>
                   <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-3 sm:p-4 rounded-xl">
-                    <p className="text-xs text-amber-600 uppercase">累计收益</p>
+                    <p className="text-xs text-amber-600 uppercase">{t("landing.totalEarnings")}</p>
                     <p className="text-xl sm:text-2xl font-bold text-amber-700">RM 3,240</p>
-                    <p className="text-xs text-amber-500">+RM 580 本月</p>
+                    <p className="text-xs text-amber-500">+RM 580 {t("landing.thisMonth")}</p>
                   </div>
                   <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-3 sm:p-4 rounded-xl">
-                    <p className="text-xs text-purple-600 uppercase">团队成员</p>
+                    <p className="text-xs text-purple-600 uppercase">{t("landing.teamMembers")}</p>
                     <p className="text-xl sm:text-2xl font-bold text-purple-700">28</p>
-                    <p className="text-xs text-purple-500">10层网络</p>
+                    <p className="text-xs text-purple-500">{t("landing.networkLevels")}</p>
                   </div>
                 </div>
 
                 <div className="bg-gray-50 rounded-xl p-4">
                   <div className="flex justify-between items-center mb-4">
-                    <span className="font-bold text-gray-700">当前奖金池周期</span>
-                    <span className="text-xs text-gray-500">剩余 6 天</span>
+                    <span className="font-bold text-gray-700">{t("landing.currentPoolCycle")}</span>
+                    <span className="text-xs text-gray-500">{t("landing.daysRemaining", { days: 6 })}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div className="bg-gradient-to-r from-emerald-500 to-amber-500 h-3 rounded-full" style={{ width: "40%" }} />
                   </div>
                   <div className="flex justify-between text-xs text-gray-500 mt-2">
-                    <span>已累积: RM 12,580</span>
-                    <span>预计分红: RM 380</span>
+                    <span>{t("landing.accumulated")}: RM 12,580</span>
+                    <span>{t("landing.estimatedDividend")}: RM 380</span>
                   </div>
                 </div>
               </Card>
@@ -651,13 +651,13 @@ export default function LandingPage() {
               variants={fadeInUp}
               className="text-3xl lg:text-5xl font-serif font-bold mb-6"
             >
-              开启您的滋养之旅
+              {t("landing.ctaTitle")}
             </motion.h2>
             <motion.p 
               variants={fadeInUp}
               className="text-lg opacity-80 max-w-2xl mx-auto mb-10"
             >
-              无论是为自己，还是为爱的人，Love Young 都将为您带来最纯粹的滋养体验。
+              {t("landing.ctaDesc")}
             </motion.p>
             <motion.div 
               variants={fadeInUp}
