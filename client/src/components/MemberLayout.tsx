@@ -21,6 +21,8 @@ import {
   User,
   Star
 } from "lucide-react";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useTranslation } from "@/lib/i18n";
 import type { User as UserType, Member, Partner, UserState } from "@shared/schema";
 
 interface MemberLayoutProps {
@@ -138,6 +140,9 @@ export function MemberLayout({ children }: MemberLayoutProps) {
       </nav>
 
       <div className="p-4 border-t space-y-2">
+        <div className="mb-3">
+          <LanguageSwitcher testId="button-language-switcher-sidebar" />
+        </div>
         <Link href="/member">
           <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-back-center">
             <ArrowLeft className="w-4 h-4" />
@@ -187,6 +192,7 @@ export function MemberLayout({ children }: MemberLayoutProps) {
           </div>
 
           <div className="flex items-center gap-3">
+            <LanguageSwitcher testId="button-language-switcher-header" />
             <Link href="/member" className="hidden sm:block">
               <Button variant="ghost" size="sm" className="text-primary-foreground gap-2" data-testid="button-header-center">
                 <ArrowLeft className="w-4 h-4" />
