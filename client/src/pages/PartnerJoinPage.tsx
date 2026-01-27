@@ -16,6 +16,7 @@ import {
   Building2, Wallet, AlertCircle, PartyPopper
 } from "lucide-react";
 import type { User as UserType, Member, Partner, UserState } from "@shared/schema";
+import { useTranslation } from "@/lib/i18n";
 
 interface UserStateResponse {
   state: UserState;
@@ -24,68 +25,72 @@ interface UserStateResponse {
   partner: Partner | null;
 }
 
-const packages = [
+const getPackages = (t: (key: string) => string) => [
   {
     id: "phase1",
     phase: 1,
-    name: "Phase 1 套餐",
+    name: t("member.partnerJoin.packages.phase1.name"),
     price: 1000,
     lyPoints: 2000,
     rwaTokens: 2,
     features: [
-      "2000 LY积分",
-      "2枚RWA令牌",
-      "推荐佣金8%",
-      "10层网络收益"
+      t("member.partnerJoin.packages.phase1.feature1"),
+      t("member.partnerJoin.packages.phase1.feature2"),
+      t("member.partnerJoin.packages.phase1.feature3"),
+      t("member.partnerJoin.packages.phase1.feature4")
     ],
     popular: false
   },
   {
     id: "phase2",
     phase: 2,
-    name: "Phase 2 套餐",
+    name: t("member.partnerJoin.packages.phase2.name"),
     price: 1300,
     lyPoints: 2600,
     rwaTokens: 3,
     features: [
-      "2600 LY积分",
-      "3枚RWA令牌",
-      "推荐佣金10%",
-      "10层网络收益"
+      t("member.partnerJoin.packages.phase2.feature1"),
+      t("member.partnerJoin.packages.phase2.feature2"),
+      t("member.partnerJoin.packages.phase2.feature3"),
+      t("member.partnerJoin.packages.phase2.feature4")
     ],
     popular: true
   },
   {
     id: "phase3",
     phase: 3,
-    name: "Phase 3 套餐",
+    name: t("member.partnerJoin.packages.phase3.name"),
     price: 1500,
     lyPoints: 3000,
     rwaTokens: 4,
     features: [
-      "3000 LY积分",
-      "4枚RWA令牌",
-      "推荐佣金12%",
-      "10层网络收益",
-      "优先客服支持"
+      t("member.partnerJoin.packages.phase3.feature1"),
+      t("member.partnerJoin.packages.phase3.feature2"),
+      t("member.partnerJoin.packages.phase3.feature3"),
+      t("member.partnerJoin.packages.phase3.feature4"),
+      t("member.partnerJoin.packages.phase3.feature5")
     ],
     popular: false
   }
 ];
 
-const paymentMethods = [
-  { id: "fpx", name: "FPX网银", icon: Building2 },
-  { id: "tng", name: "Touch n Go", icon: Wallet },
-  { id: "card", name: "信用卡/借记卡", icon: CreditCard },
+const getPaymentMethods = (t: (key: string) => string) => [
+  { id: "fpx", name: t("member.partnerJoin.paymentMethods.fpx"), icon: Building2 },
+  { id: "tng", name: t("member.partnerJoin.paymentMethods.tng"), icon: Wallet },
+  { id: "card", name: t("member.partnerJoin.paymentMethods.card"), icon: CreditCard },
 ];
 
 export default function PartnerJoinPage() {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<string>("fpx");
   const [referralCode, setReferralCode] = useState("");
   const [step, setStep] = useState<"package" | "payment" | "success">("package");
+  
+  const packages = getPackages(t);
+  const paymentMethods = getPaymentMethods(t);
 
   const { data: userState, isLoading } = useQuery<UserStateResponse>({
     queryKey: ["/api/auth/state"],
@@ -99,13 +104,13 @@ export default function PartnerJoinPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/state"] });
       setStep("success");
       toast({
-        title: "申请成功",
-        description: "您的经营人申请已提交，请等待审核激活",
+        title: t("member.partnerJoin.applicationSubmitted"),
+        description: t("member.partnerJoin.applicationDesc"),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "申请失败",
+        title: t("member.partnerJoin.applicationFailed"),
         description: error.message,
         variant: "destructive",
       });
@@ -138,27 +143,27 @@ export default function PartnerJoinPage() {
               <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-4">
                 <Crown className="w-8 h-8 text-secondary" />
               </div>
-              <CardTitle className="text-2xl">加入联合经营人计划</CardTitle>
-              <CardDescription>请先登录后再申请成为联合经营人</CardDescription>
+              <CardTitle className="text-2xl">{t("member.partnerJoin.title")}</CardTitle>
+              <CardDescription>{t("member.partnerJoin.loginRequired")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-4 bg-muted/50 rounded-lg text-left">
                 <h3 className="font-bold mb-2 flex items-center gap-2">
                   <Gift className="w-5 h-5 text-secondary" />
-                  加入即享专属权益
+                  {t("member.partnerJoin.exclusiveBenefits")}
                 </h3>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    最高2000-3000 LY积分
+                    {t("member.partnerJoin.maxLyPoints")}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    RWA令牌持续分红
+                    {t("member.partnerJoin.rwaDividend")}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    10层推荐网络收益
+                    {t("member.partnerJoin.tenLevelNetwork")}
                   </li>
                 </ul>
               </div>
@@ -170,13 +175,13 @@ export default function PartnerJoinPage() {
                 data-testid="button-login-join"
               >
                 <Crown className="w-5 h-5" />
-                登录后加入
+                {t("member.partnerJoin.loginToJoin")}
               </Button>
 
               <Link href="/partner">
                 <Button variant="outline" className="w-full gap-2">
                   <ArrowLeft className="w-4 h-4" />
-                  返回了解更多
+                  {t("member.partnerJoin.learnMore")}
                 </Button>
               </Link>
             </CardContent>
@@ -195,26 +200,26 @@ export default function PartnerJoinPage() {
               <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-8 h-8 text-green-500" />
               </div>
-              <CardTitle className="text-2xl">您已是联合经营人</CardTitle>
+              <CardTitle className="text-2xl">{t("member.partnerJoin.alreadyPartner")}</CardTitle>
               <CardDescription>
                 {userState.partner.status === "active" 
-                  ? "您的经营人账户已激活，可以开始使用全部功能" 
-                  : "您的申请正在审核中，请耐心等待"}
+                  ? t("member.partnerJoin.accountActive")
+                  : t("member.partnerJoin.pendingReview")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-secondary">{userState.partner.lyBalance}</div>
-                  <div className="text-xs text-muted-foreground">LY积分</div>
+                  <div className="text-xs text-muted-foreground">{t("member.partnerDashboard.lyPoints")}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{userState.partner.rwaTokens}</div>
-                  <div className="text-xs text-muted-foreground">RWA令牌</div>
+                  <div className="text-xs text-muted-foreground">{t("member.partnerDashboard.rwaToken")}</div>
                 </div>
                 <div className="text-center">
                   <Badge variant={userState.partner.status === "active" ? "default" : "outline"}>
-                    {userState.partner.status === "active" ? "已激活" : "待审核"}
+                    {userState.partner.status === "active" ? t("member.partnerJoin.activated") : t("member.partnerJoin.pending")}
                   </Badge>
                 </div>
               </div>
@@ -222,7 +227,7 @@ export default function PartnerJoinPage() {
               <Link href="/member/partner">
                 <Button className="w-full bg-secondary text-secondary-foreground gap-2" data-testid="button-go-dashboard">
                   <TrendingUp className="w-5 h-5" />
-                  进入经营人中心
+                  {t("member.partnerJoin.goToDashboard")}
                 </Button>
               </Link>
             </CardContent>
@@ -241,26 +246,26 @@ export default function PartnerJoinPage() {
               <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
                 <PartyPopper className="w-10 h-10 text-green-500" />
               </div>
-              <CardTitle className="text-2xl">申请成功!</CardTitle>
-              <CardDescription>恭喜您成功提交经营人申请</CardDescription>
+              <CardTitle className="text-2xl">{t("member.partnerJoin.applicationSuccess")}</CardTitle>
+              <CardDescription>{t("member.partnerJoin.congratsMessage")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="p-4 bg-muted/30 rounded-lg space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  您的申请已进入审核流程，通常1-2个工作日内会完成审核。审核通过后您将收到通知，届时可以开始使用全部经营人功能。
+                  {t("member.partnerJoin.reviewProcess")}
                 </p>
                 <div className="flex items-center gap-2 text-sm">
                   <AlertCircle className="w-4 h-4 text-primary" />
-                  <span>请确保您已完成套餐支付</span>
+                  <span>{t("member.partnerJoin.ensurePayment")}</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <Link href="/member">
-                  <Button variant="outline" className="w-full">返回会员中心</Button>
+                  <Button variant="outline" className="w-full">{t("member.partnerJoin.backToMember")}</Button>
                 </Link>
                 <Link href="/">
-                  <Button variant="ghost" className="w-full">返回首页</Button>
+                  <Button variant="ghost" className="w-full">{t("member.partnerJoin.backToHome")}</Button>
                 </Link>
               </div>
             </CardContent>
@@ -282,11 +287,11 @@ export default function PartnerJoinPage() {
             </Link>
             <div className="flex items-center gap-2">
               <Crown className="w-5 h-5 text-secondary" />
-              <span className="font-semibold">加入联合经营人</span>
+              <span className="font-semibold">{t("member.partnerJoin.joinPartner")}</span>
             </div>
           </div>
           <Badge variant="outline" className="text-primary-foreground border-primary-foreground/30">
-            {step === "package" ? "第1步：选择套餐" : "第2步：确认支付"}
+            {step === "package" ? t("member.partnerJoin.step1") : t("member.partnerJoin.step2")}
           </Badge>
         </div>
       </header>
@@ -295,8 +300,8 @@ export default function PartnerJoinPage() {
         {step === "package" && (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h1 className="text-2xl font-serif text-primary mb-2">选择您的套餐</h1>
-              <p className="text-muted-foreground">选择最适合您的经营人套餐，开启财富之旅</p>
+              <h1 className="text-2xl font-serif text-primary mb-2">{t("member.partnerJoin.selectPackage")}</h1>
+              <p className="text-muted-foreground">{t("member.partnerJoin.selectPackageDesc")}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -313,7 +318,7 @@ export default function PartnerJoinPage() {
                 >
                   {pkg.popular && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground">
-                      最受欢迎
+                      {t("member.partnerJoin.mostPopular")}
                     </Badge>
                   )}
                   <CardHeader className="text-center pb-2">
@@ -350,10 +355,10 @@ export default function PartnerJoinPage() {
 
             <Card>
               <CardContent className="p-4">
-                <Label htmlFor="referral" className="text-sm font-medium">推荐码（选填）</Label>
+                <Label htmlFor="referral" className="text-sm font-medium">{t("member.partnerJoin.referralCodeLabel")}</Label>
                 <Input 
                   id="referral"
-                  placeholder="如有推荐人，请输入8位推荐码"
+                  placeholder={t("member.partnerJoin.referralCodePlaceholder")}
                   className="mt-2"
                   value={referralCode}
                   onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
@@ -370,7 +375,7 @@ export default function PartnerJoinPage() {
               onClick={() => setStep("payment")}
               data-testid="button-next"
             >
-              下一步：确认支付
+              {t("member.partnerJoin.nextStep")}
             </Button>
           </div>
         )}
@@ -383,45 +388,45 @@ export default function PartnerJoinPage() {
               onClick={() => setStep("package")}
             >
               <ArrowLeft className="w-4 h-4" />
-              返回修改套餐
+              {t("member.partnerJoin.backToPackage")}
             </Button>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>订单确认</CardTitle>
+                    <CardTitle>{t("member.partnerJoin.orderConfirm")}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {selectedPackage && (
                       <>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">套餐</span>
+                          <span className="text-muted-foreground">{t("member.partnerJoin.package")}</span>
                           <span className="font-medium">
                             {packages.find(p => p.id === selectedPackage)?.name}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">LY积分</span>
+                          <span className="text-muted-foreground">{t("member.partnerDashboard.lyPoints")}</span>
                           <span className="font-medium text-secondary">
                             +{packages.find(p => p.id === selectedPackage)?.lyPoints}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">RWA令牌</span>
+                          <span className="text-muted-foreground">{t("member.partnerDashboard.rwaToken")}</span>
                           <span className="font-medium text-primary">
                             +{packages.find(p => p.id === selectedPackage)?.rwaTokens}
                           </span>
                         </div>
                         {referralCode && (
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">推荐码</span>
+                            <span className="text-muted-foreground">{t("member.partnerJoin.referralCodeLabel")}</span>
                             <span className="font-mono">{referralCode}</span>
                           </div>
                         )}
                         <Separator />
                         <div className="flex justify-between text-lg font-bold">
-                          <span>应付金额</span>
+                          <span>{t("member.partnerJoin.amountToPay")}</span>
                           <span className="text-primary">
                             RM {packages.find(p => p.id === selectedPackage)?.price.toLocaleString()}
                           </span>
@@ -433,7 +438,7 @@ export default function PartnerJoinPage() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>选择支付方式</CardTitle>
+                    <CardTitle>{t("member.partnerJoin.selectPayment")}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <RadioGroup value={selectedPayment} onValueChange={setSelectedPayment}>
@@ -465,21 +470,21 @@ export default function PartnerJoinPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <ShieldCheck className="w-5 h-5 text-primary" />
-                      安全保障
+                      {t("member.partnerJoin.securityGuarantee")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm">
                     <div className="flex items-start gap-2">
                       <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                      <span>所有交易均经过加密保护</span>
+                      <span>{t("member.partnerJoin.encryptedTransaction")}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                      <span>支付后1-2个工作日内激活账户</span>
+                      <span>{t("member.partnerJoin.activationTime")}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                      <span>24小时客服支持</span>
+                      <span>{t("member.partnerJoin.support24h")}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -489,7 +494,7 @@ export default function PartnerJoinPage() {
                     <p className="flex items-start gap-2">
                       <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                       <span>
-                        点击"确认支付"后，您将跳转至支付页面完成付款。支付成功后，您的申请将进入审核流程。
+                        {t("member.partnerJoin.paymentNote")}
                       </span>
                     </p>
                   </CardContent>
@@ -507,7 +512,7 @@ export default function PartnerJoinPage() {
                   ) : (
                     <CreditCard className="w-5 h-5" />
                   )}
-                  确认支付 RM {packages.find(p => p.id === selectedPackage)?.price.toLocaleString()}
+                  {t("member.partnerJoin.confirmPay")} RM {packages.find(p => p.id === selectedPackage)?.price.toLocaleString()}
                 </Button>
               </div>
             </div>

@@ -9,6 +9,7 @@ import {
   Gift, Star, TrendingUp, Clock, ShoppingBag,
   ArrowUpRight, ArrowDownRight, Info
 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 const mockPointsHistory = [
   { id: 1, type: "earn", amount: 226, description: "订单消费 #LY20260120001", date: "2026-01-20", balance: 1580 },
@@ -30,14 +31,15 @@ const stats = {
 };
 
 export default function MemberPointsPage() {
+  const { t } = useTranslation();
   const tierProgress = (stats.totalPoints / stats.nextTierPoints) * 100;
 
   return (
     <MemberLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-points-title">积分中心</h1>
-          <p className="text-muted-foreground">查看积分余额与兑换</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-points-title">{t("member.points.title")}</h1>
+          <p className="text-muted-foreground">{t("member.points.subtitle")}</p>
         </div>
 
         <Card className="bg-gradient-to-r from-secondary/10 to-primary/10 border-secondary/20">
@@ -48,7 +50,7 @@ export default function MemberPointsPage() {
                   <Star className="w-8 h-8 text-secondary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">当前积分</p>
+                  <p className="text-sm text-muted-foreground">{t("member.points.currentPoints")}</p>
                   <p className="text-4xl font-bold text-secondary" data-testid="text-total-points">{stats.totalPoints}</p>
                   <Badge variant="secondary" className="mt-1">{stats.currentTier}</Badge>
                 </div>
@@ -56,11 +58,11 @@ export default function MemberPointsPage() {
               <div className="flex gap-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{stats.thisMonthEarned}</div>
-                  <p className="text-sm text-muted-foreground">本月获得</p>
+                  <p className="text-sm text-muted-foreground">{t("member.points.earnedThisMonth")}</p>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-500">{stats.expiringSoon}</div>
-                  <p className="text-sm text-muted-foreground">即将过期</p>
+                  <p className="text-sm text-muted-foreground">{t("member.points.expiringSoon")}</p>
                 </div>
               </div>
             </div>
@@ -71,10 +73,10 @@ export default function MemberPointsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
-              会员等级进度
+              {t("member.points.tierProgress")}
             </CardTitle>
             <CardDescription>
-              距离升级到 {stats.nextTier} 还需 {stats.nextTierPoints - stats.totalPoints} 积分
+              {t("member.points.tierProgressDesc").replace("{nextTier}", stats.nextTier).replace("{points}", String(stats.nextTierPoints - stats.totalPoints))}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -85,8 +87,8 @@ export default function MemberPointsPage() {
               </div>
               <Progress value={tierProgress} className="h-3" />
               <div className="flex justify-between text-sm">
-                <span className="font-medium">{stats.totalPoints} 积分</span>
-                <span className="text-muted-foreground">{stats.nextTierPoints} 积分</span>
+                <span className="font-medium">{stats.totalPoints} {t("member.points.points")}</span>
+                <span className="text-muted-foreground">{stats.nextTierPoints} {t("member.points.points")}</span>
               </div>
             </div>
           </CardContent>
@@ -99,10 +101,10 @@ export default function MemberPointsPage() {
                 <Gift className="w-6 h-6 text-secondary" />
               </div>
               <div className="flex-1">
-                <h3 className="font-bold">积分兑换</h3>
-                <p className="text-sm text-muted-foreground">100积分 = RM1</p>
+                <h3 className="font-bold">{t("member.points.redeem")}</h3>
+                <p className="text-sm text-muted-foreground">{t("member.points.redeemRate")}</p>
               </div>
-              <Button variant="outline" size="sm" data-testid="button-redeem">立即兑换</Button>
+              <Button variant="outline" size="sm" data-testid="button-redeem">{t("member.points.redeemNow")}</Button>
             </CardContent>
           </Card>
 
@@ -113,10 +115,10 @@ export default function MemberPointsPage() {
                   <ShoppingBag className="w-6 h-6 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold">消费赚积分</h3>
-                  <p className="text-sm text-muted-foreground">每消费RM1得1积分</p>
+                  <h3 className="font-bold">{t("member.points.earnPoints")}</h3>
+                  <p className="text-sm text-muted-foreground">{t("member.points.earnRate")}</p>
                 </div>
-                <Button variant="outline" size="sm" data-testid="button-shop">去购物</Button>
+                <Button variant="outline" size="sm" data-testid="button-shop">{t("member.points.goShop")}</Button>
               </CardContent>
             </Card>
           </Link>
@@ -126,15 +128,15 @@ export default function MemberPointsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-primary" />
-              积分明细
+              {t("member.points.history")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="all">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="all" data-testid="tab-all">全部</TabsTrigger>
-                <TabsTrigger value="earn" data-testid="tab-earn">获得</TabsTrigger>
-                <TabsTrigger value="spend" data-testid="tab-spend">使用</TabsTrigger>
+                <TabsTrigger value="all" data-testid="tab-all">{t("member.points.tabAll")}</TabsTrigger>
+                <TabsTrigger value="earn" data-testid="tab-earn">{t("member.points.tabEarn")}</TabsTrigger>
+                <TabsTrigger value="spend" data-testid="tab-spend">{t("member.points.tabSpend")}</TabsTrigger>
               </TabsList>
               <TabsContent value="all" className="mt-4">
                 <div className="space-y-3">
@@ -157,7 +159,7 @@ export default function MemberPointsPage() {
                         <p className={`font-bold ${record.type === "spend" ? "text-red-500" : "text-green-500"}`}>
                           {record.type === "spend" ? "-" : "+"}{record.amount}
                         </p>
-                        <p className="text-xs text-muted-foreground">余额: {record.balance}</p>
+                        <p className="text-xs text-muted-foreground">{t("member.points.balance")}: {record.balance}</p>
                       </div>
                     </div>
                   ))}
@@ -207,12 +209,12 @@ export default function MemberPointsPage() {
           <CardContent className="p-4 flex items-start gap-3">
             <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
             <div className="text-sm text-muted-foreground">
-              <p className="font-medium text-foreground mb-1">积分规则</p>
+              <p className="font-medium text-foreground mb-1">{t("member.points.rulesTitle")}</p>
               <ul className="space-y-1 list-disc list-inside">
-                <li>每消费RM1可获得1积分</li>
-                <li>100积分可抵扣RM1</li>
-                <li>积分有效期为获得后12个月</li>
-                <li>积分仅限本人使用，不可转让</li>
+                <li>{t("member.points.rule1")}</li>
+                <li>{t("member.points.rule2")}</li>
+                <li>{t("member.points.rule3")}</li>
+                <li>{t("member.points.rule4")}</li>
               </ul>
             </div>
           </CardContent>

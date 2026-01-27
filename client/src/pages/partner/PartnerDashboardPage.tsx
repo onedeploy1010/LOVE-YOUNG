@@ -11,13 +11,24 @@ import {
   Crown, Star, Target, Zap
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "@/lib/i18n";
 
 export default function PartnerDashboardPage() {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
+  
+  const getTierLabel = (tier: string) => {
+    const tierMap: Record<string, string> = {
+      "phase1": t("member.partnerDashboard.tiers.phase1"),
+      "phase2": t("member.partnerDashboard.tiers.phase2"),
+      "phase3": t("member.partnerDashboard.tiers.phase3")
+    };
+    return tierMap[tier] || tier;
+  };
   
   const mockData = {
     referralCode: "LY8X9K2M",
-    tier: "Phase 1",
+    tier: "phase1",
     lyBalance: 2000,
     cashBalance: 450.00,
     rwaTokens: 15,
@@ -44,8 +55,8 @@ export default function PartnerDashboardPage() {
     <PartnerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-partner-dashboard-title">经营概览</h1>
-          <p className="text-muted-foreground">查看您的经营数据与业绩表现</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-partner-dashboard-title">{t("member.partnerDashboard.title")}</h1>
+          <p className="text-muted-foreground">{t("member.partnerDashboard.subtitle")}</p>
         </div>
 
       <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
@@ -56,13 +67,13 @@ export default function PartnerDashboardPage() {
                 <Crown className="w-8 h-8 text-secondary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">当前等级</p>
-                <h2 className="text-2xl font-bold text-primary">{mockData.tier}</h2>
-                <Badge className="mt-1 bg-secondary/20 text-secondary">联合经营人</Badge>
+                <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.currentTier")}</p>
+                <h2 className="text-2xl font-bold text-primary">{getTierLabel(mockData.tier)}</h2>
+                <Badge className="mt-1 bg-secondary/20 text-secondary">{t("member.partnerDashboard.partnerBadge")}</Badge>
               </div>
             </div>
             <div className="flex flex-col items-start md:items-end gap-2">
-              <p className="text-sm text-muted-foreground">我的推荐码</p>
+              <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.myReferralCode")}</p>
               <div className="flex items-center gap-2">
                 <code className="px-4 py-2 bg-background rounded-lg font-mono text-lg font-bold text-primary">
                   {mockData.referralCode}
@@ -88,11 +99,11 @@ export default function PartnerDashboardPage() {
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                 <Star className="w-5 h-5 text-primary" />
               </div>
-              <Badge variant="outline" className="text-xs">LY积分</Badge>
+              <Badge variant="outline" className="text-xs">{t("member.partnerDashboard.lyPoints")}</Badge>
             </div>
             <div className="mt-4">
               <p className="text-3xl font-bold text-foreground">{mockData.lyBalance.toLocaleString()}</p>
-              <p className="text-sm text-muted-foreground">可用积分余额</p>
+              <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.lyBalance")}</p>
             </div>
           </CardContent>
         </Card>
@@ -103,11 +114,11 @@ export default function PartnerDashboardPage() {
               <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
                 <Wallet className="w-5 h-5 text-green-500" />
               </div>
-              <Badge variant="outline" className="text-xs">现金钱包</Badge>
+              <Badge variant="outline" className="text-xs">{t("member.partnerDashboard.cashWallet")}</Badge>
             </div>
             <div className="mt-4">
               <p className="text-3xl font-bold text-foreground">RM {mockData.cashBalance.toFixed(2)}</p>
-              <p className="text-sm text-muted-foreground">可提现余额</p>
+              <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.cashBalance")}</p>
             </div>
           </CardContent>
         </Card>
@@ -118,11 +129,11 @@ export default function PartnerDashboardPage() {
               <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
                 <Award className="w-5 h-5 text-secondary" />
               </div>
-              <Badge variant="outline" className="text-xs">RWA令牌</Badge>
+              <Badge variant="outline" className="text-xs">{t("member.partnerDashboard.rwaToken")}</Badge>
             </div>
             <div className="mt-4">
               <p className="text-3xl font-bold text-foreground">{mockData.rwaTokens}</p>
-              <p className="text-sm text-muted-foreground">累计持有令牌</p>
+              <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.rwaBalance")}</p>
             </div>
           </CardContent>
         </Card>
@@ -133,11 +144,11 @@ export default function PartnerDashboardPage() {
               <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
                 <Users className="w-5 h-5 text-blue-500" />
               </div>
-              <Badge variant="outline" className="text-xs">推荐网络</Badge>
+              <Badge variant="outline" className="text-xs">{t("member.partnerDashboard.referralNetwork")}</Badge>
             </div>
             <div className="mt-4">
               <p className="text-3xl font-bold text-foreground">{mockData.totalReferrals}</p>
-              <p className="text-sm text-muted-foreground">{mockData.activeReferrals} 位活跃成员</p>
+              <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.activeMembers").replace("{count}", String(mockData.activeReferrals))}</p>
             </div>
           </CardContent>
         </Card>
@@ -148,9 +159,9 @@ export default function PartnerDashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
-              本月收益
+              {t("member.partnerDashboard.monthlyEarnings")}
             </CardTitle>
-            <CardDescription>返现分红与RWA奖金收入</CardDescription>
+            <CardDescription>{t("member.partnerDashboard.earningsDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-end gap-4 mb-6">
@@ -163,11 +174,11 @@ export default function PartnerDashboardPage() {
             <Separator className="my-4" />
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">累计收益</p>
+                <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.totalEarnings")}</p>
                 <p className="text-xl font-bold text-foreground">RM {mockData.totalEarnings.toFixed(2)}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">上月收益</p>
+                <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.lastMonthEarnings")}</p>
                 <p className="text-xl font-bold text-foreground">RM {mockData.lastMonthEarnings.toFixed(2)}</p>
               </div>
             </div>
@@ -178,15 +189,15 @@ export default function PartnerDashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Award className="w-5 h-5 text-secondary" />
-              RWA奖金池周期
+              {t("member.partnerDashboard.rwaCycle")}
             </CardTitle>
-            <CardDescription>第 {mockData.currentCycle} 期分红进度</CardDescription>
+            <CardDescription>{t("member.partnerDashboard.cycleDesc").replace("{cycle}", String(mockData.currentCycle))}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-muted-foreground">周期进度</span>
+                  <span className="text-muted-foreground">{t("member.partnerDashboard.cycleProgress")}</span>
                   <span className="font-medium">{mockData.cycleProgress}%</span>
                 </div>
                 <Progress value={mockData.cycleProgress} className="h-3" />
@@ -194,11 +205,11 @@ export default function PartnerDashboardPage() {
               <Separator />
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">下次分红日期</p>
+                  <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.nextPayoutDate")}</p>
                   <p className="font-medium text-foreground">{mockData.nextPayout}</p>
                 </div>
                 <Button variant="outline" size="sm" data-testid="button-view-rwa">
-                  查看详情
+                  {t("member.partnerDashboard.viewDetails")}
                 </Button>
               </div>
             </div>
@@ -210,26 +221,26 @@ export default function PartnerDashboardPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="w-5 h-5 text-primary" />
-            快捷操作
+            {t("member.partnerDashboard.quickActions")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Button variant="outline" className="h-auto py-4 flex-col gap-2" data-testid="button-share-materials">
               <Share2 className="w-5 h-5" />
-              <span>推广物料</span>
+              <span>{t("member.partnerDashboard.promoMaterials")}</span>
             </Button>
             <Button variant="outline" className="h-auto py-4 flex-col gap-2" data-testid="button-invite-friends">
               <Users className="w-5 h-5" />
-              <span>邀请好友</span>
+              <span>{t("member.partnerDashboard.inviteFriends")}</span>
             </Button>
             <Button variant="outline" className="h-auto py-4 flex-col gap-2" data-testid="button-withdraw">
               <Wallet className="w-5 h-5" />
-              <span>申请提现</span>
+              <span>{t("member.partnerDashboard.withdraw")}</span>
             </Button>
             <Button variant="outline" className="h-auto py-4 flex-col gap-2" data-testid="button-upgrade">
               <Zap className="w-5 h-5" />
-              <span>升级套餐</span>
+              <span>{t("member.partnerDashboard.upgradePlan")}</span>
             </Button>
           </div>
         </CardContent>

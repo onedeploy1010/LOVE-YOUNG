@@ -8,6 +8,7 @@ import {
   Thermometer, Search, Truck, Package, CheckCircle,
   Clock, MapPin, Eye, AlertTriangle
 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 const mockShipments = [
   { id: "SH-2026-001", order: "LY20260125001", destination: "Kuala Lumpur", status: "in_transit", temp: "-18°C", eta: "2026-01-27" },
@@ -16,17 +17,18 @@ const mockShipments = [
   { id: "SH-2026-004", order: "LY20260122004", destination: "Ipoh", status: "in_transit", temp: "-15°C", eta: "2026-01-26" },
 ];
 
-const getStatusConfig = (status: string) => {
-  switch (status) {
-    case "pending": return { label: "待发货", icon: Clock, color: "text-yellow-500", bg: "bg-yellow-500/10" };
-    case "in_transit": return { label: "运输中", icon: Truck, color: "text-blue-500", bg: "bg-blue-500/10" };
-    case "delivered": return { label: "已送达", icon: CheckCircle, color: "text-green-500", bg: "bg-green-500/10" };
-    default: return { label: "未知", icon: Package, color: "text-muted-foreground", bg: "bg-muted" };
-  }
-};
-
 export default function AdminLogisticsPage() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case "pending": return { label: t("admin.logisticsPage.pendingShipment"), icon: Clock, color: "text-yellow-500", bg: "bg-yellow-500/10" };
+      case "in_transit": return { label: t("admin.logisticsPage.inTransit"), icon: Truck, color: "text-blue-500", bg: "bg-blue-500/10" };
+      case "delivered": return { label: t("admin.logisticsPage.delivered"), icon: CheckCircle, color: "text-green-500", bg: "bg-green-500/10" };
+      default: return { label: t("admin.logisticsPage.statusUnknown"), icon: Package, color: "text-muted-foreground", bg: "bg-muted" };
+    }
+  };
 
   const filteredShipments = mockShipments.filter(s =>
     searchQuery === "" ||
@@ -46,33 +48,33 @@ export default function AdminLogisticsPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-logistics-title">物流追踪</h1>
-          <p className="text-muted-foreground">冷链物流与配送管理</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-logistics-title">{t("admin.logisticsPage.title")}</h1>
+          <p className="text-muted-foreground">{t("admin.logisticsPage.subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold">{stats.total}</p>
-              <p className="text-sm text-muted-foreground">总运单</p>
+              <p className="text-sm text-muted-foreground">{t("admin.logisticsPage.totalShipments")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-yellow-500">{stats.pending}</p>
-              <p className="text-sm text-muted-foreground">待发货</p>
+              <p className="text-sm text-muted-foreground">{t("admin.logisticsPage.pendingShipment")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-blue-500">{stats.inTransit}</p>
-              <p className="text-sm text-muted-foreground">运输中</p>
+              <p className="text-sm text-muted-foreground">{t("admin.logisticsPage.inTransit")}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-green-500">{stats.delivered}</p>
-              <p className="text-sm text-muted-foreground">已送达</p>
+              <p className="text-sm text-muted-foreground">{t("admin.logisticsPage.delivered")}</p>
             </CardContent>
           </Card>
         </div>
@@ -83,14 +85,14 @@ export default function AdminLogisticsPage() {
               <Thermometer className="w-6 h-6 text-blue-500" />
             </div>
             <div>
-              <p className="font-bold">冷链监控</p>
+              <p className="font-bold">{t("admin.logisticsPage.coldChainMonitor")}</p>
               <p className="text-sm text-muted-foreground">
-                所有运输中货品温度正常 (-18°C ~ -15°C)
+                {t("admin.logisticsPage.tempNormal")}
               </p>
             </div>
             <Badge className="ml-auto bg-green-500 text-white gap-1">
               <CheckCircle className="w-3 h-3" />
-              正常
+              {t("admin.logisticsPage.statusNormal")}
             </Badge>
           </CardContent>
         </Card>
@@ -100,12 +102,12 @@ export default function AdminLogisticsPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <CardTitle className="flex items-center gap-2">
                 <Truck className="w-5 h-5 text-primary" />
-                运单列表
+                {t("admin.logisticsPage.shipmentList")}
               </CardTitle>
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="搜索运单或目的地..."
+                  placeholder={t("admin.logisticsPage.searchPlaceholder")}
                   className="pl-9"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -135,7 +137,7 @@ export default function AdminLogisticsPage() {
                           <Badge variant="outline">{statusConfig.label}</Badge>
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>订单: {shipment.order}</span>
+                          <span>{t("admin.logisticsPage.order")}: {shipment.order}</span>
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3 h-3" />
                             {shipment.destination}
@@ -153,7 +155,7 @@ export default function AdminLogisticsPage() {
                       </div>
                       <Button variant="outline" size="sm" className="gap-1" data-testid={`button-track-${shipment.id}`}>
                         <Eye className="w-4 h-4" />
-                        追踪
+                        {t("admin.logisticsPage.track")}
                       </Button>
                     </div>
                   </div>

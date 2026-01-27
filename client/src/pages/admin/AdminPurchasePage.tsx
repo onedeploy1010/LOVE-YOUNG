@@ -9,6 +9,7 @@ import {
   ClipboardCheck, Search, Plus, Building2, Eye,
   Clock, CheckCircle, Truck, Package
 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 const mockPurchaseOrders = [
   { id: "PO-2026-001", supplier: "马来西亚燕窝供应商", total: 25000, status: "pending", items: 5, date: "2026-01-25" },
@@ -23,19 +24,20 @@ const mockSuppliers = [
   { id: "3", name: "包装材料供应商", contact: "Mdm. Lee", phone: "+60 12-987 6543", orders: 5 },
 ];
 
-const getStatusConfig = (status: string) => {
-  switch (status) {
-    case "pending": return { label: "待审批", icon: Clock, color: "text-yellow-500", bg: "bg-yellow-500/10" };
-    case "approved": return { label: "已审批", icon: CheckCircle, color: "text-blue-500", bg: "bg-blue-500/10" };
-    case "shipped": return { label: "运输中", icon: Truck, color: "text-primary", bg: "bg-primary/10" };
-    case "received": return { label: "已收货", icon: Package, color: "text-green-500", bg: "bg-green-500/10" };
-    default: return { label: "未知", icon: Clock, color: "text-muted-foreground", bg: "bg-muted" };
-  }
-};
-
 export default function AdminPurchasePage() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("orders");
+
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case "pending": return { label: t("admin.purchasePage.statusPending"), icon: Clock, color: "text-yellow-500", bg: "bg-yellow-500/10" };
+      case "approved": return { label: t("admin.purchasePage.statusApproved"), icon: CheckCircle, color: "text-blue-500", bg: "bg-blue-500/10" };
+      case "shipped": return { label: t("admin.purchasePage.statusShipped"), icon: Truck, color: "text-primary", bg: "bg-primary/10" };
+      case "received": return { label: t("admin.purchasePage.statusReceived"), icon: Package, color: "text-green-500", bg: "bg-green-500/10" };
+      default: return { label: t("admin.purchasePage.statusUnknown"), icon: Clock, color: "text-muted-foreground", bg: "bg-muted" };
+    }
+  };
 
   const filteredOrders = mockPurchaseOrders.filter(order =>
     searchQuery === "" ||
@@ -48,19 +50,19 @@ export default function AdminPurchasePage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif text-primary" data-testid="text-purchase-title">采购管理</h1>
-            <p className="text-muted-foreground">采购订单与供应商管理</p>
+            <h1 className="text-2xl font-serif text-primary" data-testid="text-purchase-title">{t("admin.purchasePage.title")}</h1>
+            <p className="text-muted-foreground">{t("admin.purchasePage.subtitle")}</p>
           </div>
           <Button className="gap-2 bg-secondary text-secondary-foreground" data-testid="button-new-po">
             <Plus className="w-4 h-4" />
-            新建采购单
+            {t("admin.purchasePage.newPo")}
           </Button>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="orders" data-testid="tab-orders">采购订单</TabsTrigger>
-            <TabsTrigger value="suppliers" data-testid="tab-suppliers">供应商</TabsTrigger>
+            <TabsTrigger value="orders" data-testid="tab-orders">{t("admin.purchasePage.purchaseOrders")}</TabsTrigger>
+            <TabsTrigger value="suppliers" data-testid="tab-suppliers">{t("admin.purchasePage.suppliers")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="orders" className="mt-4">
@@ -69,12 +71,12 @@ export default function AdminPurchasePage() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <CardTitle className="flex items-center gap-2">
                     <ClipboardCheck className="w-5 h-5 text-primary" />
-                    采购订单 ({mockPurchaseOrders.length})
+                    {t("admin.purchasePage.purchaseOrders")} ({mockPurchaseOrders.length})
                   </CardTitle>
                   <div className="relative w-full md:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      placeholder="搜索订单或供应商..."
+                      placeholder={t("admin.purchasePage.searchPlaceholder")}
                       className="pl-9"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -105,7 +107,7 @@ export default function AdminPurchasePage() {
                             </div>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <span>{order.supplier}</span>
-                              <span>{order.items} 项</span>
+                              <span>{order.items} {t("admin.purchasePage.items")}</span>
                               <span>{order.date}</span>
                             </div>
                           </div>
@@ -114,7 +116,7 @@ export default function AdminPurchasePage() {
                           <span className="font-bold text-primary">RM {order.total.toLocaleString()}</span>
                           <Button variant="outline" size="sm" className="gap-1" data-testid={`button-view-${order.id}`}>
                             <Eye className="w-4 h-4" />
-                            详情
+                            {t("admin.purchasePage.viewDetails")}
                           </Button>
                         </div>
                       </div>
@@ -131,11 +133,11 @@ export default function AdminPurchasePage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Building2 className="w-5 h-5 text-primary" />
-                    供应商列表
+                    {t("admin.purchasePage.supplierList")}
                   </CardTitle>
                   <Button variant="outline" className="gap-2" data-testid="button-add-supplier">
                     <Plus className="w-4 h-4" />
-                    添加供应商
+                    {t("admin.purchasePage.addSupplier")}
                   </Button>
                 </div>
               </CardHeader>
@@ -159,9 +161,9 @@ export default function AdminPurchasePage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <Badge variant="outline">{supplier.orders} 订单</Badge>
+                        <Badge variant="outline">{supplier.orders} {t("admin.purchasePage.orders")}</Badge>
                         <Button variant="outline" size="sm" data-testid={`button-edit-${supplier.id}`}>
-                          编辑
+                          {t("admin.purchasePage.edit")}
                         </Button>
                       </div>
                     </div>

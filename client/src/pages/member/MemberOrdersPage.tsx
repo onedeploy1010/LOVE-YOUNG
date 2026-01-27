@@ -9,6 +9,7 @@ import {
   ShoppingBag, Package, Truck, CheckCircle, Clock,
   ChevronRight, RefreshCw
 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 const mockOrders = [
   { 
@@ -50,27 +51,28 @@ const mockOrders = [
   },
 ];
 
-const getStatusConfig = (status: string) => {
-  switch (status) {
-    case "pending":
-      return { label: "待付款", icon: Clock, color: "bg-yellow-500/10 text-yellow-600", badgeVariant: "outline" as const };
-    case "paid":
-      return { label: "已付款", icon: CheckCircle, color: "bg-blue-500/10 text-blue-500", badgeVariant: "default" as const };
-    case "processing":
-      return { label: "备货中", icon: Package, color: "bg-blue-500/10 text-blue-500", badgeVariant: "default" as const };
-    case "shipped":
-      return { label: "配送中", icon: Truck, color: "bg-primary/10 text-primary", badgeVariant: "default" as const };
-    case "delivered":
-      return { label: "已完成", icon: CheckCircle, color: "bg-green-500/10 text-green-500", badgeVariant: "secondary" as const };
-    case "cancelled":
-      return { label: "已取消", icon: RefreshCw, color: "bg-muted text-muted-foreground", badgeVariant: "outline" as const };
-    default:
-      return { label: "未知", icon: Clock, color: "bg-muted", badgeVariant: "outline" as const };
-  }
-};
-
 export default function MemberOrdersPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("all");
+
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case "pending":
+        return { label: t("member.orders.statusPending"), icon: Clock, color: "bg-yellow-500/10 text-yellow-600", badgeVariant: "outline" as const };
+      case "paid":
+        return { label: t("member.orders.statusPaid"), icon: CheckCircle, color: "bg-blue-500/10 text-blue-500", badgeVariant: "default" as const };
+      case "processing":
+        return { label: t("member.orders.statusProcessing"), icon: Package, color: "bg-blue-500/10 text-blue-500", badgeVariant: "default" as const };
+      case "shipped":
+        return { label: t("member.orders.statusShipped"), icon: Truck, color: "bg-primary/10 text-primary", badgeVariant: "default" as const };
+      case "delivered":
+        return { label: t("member.orders.statusDelivered"), icon: CheckCircle, color: "bg-green-500/10 text-green-500", badgeVariant: "secondary" as const };
+      case "cancelled":
+        return { label: t("member.orders.statusCancelled"), icon: RefreshCw, color: "bg-muted text-muted-foreground", badgeVariant: "outline" as const };
+      default:
+        return { label: t("member.orders.statusUnknown"), icon: Clock, color: "bg-muted", badgeVariant: "outline" as const };
+    }
+  };
 
   const filteredOrders = activeTab === "all" 
     ? mockOrders 
@@ -80,17 +82,17 @@ export default function MemberOrdersPage() {
     <MemberLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-orders-title">订单记录</h1>
-          <p className="text-muted-foreground">查看您的历史订单</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-orders-title">{t("member.orders.title")}</h1>
+          <p className="text-muted-foreground">{t("member.orders.subtitle")}</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="all" data-testid="tab-all">全部</TabsTrigger>
-            <TabsTrigger value="pending" data-testid="tab-pending">待付款</TabsTrigger>
-            <TabsTrigger value="shipped" data-testid="tab-shipped">配送中</TabsTrigger>
-            <TabsTrigger value="delivered" data-testid="tab-delivered">已完成</TabsTrigger>
-            <TabsTrigger value="cancelled" data-testid="tab-cancelled">已取消</TabsTrigger>
+            <TabsTrigger value="all" data-testid="tab-all">{t("member.orders.tabAll")}</TabsTrigger>
+            <TabsTrigger value="pending" data-testid="tab-pending">{t("member.orders.tabPending")}</TabsTrigger>
+            <TabsTrigger value="shipped" data-testid="tab-shipped">{t("member.orders.tabShipped")}</TabsTrigger>
+            <TabsTrigger value="delivered" data-testid="tab-delivered">{t("member.orders.tabDelivered")}</TabsTrigger>
+            <TabsTrigger value="cancelled" data-testid="tab-cancelled">{t("member.orders.tabCancelled")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-4">
@@ -98,10 +100,10 @@ export default function MemberOrdersPage() {
               <Card>
                 <CardContent className="p-12 text-center">
                   <ShoppingBag className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                  <p className="text-muted-foreground">暂无订单</p>
+                  <p className="text-muted-foreground">{t("member.orders.noOrders")}</p>
                   <Link href="/products">
                     <Button className="mt-4 bg-secondary text-secondary-foreground" data-testid="button-shop">
-                      去逛逛
+                      {t("member.orders.goShop")}
                     </Button>
                   </Link>
                 </CardContent>
@@ -142,14 +144,14 @@ export default function MemberOrdersPage() {
                         </div>
                         <div className="flex items-center justify-between mt-4 pt-4 border-t">
                           <span className="text-muted-foreground">
-                            共 {order.items.reduce((sum, i) => sum + i.quantity, 0)} 件商品
+                            {t("member.orders.totalItems").replace("{count}", String(order.items.reduce((sum, i) => sum + i.quantity, 0)))}
                           </span>
                           <div className="flex items-center gap-4">
                             <span className="font-bold text-lg">
-                              合计: <span className="text-primary">RM {order.total}</span>
+                              {t("member.orders.total")}: <span className="text-primary">RM {order.total}</span>
                             </span>
                             <Button variant="outline" size="sm" className="gap-1" data-testid={`button-detail-${order.id}`}>
-                              查看详情
+                              {t("member.orders.viewDetails")}
                               <ChevronRight className="w-4 h-4" />
                             </Button>
                           </div>

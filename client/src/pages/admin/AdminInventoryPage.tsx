@@ -9,6 +9,7 @@ import {
   Boxes, Search, Plus, AlertTriangle, CheckCircle,
   ArrowUpRight, ArrowDownRight, Package
 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 const mockInventory = [
   { id: "1", name: "原味红枣燕窝", sku: "BN-001", stock: 150, minStock: 50, status: "normal" },
@@ -25,6 +26,7 @@ const mockLedger = [
 ];
 
 export default function AdminInventoryPage() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredInventory = mockInventory.filter(item =>
@@ -41,10 +43,10 @@ export default function AdminInventoryPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "normal": return <Badge className="bg-green-500">充足</Badge>;
-      case "low": return <Badge className="bg-yellow-500">偏低</Badge>;
-      case "critical": return <Badge className="bg-red-500">紧缺</Badge>;
-      default: return <Badge variant="outline">未知</Badge>;
+      case "normal": return <Badge className="bg-green-500">{t("admin.inventoryPage.statusNormal")}</Badge>;
+      case "low": return <Badge className="bg-yellow-500">{t("admin.inventoryPage.statusLow")}</Badge>;
+      case "critical": return <Badge className="bg-red-500">{t("admin.inventoryPage.statusCritical")}</Badge>;
+      default: return <Badge variant="outline">{t("admin.inventoryPage.statusUnknown")}</Badge>;
     }
   };
 
@@ -53,12 +55,12 @@ export default function AdminInventoryPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif text-primary" data-testid="text-inventory-title">库存管理</h1>
-            <p className="text-muted-foreground">库存查询与调整</p>
+            <h1 className="text-2xl font-serif text-primary" data-testid="text-inventory-title">{t("admin.inventoryPage.title")}</h1>
+            <p className="text-muted-foreground">{t("admin.inventoryPage.subtitle")}</p>
           </div>
           <Button className="gap-2 bg-secondary text-secondary-foreground" data-testid="button-add-stock">
             <Plus className="w-4 h-4" />
-            入库登记
+            {t("admin.inventoryPage.addStock")}
           </Button>
         </div>
 
@@ -70,7 +72,7 @@ export default function AdminInventoryPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.totalSku}</p>
-                <p className="text-sm text-muted-foreground">产品SKU</p>
+                <p className="text-sm text-muted-foreground">{t("admin.inventoryPage.productSku")}</p>
               </div>
             </CardContent>
           </Card>
@@ -81,7 +83,7 @@ export default function AdminInventoryPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-yellow-500">{stats.lowStock}</p>
-                <p className="text-sm text-muted-foreground">库存偏低</p>
+                <p className="text-sm text-muted-foreground">{t("admin.inventoryPage.lowStock")}</p>
               </div>
             </CardContent>
           </Card>
@@ -92,7 +94,7 @@ export default function AdminInventoryPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-red-500">{stats.critical}</p>
-                <p className="text-sm text-muted-foreground">库存紧缺</p>
+                <p className="text-sm text-muted-foreground">{t("admin.inventoryPage.criticalStock")}</p>
               </div>
             </CardContent>
           </Card>
@@ -103,12 +105,12 @@ export default function AdminInventoryPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <CardTitle className="flex items-center gap-2">
                 <Package className="w-5 h-5 text-primary" />
-                库存状态
+                {t("admin.inventoryPage.inventoryStatus")}
               </CardTitle>
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="搜索产品或SKU..."
+                  placeholder={t("admin.inventoryPage.searchPlaceholder")}
                   className="pl-9"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -157,7 +159,7 @@ export default function AdminInventoryPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ArrowUpRight className="w-5 h-5 text-primary" />
-              最近库存变动
+              {t("admin.inventoryPage.recentChanges")}
             </CardTitle>
           </CardHeader>
           <CardContent>

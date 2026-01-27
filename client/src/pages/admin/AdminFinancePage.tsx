@@ -7,6 +7,7 @@ import {
   DollarSign, TrendingUp, TrendingDown, PieChart,
   ArrowUpRight, ArrowDownRight, Download, Calendar
 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 const mockFinanceData = {
   revenue: { current: 125000, previous: 98000, growth: 27.6 },
@@ -25,18 +26,20 @@ const mockTransactions = [
 ];
 
 export default function AdminFinancePage() {
+  const { t } = useTranslation();
+
   return (
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif text-primary" data-testid="text-finance-title">财务报表</h1>
-            <p className="text-muted-foreground">收支分析与报表</p>
+            <h1 className="text-2xl font-serif text-primary" data-testid="text-finance-title">{t("admin.financePage.title")}</h1>
+            <p className="text-muted-foreground">{t("admin.financePage.subtitle")}</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="gap-2" data-testid="button-export">
               <Download className="w-4 h-4" />
-              导出报表
+              {t("admin.financePage.exportReport")}
             </Button>
           </div>
         </div>
@@ -54,7 +57,7 @@ export default function AdminFinancePage() {
                 </Badge>
               </div>
               <p className="text-3xl font-bold text-green-600">RM {mockFinanceData.revenue.current.toLocaleString()}</p>
-              <p className="text-sm text-muted-foreground">本月收入</p>
+              <p className="text-sm text-muted-foreground">{t("admin.financePage.monthlyRevenue")}</p>
             </CardContent>
           </Card>
 
@@ -70,7 +73,7 @@ export default function AdminFinancePage() {
                 </Badge>
               </div>
               <p className="text-3xl font-bold text-red-500">RM {mockFinanceData.expenses.current.toLocaleString()}</p>
-              <p className="text-sm text-muted-foreground">本月支出</p>
+              <p className="text-sm text-muted-foreground">{t("admin.financePage.monthlyExpenses")}</p>
             </CardContent>
           </Card>
 
@@ -86,7 +89,7 @@ export default function AdminFinancePage() {
                 </Badge>
               </div>
               <p className="text-3xl font-bold text-primary">RM {mockFinanceData.profit.current.toLocaleString()}</p>
-              <p className="text-sm text-muted-foreground">本月净利润</p>
+              <p className="text-sm text-muted-foreground">{t("admin.financePage.monthlyProfit")}</p>
             </CardContent>
           </Card>
         </div>
@@ -96,24 +99,24 @@ export default function AdminFinancePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <PieChart className="w-5 h-5 text-primary" />
-                支出构成
+                {t("admin.financePage.expenseBreakdown")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                <span>采购成本</span>
+                <span>{t("admin.financePage.purchaseCost")}</span>
                 <span className="font-bold">RM 25,000 (55%)</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                <span>物流费用</span>
+                <span>{t("admin.financePage.logisticsCost")}</span>
                 <span className="font-bold">RM 8,000 (18%)</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                <span>运营费用</span>
+                <span>{t("admin.financePage.operationCost")}</span>
                 <span className="font-bold">RM 7,000 (16%)</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                <span>其他费用</span>
+                <span>{t("admin.financePage.otherCost")}</span>
                 <span className="font-bold">RM 5,000 (11%)</span>
               </div>
             </CardContent>
@@ -123,23 +126,23 @@ export default function AdminFinancePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-secondary" />
-                经营人相关支出
+                {t("admin.financePage.partnerExpenses")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-4 bg-secondary/10 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <span>返现分红支出</span>
+                  <span>{t("admin.financePage.cashbackPayout")}</span>
                   <span className="font-bold text-secondary">RM {mockFinanceData.partnerPayouts.toLocaleString()}</span>
                 </div>
-                <p className="text-sm text-muted-foreground">包含直接推荐和3代网络返现</p>
+                <p className="text-sm text-muted-foreground">{t("admin.financePage.cashbackDesc")}</p>
               </div>
               <div className="p-4 bg-primary/10 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <span>RWA奖金池支出</span>
+                  <span>{t("admin.financePage.bonusPoolPayout")}</span>
                   <span className="font-bold text-primary">RM {mockFinanceData.bonusPoolPayout.toLocaleString()}</span>
                 </div>
-                <p className="text-sm text-muted-foreground">本周期奖金池分红</p>
+                <p className="text-sm text-muted-foreground">{t("admin.financePage.bonusPoolDesc")}</p>
               </div>
             </CardContent>
           </Card>
@@ -149,15 +152,15 @@ export default function AdminFinancePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-primary" />
-              最近交易记录
+              {t("admin.financePage.recentTransactions")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="all">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="all" data-testid="tab-all">全部</TabsTrigger>
-                <TabsTrigger value="income" data-testid="tab-income">收入</TabsTrigger>
-                <TabsTrigger value="expense" data-testid="tab-expense">支出</TabsTrigger>
+                <TabsTrigger value="all" data-testid="tab-all">{t("admin.financePage.tabAll")}</TabsTrigger>
+                <TabsTrigger value="income" data-testid="tab-income">{t("admin.financePage.tabIncome")}</TabsTrigger>
+                <TabsTrigger value="expense" data-testid="tab-expense">{t("admin.financePage.tabExpense")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="all" className="mt-4">

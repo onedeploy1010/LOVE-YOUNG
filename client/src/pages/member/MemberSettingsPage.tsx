@@ -13,6 +13,7 @@ import {
   Bell, Globe, Moon, Save, Loader2
 } from "lucide-react";
 import type { User as UserType, Member } from "@shared/schema";
+import { useTranslation } from "@/lib/i18n";
 
 interface UserResponse {
   user: UserType | null;
@@ -20,6 +21,7 @@ interface UserResponse {
 }
 
 export default function MemberSettingsPage() {
+  const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
   
   const { data } = useQuery<UserResponse>({
@@ -38,17 +40,17 @@ export default function MemberSettingsPage() {
     <MemberLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-settings-title">账户设置</h1>
-          <p className="text-muted-foreground">管理您的个人信息和偏好设置</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-settings-title">{t("member.settings.title")}</h1>
+          <p className="text-muted-foreground">{t("member.settings.subtitle")}</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="w-5 h-5 text-primary" />
-              个人信息
+              {t("member.settings.personalInfo")}
             </CardTitle>
-            <CardDescription>更新您的个人资料和联系方式</CardDescription>
+            <CardDescription>{t("member.settings.personalInfoDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center gap-6">
@@ -60,7 +62,7 @@ export default function MemberSettingsPage() {
               </Avatar>
               <Button variant="outline" className="gap-2">
                 <Camera className="w-4 h-4" />
-                更换头像
+                {t("member.settings.changeAvatar")}
               </Button>
             </div>
 
@@ -68,23 +70,23 @@ export default function MemberSettingsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">姓名</Label>
+                <Label htmlFor="name">{t("member.settings.name")}</Label>
                 <Input id="name" defaultValue={member?.name || user?.firstName || ""} data-testid="input-name" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">手机号码</Label>
+                <Label htmlFor="phone">{t("member.settings.phone")}</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input id="phone" className="pl-10" defaultValue={member?.phone || ""} data-testid="input-phone" />
                 </div>
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="email">电子邮箱</Label>
+                <Label htmlFor="email">{t("member.settings.email")}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input id="email" className="pl-10" defaultValue={user?.email || ""} disabled data-testid="input-email" />
                 </div>
-                <p className="text-xs text-muted-foreground">邮箱绑定Replit账户，暂不支持修改</p>
+                <p className="text-xs text-muted-foreground">{t("member.settings.emailNote")}</p>
               </div>
             </div>
           </CardContent>
@@ -94,20 +96,20 @@ export default function MemberSettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary" />
-              安全设置
+              {t("member.settings.security")}
             </CardTitle>
-            <CardDescription>保护您的账户安全</CardDescription>
+            <CardDescription>{t("member.settings.securityDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
               <div className="flex items-center gap-3">
                 <Lock className="w-5 h-5 text-muted-foreground" />
                 <div>
-                  <p className="font-medium">登录方式</p>
-                  <p className="text-sm text-muted-foreground">通过Replit账户登录</p>
+                  <p className="font-medium">{t("member.settings.loginMethod")}</p>
+                  <p className="text-sm text-muted-foreground">{t("member.settings.loginMethodDesc")}</p>
                 </div>
               </div>
-              <Button variant="outline" size="sm">管理</Button>
+              <Button variant="outline" size="sm">{t("member.settings.manage")}</Button>
             </div>
           </CardContent>
         </Card>
@@ -116,31 +118,31 @@ export default function MemberSettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="w-5 h-5 text-primary" />
-              通知偏好
+              {t("member.settings.notifications")}
             </CardTitle>
-            <CardDescription>管理您的通知设置</CardDescription>
+            <CardDescription>{t("member.settings.notificationsDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">订单更新通知</p>
-                <p className="text-sm text-muted-foreground">订单状态变更时发送通知</p>
+                <p className="font-medium">{t("member.settings.orderNotify")}</p>
+                <p className="text-sm text-muted-foreground">{t("member.settings.orderNotifyDesc")}</p>
               </div>
               <Switch defaultChecked data-testid="switch-order-notify" />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">促销活动通知</p>
-                <p className="text-sm text-muted-foreground">接收优惠和促销信息</p>
+                <p className="font-medium">{t("member.settings.promoNotify")}</p>
+                <p className="text-sm text-muted-foreground">{t("member.settings.promoNotifyDesc")}</p>
               </div>
               <Switch defaultChecked data-testid="switch-promo-notify" />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">收益提醒</p>
-                <p className="text-sm text-muted-foreground">分红到账时发送通知</p>
+                <p className="font-medium">{t("member.settings.earningNotify")}</p>
+                <p className="text-sm text-muted-foreground">{t("member.settings.earningNotifyDesc")}</p>
               </div>
               <Switch defaultChecked data-testid="switch-earning-notify" />
             </div>
@@ -151,7 +153,7 @@ export default function MemberSettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Globe className="w-5 h-5 text-primary" />
-              显示偏好
+              {t("member.settings.display")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -159,8 +161,8 @@ export default function MemberSettingsPage() {
               <div className="flex items-center gap-3">
                 <Moon className="w-5 h-5 text-muted-foreground" />
                 <div>
-                  <p className="font-medium">深色模式</p>
-                  <p className="text-sm text-muted-foreground">跟随系统设置</p>
+                  <p className="font-medium">{t("member.settings.darkMode")}</p>
+                  <p className="text-sm text-muted-foreground">{t("member.settings.darkModeDesc")}</p>
                 </div>
               </div>
               <Switch data-testid="switch-dark-mode" />
@@ -176,7 +178,7 @@ export default function MemberSettingsPage() {
             data-testid="button-save"
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            保存更改
+            {t("member.settings.saveChanges")}
           </Button>
         </div>
       </div>
