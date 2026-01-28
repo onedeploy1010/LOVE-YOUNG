@@ -28,6 +28,7 @@ The frontend follows a component-based architecture with:
 - **Runtime**: Node.js with Express
 - **Language**: TypeScript (ESM modules)
 - **API Style**: RESTful JSON endpoints under `/api/`
+- **Authentication**: Supabase Auth with JWT validation
 - **Development**: Vite dev server with HMR proxied through Express
 
 The server implements:
@@ -35,6 +36,27 @@ The server implements:
 - Testimonial retrieval
 - Contact form submission
 - Static file serving in production
+
+### Authentication (Supabase Auth)
+- **Provider**: Supabase Auth with email/password and Google OAuth
+- **Frontend Client**: `client/src/lib/supabase.ts` - Supabase client configuration
+- **Auth Context**: `client/src/contexts/AuthContext.tsx` - React context for user state
+- **Backend Middleware**: `server/supabaseAuth.ts` - JWT token validation middleware
+- **Login Page**: `/auth/login` - Login and signup forms with i18n support
+- **OAuth Callback**: `/auth/callback` - Handles OAuth redirect
+
+Environment Variables:
+- `SUPABASE_URL` - Supabase project URL (server)
+- `SUPABASE_ANON_KEY` - Supabase anonymous key (server)
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key for JWT validation (server)
+- `VITE_SUPABASE_URL` - Supabase project URL (frontend)
+- `VITE_SUPABASE_ANON_KEY` - Supabase anonymous key (frontend)
+
+Auth Flow:
+1. Frontend uses AuthContext to access user state via `useAuth()` hook
+2. API requests include `Authorization: Bearer <access_token>` header automatically
+3. Backend validates JWT using `isSupabaseAuthenticated` middleware
+4. User ID available via `req.supabaseUser.id` in protected routes
 
 ### Data Storage
 - **ORM**: Drizzle ORM with PostgreSQL dialect
