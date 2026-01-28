@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { MemberLayout } from "@/components/MemberLayout";
+import { useTranslation } from "@/lib/i18n";
 import {
   MapPin, Plus, Edit, Trash2, Home, Building2, CheckCircle
 } from "lucide-react";
@@ -14,7 +15,7 @@ import {
 const mockAddresses = [
   { 
     id: 1, 
-    name: "张三", 
+    name: "John Doe", 
     phone: "+60 12-345 6789",
     address: "No. 123, Jalan Bukit Bintang, Bukit Bintang",
     city: "Kuala Lumpur",
@@ -25,7 +26,7 @@ const mockAddresses = [
   },
   { 
     id: 2, 
-    name: "张三", 
+    name: "John Doe", 
     phone: "+60 12-345 6789",
     address: "Level 10, Menara XYZ, Jalan Sultan Ismail",
     city: "Kuala Lumpur",
@@ -37,6 +38,7 @@ const mockAddresses = [
 ];
 
 export default function MemberAddressesPage() {
+  const { t } = useTranslation();
   const [addresses, setAddresses] = useState(mockAddresses);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -56,53 +58,53 @@ export default function MemberAddressesPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif text-primary" data-testid="text-addresses-title">地址管理</h1>
-            <p className="text-muted-foreground">管理您的收货地址</p>
+            <h1 className="text-2xl font-serif text-primary" data-testid="text-addresses-title">{t("member.addresses.title")}</h1>
+            <p className="text-muted-foreground">{t("member.addresses.subtitle")}</p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2 bg-secondary text-secondary-foreground" data-testid="button-add-address">
                 <Plus className="w-4 h-4" />
-                新增地址
+                {t("member.addresses.addAddress")}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-lg">
               <DialogHeader>
-                <DialogTitle>新增收货地址</DialogTitle>
+                <DialogTitle>{t("member.addresses.addAddressTitle")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 mt-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">收件人姓名</Label>
-                    <Input id="name" placeholder="请输入姓名" data-testid="input-name" />
+                    <Label htmlFor="name">{t("member.addresses.form.name")}</Label>
+                    <Input id="name" placeholder={t("member.addresses.form.namePlaceholder")} data-testid="input-name" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">联系电话</Label>
+                    <Label htmlFor="phone">{t("member.addresses.form.phone")}</Label>
                     <Input id="phone" placeholder="+60 12-345 6789" data-testid="input-phone" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="address">详细地址</Label>
-                  <Textarea id="address" placeholder="街道、门牌号、楼层等" data-testid="input-address" />
+                  <Label htmlFor="address">{t("member.addresses.form.address")}</Label>
+                  <Textarea id="address" placeholder={t("member.addresses.form.addressPlaceholder")} data-testid="input-address" />
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="city">城市</Label>
+                    <Label htmlFor="city">{t("member.addresses.form.city")}</Label>
                     <Input id="city" placeholder="Kuala Lumpur" data-testid="input-city" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="postcode">邮编</Label>
+                    <Label htmlFor="postcode">{t("member.addresses.form.postcode")}</Label>
                     <Input id="postcode" placeholder="50000" data-testid="input-postcode" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="state">州属</Label>
+                    <Label htmlFor="state">{t("member.addresses.form.state")}</Label>
                     <Input id="state" placeholder="Selangor" data-testid="input-state" />
                   </div>
                 </div>
                 <div className="flex justify-end gap-3 mt-6">
-                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>取消</Button>
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>{t("member.addresses.cancel")}</Button>
                   <Button className="bg-secondary text-secondary-foreground" onClick={() => setIsDialogOpen(false)} data-testid="button-save-address">
-                    保存地址
+                    {t("member.addresses.save")}
                   </Button>
                 </div>
               </div>
@@ -114,9 +116,9 @@ export default function MemberAddressesPage() {
           <Card>
             <CardContent className="p-12 text-center">
               <MapPin className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground mb-4">您还没有添加收货地址</p>
+              <p className="text-muted-foreground mb-4">{t("member.addresses.noAddresses")}</p>
               <Button className="bg-secondary text-secondary-foreground" onClick={() => setIsDialogOpen(true)}>
-                添加第一个地址
+                {t("member.addresses.addFirst")}
               </Button>
             </CardContent>
           </Card>
@@ -131,7 +133,7 @@ export default function MemberAddressesPage() {
                 {addr.isDefault && (
                   <Badge className="absolute top-4 right-4 bg-secondary text-secondary-foreground gap-1">
                     <CheckCircle className="w-3 h-3" />
-                    默认地址
+                    {t("member.addresses.defaultBadge")}
                   </Badge>
                 )}
                 <CardContent className="p-6">
@@ -163,12 +165,12 @@ export default function MemberAddressesPage() {
                         onClick={() => setDefault(addr.id)}
                         data-testid={`button-default-${addr.id}`}
                       >
-                        设为默认
+                        {t("member.addresses.setDefault")}
                       </Button>
                     )}
                     <Button variant="ghost" size="sm" className="gap-1" data-testid={`button-edit-${addr.id}`}>
                       <Edit className="w-4 h-4" />
-                      编辑
+                      {t("member.addresses.edit")}
                     </Button>
                     <Button 
                       variant="ghost" 
@@ -178,7 +180,7 @@ export default function MemberAddressesPage() {
                       data-testid={`button-delete-${addr.id}`}
                     >
                       <Trash2 className="w-4 h-4" />
-                      删除
+                      {t("member.addresses.delete")}
                     </Button>
                   </div>
                 </CardContent>

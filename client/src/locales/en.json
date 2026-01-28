@@ -1129,6 +1129,75 @@
         }
       }
     },
+    "notifications": {
+      "title": "Notifications",
+      "unreadCount": "You have {count} unread messages",
+      "noUnread": "No unread messages",
+      "markAllRead": "Mark all read",
+      "tabs": {
+        "all": "All",
+        "unread": "Unread",
+        "order": "Orders",
+        "earning": "Earnings",
+        "promo": "Promos"
+      },
+      "noMessages": "No messages",
+      "new": "New"
+    },
+    "addresses": {
+      "title": "Address Management",
+      "subtitle": "Manage your shipping addresses",
+      "addAddress": "Add Address",
+      "addAddressTitle": "Add Shipping Address",
+      "noAddresses": "You haven't added any addresses",
+      "addFirst": "Add your first address",
+      "defaultBadge": "Default",
+      "setDefault": "Set as default",
+      "edit": "Edit",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "save": "Save Address",
+      "form": {
+        "name": "Recipient Name",
+        "namePlaceholder": "Enter name",
+        "phone": "Phone Number",
+        "address": "Address Details",
+        "addressPlaceholder": "Street, unit number, floor, etc.",
+        "city": "City",
+        "postcode": "Postcode",
+        "state": "State"
+      }
+    },
+    "payment": {
+      "title": "Payment Methods",
+      "subtitle": "Manage your payment methods",
+      "securityTitle": "Payment Security",
+      "securityDesc": "All payment information is encrypted to ensure your funds are safe. We support multiple Malaysian local payment methods.",
+      "boundMethods": "Linked Payment Methods",
+      "methodCount": "You have {count} payment methods added",
+      "add": "Add",
+      "addTitle": "Add Payment Method",
+      "bankAccount": "Bank Account",
+      "ewallet": "E-Wallet",
+      "bankName": "Bank Name",
+      "bankNamePlaceholder": "Select bank",
+      "accountNumber": "Account Number",
+      "accountNumberPlaceholder": "Enter account number",
+      "cancel": "Cancel",
+      "save": "Save",
+      "noMethods": "No payment methods added",
+      "default": "Default",
+      "setDefault": "Set as default",
+      "thirdParty": "Third-Party Payments",
+      "thirdPartyDesc": "Order and pay through social media shops",
+      "creditCardSupport": "Credit card supported",
+      "supportedMethods": "Supported Payment Methods",
+      "supportedList": {
+        "bank": "Bank Transfer (FPX) - Maybank, CIMB, Public Bank, etc.",
+        "ewallet": "E-Wallets - Touch n Go, GrabPay, Boost",
+        "card": "Credit/Debit Cards - via Meta Shop"
+      }
+    },
     "partnerDashboard": {
       "title": "Business Overview",
       "subtitle": "View your business data and performance",

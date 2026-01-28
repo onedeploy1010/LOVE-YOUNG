@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MemberLayout } from "@/components/MemberLayout";
+import { useTranslation } from "@/lib/i18n";
 import { SiFacebook, SiInstagram } from "react-icons/si";
 import {
   CreditCard, Plus, Trash2, CheckCircle, Building2,
@@ -19,6 +20,7 @@ const mockPaymentMethods = [
 ];
 
 export default function MemberPaymentPage() {
+  const { t } = useTranslation();
   const [methods, setMethods] = useState(mockPaymentMethods);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -34,8 +36,8 @@ export default function MemberPaymentPage() {
     <MemberLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-payment-title">支付方式</h1>
-          <p className="text-muted-foreground">管理您的支付方式</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-payment-title">{t("member.payment.title")}</h1>
+          <p className="text-muted-foreground">{t("member.payment.subtitle")}</p>
         </div>
 
         <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
@@ -45,9 +47,9 @@ export default function MemberPaymentPage() {
                 <ShieldCheck className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h3 className="font-bold mb-1">支付安全保障</h3>
+                <h3 className="font-bold mb-1">{t("member.payment.securityTitle")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  所有支付信息均经过加密处理，确保您的资金安全。我们支持多种马来西亚本地支付方式。
+                  {t("member.payment.securityDesc")}
                 </p>
               </div>
             </div>
@@ -55,24 +57,24 @@ export default function MemberPaymentPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between gap-4">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-primary" />
-                已绑定支付方式
+                {t("member.payment.boundMethods")}
               </CardTitle>
-              <CardDescription>您已添加 {methods.length} 种支付方式</CardDescription>
+              <CardDescription>{t("member.payment.methodCount").replace("{count}", String(methods.length))}</CardDescription>
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="gap-2" data-testid="button-add-payment">
                   <Plus className="w-4 h-4" />
-                  添加
+                  {t("member.payment.add")}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>添加支付方式</DialogTitle>
+                  <DialogTitle>{t("member.payment.addTitle")}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
                   <RadioGroup defaultValue="bank">
@@ -80,31 +82,31 @@ export default function MemberPaymentPage() {
                       <RadioGroupItem value="bank" id="bank" />
                       <Label htmlFor="bank" className="flex items-center gap-2 cursor-pointer flex-1">
                         <Building2 className="w-5 h-5" />
-                        银行账户
+                        {t("member.payment.bankAccount")}
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2 p-3 border rounded-lg">
                       <RadioGroupItem value="ewallet" id="ewallet" />
                       <Label htmlFor="ewallet" className="flex items-center gap-2 cursor-pointer flex-1">
                         <Wallet className="w-5 h-5" />
-                        电子钱包
+                        {t("member.payment.ewallet")}
                       </Label>
                     </div>
                   </RadioGroup>
 
                   <div className="space-y-2">
-                    <Label htmlFor="bank-name">银行名称</Label>
-                    <Input id="bank-name" placeholder="选择银行" />
+                    <Label htmlFor="bank-name">{t("member.payment.bankName")}</Label>
+                    <Input id="bank-name" placeholder={t("member.payment.bankNamePlaceholder")} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="account">账户号码</Label>
-                    <Input id="account" placeholder="输入账户号码" />
+                    <Label htmlFor="account">{t("member.payment.accountNumber")}</Label>
+                    <Input id="account" placeholder={t("member.payment.accountNumberPlaceholder")} />
                   </div>
 
                   <div className="flex justify-end gap-3">
-                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>取消</Button>
+                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>{t("member.payment.cancel")}</Button>
                     <Button className="bg-secondary text-secondary-foreground" onClick={() => setIsDialogOpen(false)} data-testid="button-save-payment">
-                      保存
+                      {t("member.payment.save")}
                     </Button>
                   </div>
                 </div>
@@ -115,7 +117,7 @@ export default function MemberPaymentPage() {
             {methods.length === 0 ? (
               <div className="text-center py-8">
                 <CreditCard className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                <p className="text-muted-foreground">暂未添加支付方式</p>
+                <p className="text-muted-foreground">{t("member.payment.noMethods")}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -139,7 +141,7 @@ export default function MemberPaymentPage() {
                           {method.isDefault && (
                             <Badge className="bg-secondary text-secondary-foreground gap-1">
                               <CheckCircle className="w-3 h-3" />
-                              默认
+                              {t("member.payment.default")}
                             </Badge>
                           )}
                         </div>
@@ -156,7 +158,7 @@ export default function MemberPaymentPage() {
                           onClick={() => setDefault(method.id)}
                           data-testid={`button-default-${method.id}`}
                         >
-                          设为默认
+                          {t("member.payment.setDefault")}
                         </Button>
                       )}
                       <Button 
@@ -180,9 +182,9 @@ export default function MemberPaymentPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ExternalLink className="w-5 h-5 text-primary" />
-              第三方支付
+              {t("member.payment.thirdParty")}
             </CardTitle>
-            <CardDescription>通过社交平台店铺下单支付</CardDescription>
+            <CardDescription>{t("member.payment.thirdPartyDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -194,7 +196,7 @@ export default function MemberPaymentPage() {
                     </div>
                     <div>
                       <p className="font-medium">Facebook Shop</p>
-                      <p className="text-sm text-muted-foreground">支持信用卡支付</p>
+                      <p className="text-sm text-muted-foreground">{t("member.payment.creditCardSupport")}</p>
                     </div>
                   </div>
                 </Card>
@@ -208,7 +210,7 @@ export default function MemberPaymentPage() {
                     </div>
                     <div>
                       <p className="font-medium">Instagram Shop</p>
-                      <p className="text-sm text-muted-foreground">支持信用卡支付</p>
+                      <p className="text-sm text-muted-foreground">{t("member.payment.creditCardSupport")}</p>
                     </div>
                   </div>
                 </Card>
@@ -221,11 +223,11 @@ export default function MemberPaymentPage() {
           <CardContent className="p-4 flex items-start gap-3">
             <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
             <div className="text-sm text-muted-foreground">
-              <p className="font-medium text-foreground mb-1">支持的支付方式</p>
+              <p className="font-medium text-foreground mb-1">{t("member.payment.supportedMethods")}</p>
               <ul className="space-y-1 list-disc list-inside">
-                <li>银行转账 (FPX) - Maybank, CIMB, Public Bank等</li>
-                <li>电子钱包 - Touch n Go, GrabPay, Boost</li>
-                <li>信用卡/借记卡 - 通过Meta Shop支付</li>
+                <li>{t("member.payment.supportedList.bank")}</li>
+                <li>{t("member.payment.supportedList.ewallet")}</li>
+                <li>{t("member.payment.supportedList.card")}</li>
               </ul>
             </div>
           </CardContent>

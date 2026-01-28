@@ -1129,6 +1129,75 @@
         }
       }
     },
+    "notifications": {
+      "title": "消息通知",
+      "unreadCount": "您有 {count} 条未读消息",
+      "noUnread": "暂无未读消息",
+      "markAllRead": "全部已读",
+      "tabs": {
+        "all": "全部",
+        "unread": "未读",
+        "order": "订单",
+        "earning": "收益",
+        "promo": "活动"
+      },
+      "noMessages": "暂无消息",
+      "new": "新"
+    },
+    "addresses": {
+      "title": "地址管理",
+      "subtitle": "管理您的收货地址",
+      "addAddress": "新增地址",
+      "addAddressTitle": "新增收货地址",
+      "noAddresses": "您还没有添加收货地址",
+      "addFirst": "添加第一个地址",
+      "defaultBadge": "默认地址",
+      "setDefault": "设为默认",
+      "edit": "编辑",
+      "delete": "删除",
+      "cancel": "取消",
+      "save": "保存地址",
+      "form": {
+        "name": "收件人姓名",
+        "namePlaceholder": "请输入姓名",
+        "phone": "联系电话",
+        "address": "详细地址",
+        "addressPlaceholder": "街道、门牌号、楼层等",
+        "city": "城市",
+        "postcode": "邮编",
+        "state": "州属"
+      }
+    },
+    "payment": {
+      "title": "支付方式",
+      "subtitle": "管理您的支付方式",
+      "securityTitle": "支付安全保障",
+      "securityDesc": "所有支付信息均经过加密处理，确保您的资金安全。我们支持多种马来西亚本地支付方式。",
+      "boundMethods": "已绑定支付方式",
+      "methodCount": "您已添加 {count} 种支付方式",
+      "add": "添加",
+      "addTitle": "添加支付方式",
+      "bankAccount": "银行账户",
+      "ewallet": "电子钱包",
+      "bankName": "银行名称",
+      "bankNamePlaceholder": "选择银行",
+      "accountNumber": "账户号码",
+      "accountNumberPlaceholder": "输入账户号码",
+      "cancel": "取消",
+      "save": "保存",
+      "noMethods": "暂未添加支付方式",
+      "default": "默认",
+      "setDefault": "设为默认",
+      "thirdParty": "第三方支付",
+      "thirdPartyDesc": "通过社交平台店铺下单支付",
+      "creditCardSupport": "支持信用卡支付",
+      "supportedMethods": "支持的支付方式",
+      "supportedList": {
+        "bank": "银行转账 (FPX) - Maybank, CIMB, Public Bank等",
+        "ewallet": "电子钱包 - Touch n Go, GrabPay, Boost",
+        "card": "信用卡/借记卡 - 通过Meta Shop支付"
+      }
+    },
     "partnerDashboard": {
       "title": "经营概览",
       "subtitle": "查看您的经营数据与业绩表现",

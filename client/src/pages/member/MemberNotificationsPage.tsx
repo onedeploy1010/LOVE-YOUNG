@@ -4,17 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MemberLayout } from "@/components/MemberLayout";
+import { useTranslation } from "@/lib/i18n";
 import {
   Bell, ShoppingBag, Gift, TrendingUp, MessageSquare,
   Check, CheckCheck, Trash2, Clock
 } from "lucide-react";
 
-const mockNotifications = [
-  { id: 1, type: "order", title: "订单发货通知", content: "您的订单 #LY20260120001 已发货，预计3-5天送达", time: "2小时前", read: false },
-  { id: 2, type: "earning", title: "分红到账", content: "您的RWA奖金池分红 RM 95.00 已到账，请查收", time: "1天前", read: false },
-  { id: 3, type: "promo", title: "新年特惠", content: "燕窝礼盒限时8折，满RM500包邮", time: "2天前", read: true },
-  { id: 4, type: "system", title: "系统维护通知", content: "系统将于1月26日凌晨2:00-4:00进行维护升级", time: "3天前", read: true },
-  { id: 5, type: "order", title: "订单确认", content: "您的订单 #LY20260118002 已确认，正在备货中", time: "1周前", read: true },
+const getMockNotifications = (t: (key: string) => string) => [
+  { id: 1, type: "order", title: t("member.notifications.tabs.order"), content: "Order #LY20260120001 shipped", time: "2h ago", read: false },
+  { id: 2, type: "earning", title: t("member.notifications.tabs.earning"), content: "RWA dividend RM 95.00 received", time: "1d ago", read: false },
+  { id: 3, type: "promo", title: t("member.notifications.tabs.promo"), content: "New Year special - 20% off", time: "2d ago", read: true },
+  { id: 4, type: "system", title: "System", content: "Maintenance scheduled Jan 26, 2:00-4:00 AM", time: "3d ago", read: true },
+  { id: 5, type: "order", title: t("member.notifications.tabs.order"), content: "Order #LY20260118002 confirmed", time: "1w ago", read: true },
 ];
 
 const getIcon = (type: string) => {
@@ -38,7 +39,8 @@ const getIconBg = (type: string) => {
 };
 
 export default function MemberNotificationsPage() {
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const { t } = useTranslation();
+  const [notifications, setNotifications] = useState(() => getMockNotifications(t));
   const [activeTab, setActiveTab] = useState("all");
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -66,15 +68,17 @@ export default function MemberNotificationsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif text-primary" data-testid="text-notifications-title">消息通知</h1>
+            <h1 className="text-2xl font-serif text-primary" data-testid="text-notifications-title">{t("member.notifications.title")}</h1>
             <p className="text-muted-foreground">
-              {unreadCount > 0 ? `您有 ${unreadCount} 条未读消息` : "暂无未读消息"}
+              {unreadCount > 0 
+                ? t("member.notifications.unreadCount").replace("{count}", String(unreadCount))
+                : t("member.notifications.noUnread")}
             </p>
           </div>
           {unreadCount > 0 && (
             <Button variant="outline" size="sm" className="gap-2" onClick={markAllRead} data-testid="button-mark-all-read">
               <CheckCheck className="w-4 h-4" />
-              全部已读
+              {t("member.notifications.markAllRead")}
             </Button>
           )}
         </div>
@@ -82,20 +86,20 @@ export default function MemberNotificationsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="all" data-testid="tab-all">
-              全部
+              {t("member.notifications.tabs.all")}
               {notifications.length > 0 && (
                 <Badge variant="secondary" className="ml-1 text-xs">{notifications.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="unread" data-testid="tab-unread">
-              未读
+              {t("member.notifications.tabs.unread")}
               {unreadCount > 0 && (
                 <Badge className="ml-1 text-xs bg-red-500">{unreadCount}</Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="order" data-testid="tab-order">订单</TabsTrigger>
-            <TabsTrigger value="earning" data-testid="tab-earning">收益</TabsTrigger>
-            <TabsTrigger value="promo" data-testid="tab-promo">活动</TabsTrigger>
+            <TabsTrigger value="order" data-testid="tab-order">{t("member.notifications.tabs.order")}</TabsTrigger>
+            <TabsTrigger value="earning" data-testid="tab-earning">{t("member.notifications.tabs.earning")}</TabsTrigger>
+            <TabsTrigger value="promo" data-testid="tab-promo">{t("member.notifications.tabs.promo")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-4">
@@ -103,7 +107,7 @@ export default function MemberNotificationsPage() {
               <Card>
                 <CardContent className="p-12 text-center">
                   <Bell className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                  <p className="text-muted-foreground">暂无消息</p>
+                  <p className="text-muted-foreground">{t("member.notifications.noMessages")}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -126,7 +130,7 @@ export default function MemberNotificationsPage() {
                             <div className="flex items-center gap-2 mb-1">
                               <span className="font-medium">{notification.title}</span>
                               {!notification.read && (
-                                <Badge className="bg-red-500 text-white text-xs">新</Badge>
+                                <Badge className="bg-red-500 text-white text-xs">{t("member.notifications.new")}</Badge>
                               )}
                             </div>
                             <p className="text-sm text-muted-foreground line-clamp-2">{notification.content}</p>

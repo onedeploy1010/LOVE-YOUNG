@@ -1129,6 +1129,75 @@
         }
       }
     },
+    "notifications": {
+      "title": "Pemberitahuan",
+      "unreadCount": "Anda mempunyai {count} mesej belum dibaca",
+      "noUnread": "Tiada mesej belum dibaca",
+      "markAllRead": "Tandai semua dibaca",
+      "tabs": {
+        "all": "Semua",
+        "unread": "Belum dibaca",
+        "order": "Pesanan",
+        "earning": "Pendapatan",
+        "promo": "Promosi"
+      },
+      "noMessages": "Tiada mesej",
+      "new": "Baru"
+    },
+    "addresses": {
+      "title": "Pengurusan Alamat",
+      "subtitle": "Urus alamat penghantaran anda",
+      "addAddress": "Tambah Alamat",
+      "addAddressTitle": "Tambah Alamat Penghantaran",
+      "noAddresses": "Anda belum menambah sebarang alamat",
+      "addFirst": "Tambah alamat pertama anda",
+      "defaultBadge": "Lalai",
+      "setDefault": "Tetapkan sebagai lalai",
+      "edit": "Edit",
+      "delete": "Padam",
+      "cancel": "Batal",
+      "save": "Simpan Alamat",
+      "form": {
+        "name": "Nama Penerima",
+        "namePlaceholder": "Masukkan nama",
+        "phone": "Nombor Telefon",
+        "address": "Butiran Alamat",
+        "addressPlaceholder": "Jalan, nombor unit, tingkat, dll.",
+        "city": "Bandar",
+        "postcode": "Poskod",
+        "state": "Negeri"
+      }
+    },
+    "payment": {
+      "title": "Kaedah Pembayaran",
+      "subtitle": "Urus kaedah pembayaran anda",
+      "securityTitle": "Keselamatan Pembayaran",
+      "securityDesc": "Semua maklumat pembayaran disulitkan untuk memastikan wang anda selamat. Kami menyokong pelbagai kaedah pembayaran tempatan Malaysia.",
+      "boundMethods": "Kaedah Pembayaran Terpaut",
+      "methodCount": "Anda mempunyai {count} kaedah pembayaran ditambah",
+      "add": "Tambah",
+      "addTitle": "Tambah Kaedah Pembayaran",
+      "bankAccount": "Akaun Bank",
+      "ewallet": "E-Dompet",
+      "bankName": "Nama Bank",
+      "bankNamePlaceholder": "Pilih bank",
+      "accountNumber": "Nombor Akaun",
+      "accountNumberPlaceholder": "Masukkan nombor akaun",
+      "cancel": "Batal",
+      "save": "Simpan",
+      "noMethods": "Tiada kaedah pembayaran ditambah",
+      "default": "Lalai",
+      "setDefault": "Tetapkan sebagai lalai",
+      "thirdParty": "Pembayaran Pihak Ketiga",
+      "thirdPartyDesc": "Pesan dan bayar melalui kedai media sosial",
+      "creditCardSupport": "Kad kredit disokong",
+      "supportedMethods": "Kaedah Pembayaran Disokong",
+      "supportedList": {
+        "bank": "Pindahan Bank (FPX) - Maybank, CIMB, Public Bank, dll.",
+        "ewallet": "E-Dompet - Touch n Go, GrabPay, Boost",
+        "card": "Kad Kredit/Debit - melalui Meta Shop"
+      }
+    },
     "partnerDashboard": {
       "title": "Gambaran Perniagaan",
       "subtitle": "Lihat data dan prestasi perniagaan anda",
