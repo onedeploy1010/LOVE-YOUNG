@@ -428,18 +428,26 @@ export const insertPurchaseOrderSchema = createInsertSchema(purchaseOrders).omit
 export type InsertPurchaseOrder = z.infer<typeof insertPurchaseOrderSchema>;
 export type PurchaseOrder = typeof purchaseOrders.$inferSelect;
 
+// 生产批次状态枚举
+export const productionStatusEnum = ["planned", "material_prep", "cleaning", "cooking", "cold_storage", "inspection", "completed", "cancelled"] as const;
+export type ProductionStatus = typeof productionStatusEnum[number];
+
 // 生产批次表
 export const productionBatches = pgTable("production_batches", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   batchNumber: text("batch_number").notNull().unique(),
   productId: varchar("product_id").references(() => products.id),
   productName: text("product_name").notNull(),
-  quantity: integer("quantity").notNull(), // 生产数量
-  status: text("status").notNull().default("planned"), // planned, preparing, cooking, cooling, packaging, completed
+  plannedQuantity: integer("planned_quantity").notNull(), // 计划生产数量
+  actualQuantity: integer("actual_quantity"), // 实际产出数量
+  status: text("status").notNull().default("planned"), // planned, material_prep, cleaning, cooking, cold_storage, inspection, completed, cancelled
   plannedDate: text("planned_date"),
   startedAt: text("started_at"),
   completedAt: text("completed_at"),
-  ingredients: jsonb("ingredients"), // 原料清单
+  qualityCheckResult: text("quality_check_result"), // pass, fail, conditional_pass
+  qualityNotes: text("quality_notes"),
+  storageLocation: text("storage_location"), // 入库位置
+  storageTemperature: text("storage_temperature"), // 冷藏温度
   notes: text("notes"),
   createdBy: varchar("created_by"),
   createdAt: text("created_at").default(sql`now()`),
@@ -454,6 +462,75 @@ export const insertProductionBatchSchema = createInsertSchema(productionBatches)
 
 export type InsertProductionBatch = z.infer<typeof insertProductionBatchSchema>;
 export type ProductionBatch = typeof productionBatches.$inferSelect;
+
+// 生产工序记录表 - 追踪每个生产步骤
+export const productionSteps = pgTable("production_steps", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  batchId: varchar("batch_id").notNull().references(() => productionBatches.id),
+  stepType: text("step_type").notNull(), // material_prep, cleaning, cooking, cold_storage, inspection
+  stepOrder: integer("step_order").notNull(), // 1, 2, 3, 4, 5
+  status: text("status").notNull().default("pending"), // pending, in_progress, completed, failed
+  startedAt: text("started_at"),
+  completedAt: text("completed_at"),
+  operatorId: varchar("operator_id"),
+  operatorName: text("operator_name"),
+  // 清洗消毒专用字段
+  cleaningMethod: text("cleaning_method"), // 清洗方式
+  disinfectantUsed: text("disinfectant_used"), // 消毒剂
+  // 炖煮专用字段
+  cookingTemperature: text("cooking_temperature"), // 炖煮温度
+  cookingDuration: integer("cooking_duration"), // 炖煮时长（分钟）
+  // 冷藏专用字段
+  storageTemperature: text("storage_temperature"), // 存储温度
+  storageLocation: text("storage_location"), // 存储位置
+  // 检查专用字段
+  inspectionItems: jsonb("inspection_items"), // [{item, passed, notes}]
+  inspectionResult: text("inspection_result"), // pass, fail
+  // 通用字段
+  notes: text("notes"),
+  photos: jsonb("photos"), // 照片记录
+  createdAt: text("created_at").default(sql`now()`),
+});
+
+export const insertProductionStepSchema = createInsertSchema(productionSteps).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertProductionStep = z.infer<typeof insertProductionStepSchema>;
+export type ProductionStep = typeof productionSteps.$inferSelect;
+
+// 生产原料消耗表 - 追踪生产中使用的原料和损耗
+export const productionMaterials = pgTable("production_materials", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  batchId: varchar("batch_id").notNull().references(() => productionBatches.id),
+  inventoryId: varchar("inventory_id").notNull().references(() => inventory.id),
+  materialName: text("material_name").notNull(),
+  plannedQuantity: integer("planned_quantity").notNull(), // 计划使用量
+  actualQuantity: integer("actual_quantity"), // 实际使用量
+  wastageQuantity: integer("wastage_quantity").default(0), // 损耗量
+  wastageReason: text("wastage_reason"), // 损耗原因
+  unit: text("unit").notNull(), // 单位：g, kg, pcs
+  unitCost: integer("unit_cost"), // 单位成本（分）
+  totalCost: integer("total_cost"), // 总成本（分）
+  extractedAt: text("extracted_at"), // 从库存提取时间
+  extractedBy: varchar("extracted_by"), // 提取操作人
+  inventoryLedgerId: varchar("inventory_ledger_id"), // 关联的库存流水记录
+  notes: text("notes"),
+  createdAt: text("created_at").default(sql`now()`),
+});
+
+export const insertProductionMaterialSchema = createInsertSchema(productionMaterials).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertProductionMaterial = z.infer<typeof insertProductionMaterialSchema>;
+export type ProductionMaterial = typeof productionMaterials.$inferSelect;
+
+// 生产工序类型枚举
+export const productionStepTypeEnum = ["material_prep", "cleaning", "cooking", "cold_storage", "inspection"] as const;
+export type ProductionStepType = typeof productionStepTypeEnum[number];
 
 // 卫生检查表
 export const hygieneInspections = pgTable("hygiene_inspections", {
