@@ -44,7 +44,7 @@ import {
 import {
   Boxes, Search, Plus, AlertTriangle, CheckCircle,
   ArrowUpRight, ArrowDownRight, Package,
-  Edit, Trash2, FolderPlus, MoreHorizontal
+  Edit, Trash2, FolderPlus, MoreHorizontal, Settings
 } from "lucide-react";
 import {
   DropdownMenu,

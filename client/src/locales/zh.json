@@ -887,6 +887,7 @@
       "subtitle": "库存查询与调整",
       "addStock": "库存操作",
       "productSku": "产品SKU",
+      "status": "状态",
       "lowStock": "库存偏低",
       "criticalStock": "库存紧缺",
       "inventoryStatus": "库存状态",

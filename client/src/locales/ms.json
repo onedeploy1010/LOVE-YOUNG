@@ -887,6 +887,7 @@
       "subtitle": "Pertanyaan dan pelarasan inventori",
       "addStock": "Operasi Stok",
       "productSku": "SKU Produk",
+      "status": "Status",
       "lowStock": "Stok Rendah",
       "criticalStock": "Stok Kritikal",
       "inventoryStatus": "Status Inventori",

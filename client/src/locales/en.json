@@ -887,6 +887,7 @@
       "subtitle": "Inventory query and adjustment",
       "addStock": "Stock Operations",
       "productSku": "Product SKU",
+      "status": "Status",
       "lowStock": "Low Stock",
       "criticalStock": "Critical Stock",
       "inventoryStatus": "Inventory Status",
