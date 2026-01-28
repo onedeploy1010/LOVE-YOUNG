@@ -3,17 +3,30 @@ import { pgTable, text, varchar, integer, boolean, timestamp, jsonb, index } fro
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// User storage table for Replit Auth
+// User roles: user (default) -> member (bought product) -> partner (joined program) -> admin (db set)
+export const userRoles = ["user", "member", "partner", "admin"] as const;
+export type UserRoleType = typeof userRoles[number];
+
+// User storage table for Supabase Auth
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
+  phone: varchar("phone"),
   profileImageUrl: varchar("profile_image_url"),
+  role: varchar("role").notNull().default("user"), // user, member, partner, admin
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 

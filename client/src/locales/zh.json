@@ -31,7 +31,14 @@
     "sendOTPFailed": "发送验证码失败",
     "verifyOTPFailed": "验证失败",
     "resendOTP": "重新发送验证码",
-    "changeEmail": "更换邮箱"
+    "changeEmail": "更换邮箱",
+    "completeProfile": "完善个人信息",
+    "newUserWelcome": "欢迎加入LOVEYOUNG！请填写您的基本信息",
+    "phone": "手机号码",
+    "fillRequired": "请填写必填项",
+    "profileSaved": "信息保存成功",
+    "profileSaveFailed": "保存失败",
+    "saveAndContinue": "保存并继续"
   },
   "common": {
     "loading": "加载中...",

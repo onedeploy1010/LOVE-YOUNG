@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,21 +7,35 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/lib/i18n";
-import { Loader2, Mail, ArrowLeft } from "lucide-react";
+import { Loader2, Mail, ArrowLeft, User } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
+import { apiRequest } from "@/lib/queryClient";
 
-type AuthStep = "email" | "otp";
+type AuthStep = "email" | "otp" | "profile";
 
 export default function AuthLoginPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const { sendOTP, verifyOTP, signInWithGoogle, loading: authLoading } = useAuth();
+  const { sendOTP, verifyOTP, signInWithGoogle, user, loading: authLoading } = useAuth();
   
   const [step, setStep] = useState<AuthStep>("email");
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [otpCode, setOtpCode] = useState("");
+  const [isNewUser, setIsNewUser] = useState(false);
+  
+  // Profile info for new users
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && step !== "profile") {
+      navigate("/");
+    }
+  }, [user, step, navigate]);
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,12 +84,57 @@ export default function AuthLoginPage() {
           variant: "destructive",
         });
       } else {
-        toast({ title: t("auth.loginSuccess") });
-        navigate("/");
+        // Check if user profile exists
+        try {
+          const response = await fetch('/api/auth/user');
+          if (response.status === 404) {
+            // New user - need to fill profile
+            setIsNewUser(true);
+            setStep("profile");
+          } else {
+            toast({ title: t("auth.loginSuccess") });
+            navigate("/");
+          }
+        } catch {
+          // Assume new user
+          setIsNewUser(true);
+          setStep("profile");
+        }
       }
     } catch (err: any) {
       toast({
         title: t("auth.verifyOTPFailed"),
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firstName || !phone) {
+      toast({
+        title: t("auth.fillRequired"),
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      await apiRequest('POST', '/api/auth/complete-profile', {
+        firstName,
+        lastName,
+        phone,
+      });
+      toast({ title: t("auth.profileSaved") });
+      navigate("/");
+    } catch (err: any) {
+      toast({
+        title: t("auth.profileSaveFailed"),
         description: err.message,
         variant: "destructive",
       });
@@ -107,8 +166,12 @@ export default function AuthLoginPage() {
   };
 
   const handleBack = () => {
-    setStep("email");
-    setOtpCode("");
+    if (step === "profile") {
+      setStep("otp");
+    } else {
+      setStep("email");
+      setOtpCode("");
+    }
   };
 
   const handleResendOTP = async () => {
@@ -151,10 +214,12 @@ export default function AuthLoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-serif text-primary">LOVEYOUNG</CardTitle>
-          <CardDescription>{t("auth.welcomeBack")}</CardDescription>
+          <CardDescription>
+            {step === "profile" ? t("auth.completeProfile") : t("auth.welcomeBack")}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {step === "email" ? (
+          {step === "email" && (
             <>
               <form onSubmit={handleSendOTP} className="space-y-4">
                 <div className="space-y-2">
@@ -206,7 +271,9 @@ export default function AuthLoginPage() {
                 {t("auth.continueWithGoogle")}
               </Button>
             </>
-          ) : (
+          )}
+
+          {step === "otp" && (
             <>
               <div className="text-center space-y-2 mb-4">
                 <p className="text-sm text-muted-foreground">
@@ -260,6 +327,61 @@ export default function AuthLoginPage() {
                   {t("auth.changeEmail")}
                 </Button>
               </div>
+            </>
+          )}
+
+          {step === "profile" && (
+            <>
+              <div className="text-center space-y-2 mb-4">
+                <User className="w-12 h-12 mx-auto text-primary" />
+                <p className="text-sm text-muted-foreground">
+                  {t("auth.newUserWelcome")}
+                </p>
+              </div>
+
+              <form onSubmit={handleSaveProfile} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">{t("auth.firstName")} *</Label>
+                    <Input
+                      id="firstName"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                      data-testid="input-first-name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">{t("auth.lastName")}</Label>
+                    <Input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      data-testid="input-last-name"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">{t("auth.phone")} *</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+60 12-345 6789"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                    data-testid="input-phone"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isLoading || !firstName || !phone}
+                  data-testid="button-save-profile"
+                >
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("auth.saveAndContinue")}
+                </Button>
+              </form>
             </>
           )}
         </CardContent>

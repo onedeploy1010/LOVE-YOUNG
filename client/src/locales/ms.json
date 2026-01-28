@@ -31,7 +31,14 @@
     "sendOTPFailed": "Gagal menghantar kod pengesahan",
     "verifyOTPFailed": "Pengesahan gagal",
     "resendOTP": "Hantar Semula Kod",
-    "changeEmail": "Tukar E-mel"
+    "changeEmail": "Tukar E-mel",
+    "completeProfile": "Lengkapkan Profil Anda",
+    "newUserWelcome": "Selamat datang ke LOVEYOUNG! Sila lengkapkan maklumat anda",
+    "phone": "Nombor Telefon",
+    "fillRequired": "Sila lengkapkan ruangan yang diperlukan",
+    "profileSaved": "Profil berjaya disimpan",
+    "profileSaveFailed": "Gagal menyimpan profil",
+    "saveAndContinue": "Simpan dan Teruskan"
   },
   "common": {
     "loading": "Memuatkan...",

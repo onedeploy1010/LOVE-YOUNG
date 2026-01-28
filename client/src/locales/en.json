@@ -31,7 +31,14 @@
     "sendOTPFailed": "Failed to send verification code",
     "verifyOTPFailed": "Verification failed",
     "resendOTP": "Resend Code",
-    "changeEmail": "Change Email"
+    "changeEmail": "Change Email",
+    "completeProfile": "Complete Your Profile",
+    "newUserWelcome": "Welcome to LOVEYOUNG! Please fill in your information",
+    "phone": "Phone Number",
+    "fillRequired": "Please fill in required fields",
+    "profileSaved": "Profile saved successfully",
+    "profileSaveFailed": "Failed to save profile",
+    "saveAndContinue": "Save and Continue"
   },
   "common": {
     "loading": "Loading...",

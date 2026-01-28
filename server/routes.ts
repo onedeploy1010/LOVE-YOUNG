@@ -35,6 +35,34 @@ export async function registerRoutes(
     }
   });
 
+  // Complete profile for new users - saves basic info after OTP verification
+  app.post("/api/auth/complete-profile", isSupabaseAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.supabaseUser.id;
+      const email = req.supabaseUser.email;
+      const { firstName, lastName, phone } = req.body;
+
+      if (!firstName || !phone) {
+        return res.status(400).json({ error: "First name and phone are required" });
+      }
+
+      // Upsert user with profile info
+      await storage.upsertUser({
+        id: userId,
+        email,
+        firstName,
+        lastName,
+        phone,
+        role: "user", // New users start as "user"
+      });
+
+      res.json({ success: true, message: "Profile saved successfully" });
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      res.status(500).json({ error: "Failed to save profile" });
+    }
+  });
+
   // Get user state - returns user's current role/state in the system
   // States: user (basic), member (has orders), partner (active partner), admin
   app.get("/api/auth/state", isSupabaseAuthenticated, async (req: any, res) => {
