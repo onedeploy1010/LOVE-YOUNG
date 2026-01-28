@@ -978,6 +978,9 @@
         "member": "Ahli",
         "partner": "Rakan Kongsi",
         "admin": "Admin"
+      },
+      "badges": {
+        "pendingActivation": "Menunggu"
       }
     },
     "orders": {

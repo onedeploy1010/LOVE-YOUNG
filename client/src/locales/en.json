@@ -978,6 +978,9 @@
         "member": "Member",
         "partner": "Partner",
         "admin": "Admin"
+      },
+      "badges": {
+        "pendingActivation": "Pending"
       }
     },
     "orders": {

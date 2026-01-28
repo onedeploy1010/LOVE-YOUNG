@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { User as UserType, Member, Partner, UserState } from "@shared/schema";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useTranslation } from "@/lib/i18n";
 
 interface UserStateResponse {
   state: UserState;
@@ -41,82 +42,82 @@ type MenuSection = {
   items: MenuItem[];
 };
 
-const ALL_MENU_SECTIONS: MenuSection[] = [
+const getMenuSections = (t: (key: string) => string): MenuSection[] => [
   {
     id: "account",
-    title: "账户管理",
+    title: t("member.center.sections.account"),
     icon: User,
     items: [
-      { icon: Home, label: "个人中心", href: "/member", description: "查看账户概览" },
-      { icon: Settings, label: "账户设置", href: "/member/settings", description: "修改个人信息" },
-      { icon: Bell, label: "消息通知", href: "/member/notifications", description: "系统消息与提醒" },
-      { icon: HelpCircle, label: "帮助中心", href: "/member/help", description: "常见问题解答" },
+      { icon: Home, label: t("member.center.menuItems.personalCenter"), href: "/member", description: t("member.center.menuItems.personalCenterDesc") },
+      { icon: Settings, label: t("member.center.menuItems.accountSettings"), href: "/member/settings", description: t("member.center.menuItems.accountSettingsDesc") },
+      { icon: Bell, label: t("member.center.menuItems.notifications"), href: "/member/notifications", description: t("member.center.menuItems.notificationsDesc") },
+      { icon: HelpCircle, label: t("member.center.menuItems.helpCenter"), href: "/member/help", description: t("member.center.menuItems.helpCenterDesc") },
     ]
   },
   {
     id: "member",
-    title: "会员服务",
+    title: t("member.center.sections.member"),
     icon: Star,
     items: [
-      { icon: ShoppingBag, label: "订单记录", href: "/member/orders", description: "查看历史订单" },
-      { icon: MapPin, label: "地址管理", href: "/member/addresses", description: "管理收货地址" },
-      { icon: Gift, label: "积分中心", href: "/member/points", description: "查看积分余额与兑换" },
-      { icon: CreditCard, label: "支付方式", href: "/member/payment", description: "管理支付方式" },
+      { icon: ShoppingBag, label: t("member.center.menuItems.orderHistory"), href: "/member/orders", description: t("member.center.menuItems.orderHistoryDesc") },
+      { icon: MapPin, label: t("member.center.menuItems.addresses"), href: "/member/addresses", description: t("member.center.menuItems.addressesDesc") },
+      { icon: Gift, label: t("member.center.menuItems.pointsCenter"), href: "/member/points", description: t("member.center.menuItems.pointsCenterDesc") },
+      { icon: CreditCard, label: t("member.center.menuItems.paymentMethods"), href: "/member/payment", description: t("member.center.menuItems.paymentMethodsDesc") },
     ]
   },
   {
     id: "partner",
-    title: "经营人中心",
+    title: t("member.center.sections.partner"),
     icon: Crown,
     items: [
-      { icon: TrendingUp, label: "经营概览", href: "/member/partner", description: "查看经营数据与业绩" },
-      { icon: Users, label: "推荐网络", href: "/member/partner/referrals", description: "我的团队与下线成员" },
-      { icon: Share2, label: "推广物料", href: "/member/partner/materials", description: "获取分享素材" },
-      { icon: Wallet, label: "LY积分", href: "/member/partner/ly-points", description: "积分明细与使用记录" },
-      { icon: DollarSign, label: "现金钱包", href: "/member/partner/wallet", description: "收益查看与提现申请" },
-      { icon: Award, label: "RWA奖金池", href: "/member/partner/rwa", description: "查看分红周期与令牌" },
-      { icon: History, label: "收益记录", href: "/member/partner/earnings", description: "返现与分红历史" },
+      { icon: TrendingUp, label: t("member.center.menuItems.overview"), href: "/member/partner", description: t("member.center.menuItems.overviewDesc") },
+      { icon: Users, label: t("member.center.menuItems.referralNetwork"), href: "/member/partner/referrals", description: t("member.center.menuItems.referralNetworkDesc") },
+      { icon: Share2, label: t("member.center.menuItems.promoMaterials"), href: "/member/partner/materials", description: t("member.center.menuItems.promoMaterialsDesc") },
+      { icon: Wallet, label: t("member.center.menuItems.lyPoints"), href: "/member/partner/ly-points", description: t("member.center.menuItems.lyPointsDesc") },
+      { icon: DollarSign, label: t("member.center.menuItems.cashWallet"), href: "/member/partner/wallet", description: t("member.center.menuItems.cashWalletDesc") },
+      { icon: Award, label: t("member.center.menuItems.rwaPool"), href: "/member/partner/rwa", description: t("member.center.menuItems.rwaPoolDesc") },
+      { icon: History, label: t("member.center.menuItems.earningsHistory"), href: "/member/partner/earnings", description: t("member.center.menuItems.earningsHistoryDesc") },
     ]
   },
   {
     id: "admin-core",
-    title: "管理后台",
+    title: t("member.center.sections.adminCore"),
     icon: Shield,
     items: [
-      { icon: BarChart3, label: "数据看板", href: "/admin", description: "实时业务数据分析" },
-      { icon: UserPlus, label: "经营人管理", href: "/admin/partners", description: "审核激活与管理经营人" },
-      { icon: ShoppingBag, label: "订单管理", href: "/admin/orders", description: "处理与跟踪客户订单" },
-      { icon: Package, label: "产品管理", href: "/admin/products", description: "管理产品目录与定价" },
-      { icon: Users, label: "会员管理", href: "/admin/members", description: "查看与管理所有会员" },
-      { icon: PiggyBank, label: "奖金池管理", href: "/admin/bonus-pool", description: "RWA分红周期设置" },
+      { icon: BarChart3, label: t("member.center.menuItems.dashboard"), href: "/admin", description: t("member.center.menuItems.dashboardDesc") },
+      { icon: UserPlus, label: t("member.center.menuItems.partnerManagement"), href: "/admin/partners", description: t("member.center.menuItems.partnerManagementDesc") },
+      { icon: ShoppingBag, label: t("member.center.menuItems.orderManagement"), href: "/admin/orders", description: t("member.center.menuItems.orderManagementDesc") },
+      { icon: Package, label: t("member.center.menuItems.productManagement"), href: "/admin/products", description: t("member.center.menuItems.productManagementDesc") },
+      { icon: Users, label: t("member.center.menuItems.memberManagement"), href: "/admin/members", description: t("member.center.menuItems.memberManagementDesc") },
+      { icon: PiggyBank, label: t("member.center.menuItems.bonusPool"), href: "/admin/bonus-pool", description: t("member.center.menuItems.bonusPoolDesc") },
     ]
   },
   {
     id: "erp",
-    title: "ERP系统",
+    title: t("member.center.sections.erp"),
     icon: Building2,
     items: [
-      { icon: Boxes, label: "库存管理", href: "/admin/inventory", description: "库存查询与调整" },
-      { icon: ClipboardList, label: "采购管理", href: "/admin/purchase", description: "采购订单与供应商" },
-      { icon: Truck, label: "物流追踪", href: "/admin/logistics", description: "冷链物流与配送" },
-      { icon: Receipt, label: "账单管理", href: "/admin/bills", description: "费用与账单记录" },
-      { icon: FileText, label: "财务报表", href: "/admin/finance", description: "收支分析与报表" },
+      { icon: Boxes, label: t("member.center.menuItems.inventory"), href: "/admin/inventory", description: t("member.center.menuItems.inventoryDesc") },
+      { icon: ClipboardList, label: t("member.center.menuItems.purchase"), href: "/admin/purchase", description: t("member.center.menuItems.purchaseDesc") },
+      { icon: Truck, label: t("member.center.menuItems.logistics"), href: "/admin/logistics", description: t("member.center.menuItems.logisticsDesc") },
+      { icon: Receipt, label: t("member.center.menuItems.bills"), href: "/admin/bills", description: t("member.center.menuItems.billsDesc") },
+      { icon: FileText, label: t("member.center.menuItems.finance"), href: "/admin/finance", description: t("member.center.menuItems.financeDesc") },
     ]
   }
 ];
 
-function getStateLabel(state: UserState): { label: string; variant: "default" | "secondary" | "outline"; icon: React.ElementType } {
+function getStateLabel(state: UserState, t: (key: string) => string): { label: string; variant: "default" | "secondary" | "outline"; icon: React.ElementType } {
   switch (state) {
     case "user":
-      return { label: "用户", variant: "secondary", icon: User };
+      return { label: t("member.center.userStates.user"), variant: "secondary", icon: User };
     case "member":
-      return { label: "会员", variant: "default", icon: Star };
+      return { label: t("member.center.userStates.member"), variant: "default", icon: Star };
     case "partner":
-      return { label: "联合经营人", variant: "default", icon: Crown };
+      return { label: t("member.center.userStates.partner"), variant: "default", icon: Crown };
     case "admin":
-      return { label: "管理员", variant: "default", icon: Shield };
+      return { label: t("member.center.userStates.admin"), variant: "default", icon: Shield };
     default:
-      return { label: "用户", variant: "secondary", icon: User };
+      return { label: t("member.center.userStates.user"), variant: "secondary", icon: User };
   }
 }
 
@@ -159,7 +160,8 @@ function SidebarNav({
   );
 }
 
-function MenuGrid({ items }: { items: MenuItem[] }) {
+function MenuGrid({ items, t }: { items: MenuItem[]; t: (key: string) => string }) {
+  const pendingBadge = t("member.center.badges.pendingActivation");
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {items.map((item) => {
@@ -178,7 +180,7 @@ function MenuGrid({ items }: { items: MenuItem[] }) {
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-foreground">{item.label}</span>
                     {item.badge && (
-                      <Badge variant={item.badge === "待激活" ? "outline" : "default"} className="text-xs">
+                      <Badge variant={item.badge === pendingBadge ? "outline" : "default"} className="text-xs">
                         {item.badge}
                       </Badge>
                     )}
@@ -197,7 +199,7 @@ function MenuGrid({ items }: { items: MenuItem[] }) {
   );
 }
 
-function QuickStatsCards({ partner }: { partner: Partner | null }) {
+function QuickStatsCards({ partner, t }: { partner: Partner | null; t: (key: string) => string }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <Card className="p-4">
@@ -207,7 +209,7 @@ function QuickStatsCards({ partner }: { partner: Partner | null }) {
           </div>
           <div>
             <div className="text-2xl font-bold text-secondary">{partner?.lyBalance || 0}</div>
-            <div className="text-xs text-muted-foreground">LY积分</div>
+            <div className="text-xs text-muted-foreground">{t("member.center.quickStats.lyPoints")}</div>
           </div>
         </div>
       </Card>
@@ -218,7 +220,7 @@ function QuickStatsCards({ partner }: { partner: Partner | null }) {
           </div>
           <div>
             <div className="text-2xl font-bold text-primary">RM {((partner?.cashWalletBalance || 0) / 100).toFixed(2)}</div>
-            <div className="text-xs text-muted-foreground">现金余额</div>
+            <div className="text-xs text-muted-foreground">{t("member.center.quickStats.cashBalance")}</div>
           </div>
         </div>
       </Card>
@@ -229,7 +231,7 @@ function QuickStatsCards({ partner }: { partner: Partner | null }) {
           </div>
           <div>
             <div className="text-2xl font-bold text-secondary">{partner?.rwaTokens || 0}</div>
-            <div className="text-xs text-muted-foreground">RWA令牌</div>
+            <div className="text-xs text-muted-foreground">{t("member.center.quickStats.rwaTokens")}</div>
           </div>
         </div>
       </Card>
@@ -240,7 +242,7 @@ function QuickStatsCards({ partner }: { partner: Partner | null }) {
           </div>
           <div>
             <div className="text-2xl font-bold text-primary">RM {((partner?.totalSales || 0) / 100).toFixed(0)}</div>
-            <div className="text-xs text-muted-foreground">累计销售</div>
+            <div className="text-xs text-muted-foreground">{t("member.center.quickStats.totalSales")}</div>
           </div>
         </div>
       </Card>
@@ -249,6 +251,7 @@ function QuickStatsCards({ partner }: { partner: Partner | null }) {
 }
 
 export default function MemberCenter() {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const [activeSection, setActiveSection] = useState("account");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -261,12 +264,14 @@ export default function MemberCenter() {
     window.location.href = "/api/logout";
   };
 
+  const ALL_MENU_SECTIONS = getMenuSections(t);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto text-secondary" />
-          <p className="mt-4 text-muted-foreground">加载中...</p>
+          <p className="mt-4 text-muted-foreground">{t("member.center.loading")}</p>
         </div>
       </div>
     );
@@ -277,8 +282,8 @@ export default function MemberCenter() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle>请先登录</CardTitle>
-            <CardDescription>登录后即可访问会员中心</CardDescription>
+            <CardTitle>{t("member.center.loginTitle")}</CardTitle>
+            <CardDescription>{t("member.center.loginDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button
@@ -286,7 +291,7 @@ export default function MemberCenter() {
               onClick={() => window.location.href = "/api/login"}
               data-testid="button-login"
             >
-              登录 / 注册
+              {t("member.center.loginButton")}
             </Button>
           </CardContent>
         </Card>
@@ -295,7 +300,7 @@ export default function MemberCenter() {
   }
 
   const { state, user, member, partner } = userState;
-  const stateInfo = getStateLabel(state);
+  const stateInfo = getStateLabel(state, t);
   const StateIcon = stateInfo.icon;
   const currentSection = ALL_MENU_SECTIONS.find(s => s.id === activeSection) || ALL_MENU_SECTIONS[0];
   const CurrentSectionIcon = currentSection.icon;
@@ -321,7 +326,7 @@ export default function MemberCenter() {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium">{member?.name || user?.firstName || "用户"}</p>
+                      <p className="font-medium">{member?.name || user?.firstName || t("member.center.defaultUser")}</p>
                       <Badge variant={stateInfo.variant} className="gap-1 text-xs">
                         <StateIcon className="w-3 h-3" />
                         {stateInfo.label}
@@ -344,7 +349,7 @@ export default function MemberCenter() {
                     onClick={handleLogout}
                   >
                     <LogOut className="w-4 h-4" />
-                    退出登录
+                    {t("member.center.logout")}
                   </Button>
                 </div>
               </SheetContent>
@@ -364,7 +369,7 @@ export default function MemberCenter() {
                 </AvatarFallback>
               </Avatar>
               <span className="text-sm font-medium" data-testid="text-user-name">
-                {member?.name || user?.firstName || "用户"}
+                {member?.name || user?.firstName || t("member.center.defaultUser")}
               </span>
               <Badge variant={stateInfo.variant} className="gap-1 text-xs" data-testid="badge-user-state">
                 <StateIcon className="w-3 h-3" />
@@ -396,7 +401,7 @@ export default function MemberCenter() {
           </div>
           <div className="p-4 border-t mt-auto">
             <p className="text-xs text-muted-foreground text-center">
-              LOVE YOUNG 养乐 v1.0
+              {t("member.center.version")}
             </p>
           </div>
         </aside>
@@ -411,40 +416,40 @@ export default function MemberCenter() {
                 </h1>
               </div>
               <p className="text-muted-foreground text-sm">
-                {activeSection === "account" && "管理您的账户信息和偏好设置"}
-                {activeSection === "member" && "查看订单、管理地址和积分"}
-                {activeSection === "partner" && "经营数据、团队管理和收益提现"}
-                {activeSection === "admin-core" && "平台核心管理功能"}
-                {activeSection === "erp" && "供应链与财务管理"}
+                {activeSection === "account" && t("member.center.sectionDesc.account")}
+                {activeSection === "member" && t("member.center.sectionDesc.member")}
+                {activeSection === "partner" && t("member.center.sectionDesc.partner")}
+                {activeSection === "admin-core" && t("member.center.sectionDesc.adminCore")}
+                {activeSection === "erp" && t("member.center.sectionDesc.erp")}
               </p>
             </div>
 
             {activeSection === "partner" && (
-              <QuickStatsCards partner={partner} />
+              <QuickStatsCards partner={partner} t={t} />
             )}
 
             {activeSection === "admin-core" && (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <Card className="p-4 bg-primary/5">
                   <div className="text-2xl font-bold text-primary">--</div>
-                  <div className="text-xs text-muted-foreground">活跃经营人</div>
+                  <div className="text-xs text-muted-foreground">{t("member.center.quickStats.activePartners")}</div>
                 </Card>
                 <Card className="p-4 bg-primary/5">
                   <div className="text-2xl font-bold text-primary">--</div>
-                  <div className="text-xs text-muted-foreground">本月订单</div>
+                  <div className="text-xs text-muted-foreground">{t("member.center.quickStats.monthlyOrders")}</div>
                 </Card>
                 <Card className="p-4 bg-primary/5">
                   <div className="text-2xl font-bold text-primary">--</div>
-                  <div className="text-xs text-muted-foreground">本月销售额</div>
+                  <div className="text-xs text-muted-foreground">{t("member.center.quickStats.monthlySales")}</div>
                 </Card>
                 <Card className="p-4 bg-primary/5">
                   <div className="text-2xl font-bold text-primary">--</div>
-                  <div className="text-xs text-muted-foreground">奖金池余额</div>
+                  <div className="text-xs text-muted-foreground">{t("member.center.quickStats.bonusPoolBalance")}</div>
                 </Card>
               </div>
             )}
 
-            <MenuGrid items={currentSection.items} />
+            <MenuGrid items={currentSection.items} t={t} />
 
             <div className="mt-8 lg:hidden">
               <Separator className="mb-4" />
@@ -455,7 +460,7 @@ export default function MemberCenter() {
                 data-testid="button-logout"
               >
                 <LogOut className="w-4 h-4" />
-                退出登录
+                {t("member.center.logout")}
               </Button>
             </div>
           </div>

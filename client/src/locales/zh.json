@@ -978,6 +978,9 @@
         "member": "会员",
         "partner": "联合经营人",
         "admin": "管理员"
+      },
+      "badges": {
+        "pendingActivation": "待激活"
       }
     },
     "orders": {
