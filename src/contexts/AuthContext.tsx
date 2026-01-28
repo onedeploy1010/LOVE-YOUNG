@@ -1,10 +1,16 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { supabase, type SupabaseUser } from '@/lib/supabase';
 import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
+import type { Member, Partner } from '@shared/types';
+
+export type UserRole = 'user' | 'member' | 'partner' | 'admin';
 
 interface AuthContextType {
   user: SupabaseUser | null;
   session: Session | null;
+  member: Member | null;
+  partner: Partner | null;
+  role: UserRole;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<{ error: Error | null }>;
@@ -13,6 +19,7 @@ interface AuthContextType {
   verifyOTP: (email: string, token: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   getAccessToken: () => Promise<string | null>;
+  refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,47 +27,135 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [member, setMember] = useState<Member | null>(null);
+  const [partner, setPartner] = useState<Partner | null>(null);
+  const [role, setRole] = useState<UserRole>('user');
   const [loading, setLoading] = useState(true);
+
+  // Fetch member and partner data for a user
+  const fetchUserData = async (userId: string) => {
+    try {
+      // First check if user is admin in users table
+      const { data: userData } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', userId)
+        .single();
+
+      if (userData?.role === 'admin') {
+        setRole('admin');
+        return;
+      }
+
+      // Check if user has a member record
+      const { data: memberData } = await supabase
+        .from('members')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (memberData) {
+        const memberObj: Member = {
+          id: memberData.id,
+          userId: memberData.user_id,
+          name: memberData.name,
+          phone: memberData.phone,
+          email: memberData.email,
+          role: memberData.role,
+          pointsBalance: memberData.points_balance,
+          preferredFlavor: memberData.preferred_flavor,
+          preferredPackage: memberData.preferred_package,
+          referralCode: memberData.referral_code,
+          referrerId: memberData.referrer_id,
+          createdAt: memberData.created_at,
+        };
+        setMember(memberObj);
+
+        // Check if member is a partner
+        if (memberData.role === 'partner' || memberData.role === 'admin') {
+          const { data: partnerData } = await supabase
+            .from('partners')
+            .select('*')
+            .eq('member_id', memberData.id)
+            .single();
+
+          if (partnerData) {
+            const partnerObj: Partner = {
+              id: partnerData.id,
+              memberId: partnerData.member_id,
+              referralCode: partnerData.referral_code,
+              tier: partnerData.tier,
+              status: partnerData.status,
+              referrerId: partnerData.referrer_id,
+              lyBalance: partnerData.ly_balance,
+              cashWalletBalance: partnerData.cash_wallet_balance,
+              rwaTokens: partnerData.rwa_tokens,
+              totalSales: partnerData.total_sales,
+              totalCashback: partnerData.total_cashback,
+              paymentAmount: partnerData.payment_amount,
+              paymentDate: partnerData.payment_date,
+              paymentReference: partnerData.payment_reference,
+              createdAt: partnerData.created_at,
+              updatedAt: partnerData.updated_at,
+            };
+            setPartner(partnerObj);
+            setRole(memberData.role === 'admin' ? 'admin' : 'partner');
+          } else {
+            setRole(memberData.role === 'admin' ? 'admin' : 'member');
+          }
+        } else {
+          setRole('member');
+        }
+      } else {
+        setRole('user');
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      setRole('user');
+    }
+  };
+
+  const refreshUserData = async () => {
+    if (user?.id) {
+      await fetchUserData(user.id);
+    }
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
-        setUser({
+        const supabaseUser: SupabaseUser = {
           id: session.user.id,
           email: session.user.email || '',
           user_metadata: session.user.user_metadata,
-        });
+        };
+        setUser(supabaseUser);
+        fetchUserData(session.user.id).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: AuthChangeEvent, session: Session | null) => {
         setSession(session);
         if (session?.user) {
-          setUser({
+          const supabaseUser: SupabaseUser = {
             id: session.user.id,
             email: session.user.email || '',
             user_metadata: session.user.user_metadata,
-          });
+          };
+          setUser(supabaseUser);
 
           if (event === 'SIGNED_IN') {
-            try {
-              const token = session.access_token;
-              await fetch('/api/auth/verify', {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-                },
-              });
-            } catch (error) {
-              console.error('Failed to sync user with backend:', error);
-            }
+            await fetchUserData(session.user.id);
           }
         } else {
           setUser(null);
+          setMember(null);
+          setPartner(null);
+          setRole('user');
         }
         setLoading(false);
       }
@@ -118,6 +213,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
+    setMember(null);
+    setPartner(null);
+    setRole('user');
   };
 
   const getAccessToken = async (): Promise<string | null> => {
@@ -129,6 +227,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{
       user,
       session,
+      member,
+      partner,
+      role,
       loading,
       signIn,
       signUp,
@@ -137,6 +238,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       verifyOTP,
       signOut,
       getAccessToken,
+      refreshUserData,
     }}>
       {children}
     </AuthContext.Provider>

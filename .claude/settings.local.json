@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(npm run build:*)",
+      "Bash(PGPASSWORD=loveyoung52017888 psql:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)"
+    ]
+  }
+}

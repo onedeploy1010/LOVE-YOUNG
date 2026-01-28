@@ -7,9 +7,9 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/lib/i18n";
+import { supabase } from "@/lib/supabase";
 import { Loader2, Mail, ArrowLeft, User } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
-import { apiRequest } from "@/lib/queryClient";
 
 type AuthStep = "email" | "otp" | "profile";
 
@@ -17,32 +17,40 @@ export default function AuthLoginPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const { sendOTP, verifyOTP, signInWithGoogle, user, loading: authLoading } = useAuth();
-  
+  const { sendOTP, verifyOTP, signInWithGoogle, user, role, loading: authLoading, refreshUserData } = useAuth();
+
   const [step, setStep] = useState<AuthStep>("email");
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [isNewUser, setIsNewUser] = useState(false);
-  
+
   // Profile info for new users
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
 
-  // Redirect if already logged in
+  // Redirect if already logged in based on role
   useEffect(() => {
-    if (user && step !== "profile") {
-      navigate("/");
+    if (user && !authLoading && step !== "profile") {
+      if (role === 'admin') {
+        navigate("/admin");
+      } else if (role === 'partner') {
+        navigate("/member/partner");
+      } else if (role === 'member') {
+        navigate("/member");
+      } else {
+        navigate("/");
+      }
     }
-  }, [user, step, navigate]);
+  }, [user, role, authLoading, step, navigate]);
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    
+
     setIsLoading(true);
-    
+
     try {
       const { error } = await sendOTP(email);
       if (error) {
@@ -52,7 +60,7 @@ export default function AuthLoginPage() {
           variant: "destructive",
         });
       } else {
-        toast({ 
+        toast({
           title: t("auth.otpSent"),
           description: t("auth.checkEmailForOTP"),
         });
@@ -72,9 +80,9 @@ export default function AuthLoginPage() {
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otpCode) return;
-    
+
     setIsLoading(true);
-    
+
     try {
       const { error } = await verifyOTP(email, otpCode);
       if (error) {
@@ -84,21 +92,26 @@ export default function AuthLoginPage() {
           variant: "destructive",
         });
       } else {
-        // Check if user profile exists
-        try {
-          const response = await fetch('/api/auth/user');
-          if (response.status === 404) {
+        // Refresh user data after login
+        await refreshUserData();
+
+        // Check if user profile exists in users table
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('first_name, phone')
+            .eq('id', authUser.id)
+            .single();
+
+          if (!userData?.first_name || !userData?.phone) {
             // New user - need to fill profile
             setIsNewUser(true);
             setStep("profile");
           } else {
             toast({ title: t("auth.loginSuccess") });
-            navigate("/");
+            // Navigation will be handled by useEffect
           }
-        } catch {
-          // Assume new user
-          setIsNewUser(true);
-          setStep("profile");
         }
       }
     } catch (err: any) {
@@ -121,15 +134,26 @@ export default function AuthLoginPage() {
       });
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
-      await apiRequest('POST', '/api/auth/complete-profile', {
-        firstName,
-        lastName,
-        phone,
-      });
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) throw new Error("Not authenticated");
+
+      // Update user profile in users table
+      const { error } = await supabase
+        .from('users')
+        .update({
+          first_name: firstName,
+          last_name: lastName,
+          phone: phone,
+        })
+        .eq('id', authUser.id);
+
+      if (error) throw error;
+
+      await refreshUserData();
       toast({ title: t("auth.profileSaved") });
       navigate("/");
     } catch (err: any) {
@@ -185,7 +209,7 @@ export default function AuthLoginPage() {
           variant: "destructive",
         });
       } else {
-        toast({ 
+        toast({
           title: t("auth.otpResent"),
           description: t("auth.checkEmailForOTP"),
         });
@@ -234,9 +258,9 @@ export default function AuthLoginPage() {
                     data-testid="input-email"
                   />
                 </div>
-                <Button 
-                  type="submit" 
-                  className="w-full gap-2" 
+                <Button
+                  type="submit"
+                  className="w-full gap-2"
                   disabled={isLoading || !email}
                   data-testid="button-send-otp"
                 >
@@ -296,9 +320,9 @@ export default function AuthLoginPage() {
                     data-testid="input-otp"
                   />
                 </div>
-                <Button 
-                  type="submit" 
-                  className="w-full" 
+                <Button
+                  type="submit"
+                  className="w-full"
                   disabled={isLoading || otpCode.length !== 6}
                   data-testid="button-verify-otp"
                 >
@@ -373,9 +397,9 @@ export default function AuthLoginPage() {
                     data-testid="input-phone"
                   />
                 </div>
-                <Button 
-                  type="submit" 
-                  className="w-full" 
+                <Button
+                  type="submit"
+                  className="w-full"
                   disabled={isLoading || !firstName || !phone}
                   data-testid="button-save-profile"
                 >

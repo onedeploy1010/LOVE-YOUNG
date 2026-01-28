@@ -5,18 +5,107 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { PartnerLayout } from "@/components/PartnerLayout";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 import {
   TrendingUp, Users, Wallet, Award, Share2,
   ArrowUpRight, ArrowDownRight, Copy, Check,
-  Crown, Star, Target, Zap
+  Crown, Star, Target, Zap, Loader2
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "@/lib/i18n";
 
 export default function PartnerDashboardPage() {
   const { t } = useTranslation();
+  const { partner, member } = useAuth();
   const [copied, setCopied] = useState(false);
-  
+
+  // Fetch partner stats
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ["partner-dashboard-stats", partner?.id],
+    queryFn: async () => {
+      if (!partner?.id) return null;
+
+      // Get referral count
+      const { count: referralCount } = await supabase
+        .from("partners")
+        .select("*", { count: "exact", head: true })
+        .eq("referrer_id", partner.id);
+
+      // Get active referral count
+      const { count: activeReferralCount } = await supabase
+        .from("partners")
+        .select("*", { count: "exact", head: true })
+        .eq("referrer_id", partner.id)
+        .eq("status", "active");
+
+      // Get current month earnings from cash_wallet_ledger
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      const { data: monthlyEarnings } = await supabase
+        .from("cash_wallet_ledger")
+        .select("amount")
+        .eq("partner_id", partner.id)
+        .gte("created_at", `${currentMonth}-01`);
+
+      const thisMonthTotal = monthlyEarnings?.reduce((sum, e) => sum + (e.amount > 0 ? e.amount : 0), 0) || 0;
+
+      // Get last month earnings
+      const lastMonth = new Date();
+      lastMonth.setMonth(lastMonth.getMonth() - 1);
+      const lastMonthStr = lastMonth.toISOString().slice(0, 7);
+      const { data: lastMonthEarnings } = await supabase
+        .from("cash_wallet_ledger")
+        .select("amount")
+        .eq("partner_id", partner.id)
+        .gte("created_at", `${lastMonthStr}-01`)
+        .lt("created_at", `${currentMonth}-01`);
+
+      const lastMonthTotal = lastMonthEarnings?.reduce((sum, e) => sum + (e.amount > 0 ? e.amount : 0), 0) || 0;
+
+      // Get total earnings
+      const { data: totalEarnings } = await supabase
+        .from("cash_wallet_ledger")
+        .select("amount")
+        .eq("partner_id", partner.id)
+        .gt("amount", 0);
+
+      const totalEarningsAmount = totalEarnings?.reduce((sum, e) => sum + e.amount, 0) || 0;
+
+      // Get current bonus pool cycle
+      const { data: currentCycle } = await supabase
+        .from("bonus_pool_cycles")
+        .select("*")
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      let cycleProgress = 0;
+      let nextPayout = "";
+      if (currentCycle) {
+        const startDate = new Date(currentCycle.start_date);
+        const endDate = new Date(currentCycle.end_date);
+        const now = new Date();
+        const totalDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+        const daysPassed = (now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+        cycleProgress = Math.min(100, Math.max(0, (daysPassed / totalDays) * 100));
+        nextPayout = currentCycle.end_date;
+      }
+
+      return {
+        totalReferrals: referralCount || 0,
+        activeReferrals: activeReferralCount || 0,
+        monthlyEarnings: thisMonthTotal,
+        lastMonthEarnings: lastMonthTotal,
+        totalEarnings: totalEarningsAmount,
+        currentCycle: currentCycle?.cycle_number || 1,
+        cycleProgress,
+        nextPayout,
+      };
+    },
+    enabled: !!partner?.id,
+  });
+
   const getTierLabel = (tier: string) => {
     const tierMap: Record<string, string> = {
       "phase1": t("member.partnerDashboard.tiers.phase1"),
@@ -25,31 +114,33 @@ export default function PartnerDashboardPage() {
     };
     return tierMap[tier] || tier;
   };
-  
-  const mockData = {
-    referralCode: "LY8X9K2M",
-    tier: "phase1",
-    lyBalance: 2000,
-    cashBalance: 450.00,
-    rwaTokens: 15,
-    totalReferrals: 12,
-    activeReferrals: 8,
-    monthlyEarnings: 380.00,
-    lastMonthEarnings: 320.00,
-    totalEarnings: 2850.00,
-    currentCycle: 3,
-    cycleProgress: 65,
-    nextPayout: "2026-02-01"
+
+  const formatCurrency = (amount: number) => {
+    return `RM ${(amount / 100).toFixed(2)}`;
   };
 
-  const earningsChange = ((mockData.monthlyEarnings - mockData.lastMonthEarnings) / mockData.lastMonthEarnings * 100).toFixed(1);
-  const isPositive = mockData.monthlyEarnings >= mockData.lastMonthEarnings;
+  const earningsChange = stats && stats.lastMonthEarnings > 0
+    ? ((stats.monthlyEarnings - stats.lastMonthEarnings) / stats.lastMonthEarnings * 100).toFixed(1)
+    : "0";
+  const isPositive = stats ? stats.monthlyEarnings >= stats.lastMonthEarnings : true;
 
   const copyReferralCode = () => {
-    navigator.clipboard.writeText(mockData.referralCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (partner?.referralCode) {
+      navigator.clipboard.writeText(partner.referralCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <PartnerLayout>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </PartnerLayout>
+    );
+  }
 
   return (
     <PartnerLayout>
@@ -59,192 +150,192 @@ export default function PartnerDashboardPage() {
           <p className="text-muted-foreground">{t("member.partnerDashboard.subtitle")}</p>
         </div>
 
-      <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center">
-                <Crown className="w-8 h-8 text-secondary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.currentTier")}</p>
-                <h2 className="text-2xl font-bold text-primary">{getTierLabel(mockData.tier)}</h2>
-                <Badge className="mt-1 bg-secondary/20 text-secondary">{t("member.partnerDashboard.partnerBadge")}</Badge>
-              </div>
-            </div>
-            <div className="flex flex-col items-start md:items-end gap-2">
-              <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.myReferralCode")}</p>
-              <div className="flex items-center gap-2">
-                <code className="px-4 py-2 bg-background rounded-lg font-mono text-lg font-bold text-primary">
-                  {mockData.referralCode}
-                </code>
-                <Button 
-                  size="icon" 
-                  variant="outline"
-                  onClick={copyReferralCode}
-                  data-testid="button-copy-referral"
-                >
-                  {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card data-testid="card-ly-balance">
+        <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Star className="w-5 h-5 text-primary" />
-              </div>
-              <Badge variant="outline" className="text-xs">{t("member.partnerDashboard.lyPoints")}</Badge>
-            </div>
-            <div className="mt-4">
-              <p className="text-3xl font-bold text-foreground">{mockData.lyBalance.toLocaleString()}</p>
-              <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.lyBalance")}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card data-testid="card-cash-balance">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                <Wallet className="w-5 h-5 text-green-500" />
-              </div>
-              <Badge variant="outline" className="text-xs">{t("member.partnerDashboard.cashWallet")}</Badge>
-            </div>
-            <div className="mt-4">
-              <p className="text-3xl font-bold text-foreground">RM {mockData.cashBalance.toFixed(2)}</p>
-              <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.cashBalance")}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card data-testid="card-rwa-tokens">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
-                <Award className="w-5 h-5 text-secondary" />
-              </div>
-              <Badge variant="outline" className="text-xs">{t("member.partnerDashboard.rwaToken")}</Badge>
-            </div>
-            <div className="mt-4">
-              <p className="text-3xl font-bold text-foreground">{mockData.rwaTokens}</p>
-              <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.rwaBalance")}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card data-testid="card-referrals">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-500" />
-              </div>
-              <Badge variant="outline" className="text-xs">{t("member.partnerDashboard.referralNetwork")}</Badge>
-            </div>
-            <div className="mt-4">
-              <p className="text-3xl font-bold text-foreground">{mockData.totalReferrals}</p>
-              <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.activeMembers").replace("{count}", String(mockData.activeReferrals))}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              {t("member.partnerDashboard.monthlyEarnings")}
-            </CardTitle>
-            <CardDescription>{t("member.partnerDashboard.earningsDesc")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-end gap-4 mb-6">
-              <p className="text-4xl font-bold text-foreground">RM {mockData.monthlyEarnings.toFixed(2)}</p>
-              <div className={`flex items-center gap-1 text-sm ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
-                {isPositive ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-                {earningsChange}%
-              </div>
-            </div>
-            <Separator className="my-4" />
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.totalEarnings")}</p>
-                <p className="text-xl font-bold text-foreground">RM {mockData.totalEarnings.toFixed(2)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.lastMonthEarnings")}</p>
-                <p className="text-xl font-bold text-foreground">RM {mockData.lastMonthEarnings.toFixed(2)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-secondary" />
-              {t("member.partnerDashboard.rwaCycle")}
-            </CardTitle>
-            <CardDescription>{t("member.partnerDashboard.cycleDesc").replace("{cycle}", String(mockData.currentCycle))}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-muted-foreground">{t("member.partnerDashboard.cycleProgress")}</span>
-                  <span className="font-medium">{mockData.cycleProgress}%</span>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center">
+                  <Crown className="w-8 h-8 text-secondary" />
                 </div>
-                <Progress value={mockData.cycleProgress} className="h-3" />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.nextPayoutDate")}</p>
-                  <p className="font-medium text-foreground">{mockData.nextPayout}</p>
+                  <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.currentTier")}</p>
+                  <h2 className="text-2xl font-bold text-primary">{getTierLabel(partner?.tier || "phase1")}</h2>
+                  <Badge className="mt-1 bg-secondary/20 text-secondary">{t("member.partnerDashboard.partnerBadge")}</Badge>
                 </div>
-                <Button variant="outline" size="sm" data-testid="button-view-rwa">
-                  {t("member.partnerDashboard.viewDetails")}
-                </Button>
+              </div>
+              <div className="flex flex-col items-start md:items-end gap-2">
+                <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.myReferralCode")}</p>
+                <div className="flex items-center gap-2">
+                  <code className="px-4 py-2 bg-background rounded-lg font-mono text-lg font-bold text-primary">
+                    {partner?.referralCode || "--------"}
+                  </code>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    onClick={copyReferralCode}
+                    data-testid="button-copy-referral"
+                  >
+                    {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-primary" />
-            {t("member.partnerDashboard.quickActions")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2" data-testid="button-share-materials">
-              <Share2 className="w-5 h-5" />
-              <span>{t("member.partnerDashboard.promoMaterials")}</span>
-            </Button>
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2" data-testid="button-invite-friends">
-              <Users className="w-5 h-5" />
-              <span>{t("member.partnerDashboard.inviteFriends")}</span>
-            </Button>
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2" data-testid="button-withdraw">
-              <Wallet className="w-5 h-5" />
-              <span>{t("member.partnerDashboard.withdraw")}</span>
-            </Button>
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2" data-testid="button-upgrade">
-              <Zap className="w-5 h-5" />
-              <span>{t("member.partnerDashboard.upgradePlan")}</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card data-testid="card-ly-balance">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Star className="w-5 h-5 text-primary" />
+                </div>
+                <Badge variant="outline" className="text-xs">{t("member.partnerDashboard.lyPoints")}</Badge>
+              </div>
+              <div className="mt-4">
+                <p className="text-3xl font-bold text-foreground">{(partner?.lyBalance || 0).toLocaleString()}</p>
+                <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.lyBalance")}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-cash-balance">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <Wallet className="w-5 h-5 text-green-500" />
+                </div>
+                <Badge variant="outline" className="text-xs">{t("member.partnerDashboard.cashWallet")}</Badge>
+              </div>
+              <div className="mt-4">
+                <p className="text-3xl font-bold text-foreground">{formatCurrency(partner?.cashWalletBalance || 0)}</p>
+                <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.cashBalance")}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-rwa-tokens">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
+                  <Award className="w-5 h-5 text-secondary" />
+                </div>
+                <Badge variant="outline" className="text-xs">{t("member.partnerDashboard.rwaToken")}</Badge>
+              </div>
+              <div className="mt-4">
+                <p className="text-3xl font-bold text-foreground">{partner?.rwaTokens || 0}</p>
+                <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.rwaBalance")}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-referrals">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-blue-500" />
+                </div>
+                <Badge variant="outline" className="text-xs">{t("member.partnerDashboard.referralNetwork")}</Badge>
+              </div>
+              <div className="mt-4">
+                <p className="text-3xl font-bold text-foreground">{stats?.totalReferrals || 0}</p>
+                <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.activeMembers").replace("{count}", String(stats?.activeReferrals || 0))}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-primary" />
+                {t("member.partnerDashboard.monthlyEarnings")}
+              </CardTitle>
+              <CardDescription>{t("member.partnerDashboard.earningsDesc")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-end gap-4 mb-6">
+                <p className="text-4xl font-bold text-foreground">{formatCurrency(stats?.monthlyEarnings || 0)}</p>
+                <div className={`flex items-center gap-1 text-sm ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                  {isPositive ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                  {earningsChange}%
+                </div>
+              </div>
+              <Separator className="my-4" />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.totalEarnings")}</p>
+                  <p className="text-xl font-bold text-foreground">{formatCurrency(stats?.totalEarnings || 0)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.lastMonthEarnings")}</p>
+                  <p className="text-xl font-bold text-foreground">{formatCurrency(stats?.lastMonthEarnings || 0)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-secondary" />
+                {t("member.partnerDashboard.rwaCycle")}
+              </CardTitle>
+              <CardDescription>{t("member.partnerDashboard.cycleDesc").replace("{cycle}", String(stats?.currentCycle || 1))}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-muted-foreground">{t("member.partnerDashboard.cycleProgress")}</span>
+                    <span className="font-medium">{Math.round(stats?.cycleProgress || 0)}%</span>
+                  </div>
+                  <Progress value={stats?.cycleProgress || 0} className="h-3" />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t("member.partnerDashboard.nextPayoutDate")}</p>
+                    <p className="font-medium text-foreground">{stats?.nextPayout || "-"}</p>
+                  </div>
+                  <Button variant="outline" size="sm" data-testid="button-view-rwa">
+                    {t("member.partnerDashboard.viewDetails")}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-primary" />
+              {t("member.partnerDashboard.quickActions")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2" data-testid="button-share-materials">
+                <Share2 className="w-5 h-5" />
+                <span>{t("member.partnerDashboard.promoMaterials")}</span>
+              </Button>
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2" data-testid="button-invite-friends">
+                <Users className="w-5 h-5" />
+                <span>{t("member.partnerDashboard.inviteFriends")}</span>
+              </Button>
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2" data-testid="button-withdraw">
+                <Wallet className="w-5 h-5" />
+                <span>{t("member.partnerDashboard.withdraw")}</span>
+              </Button>
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2" data-testid="button-upgrade">
+                <Zap className="w-5 h-5" />
+                <span>{t("member.partnerDashboard.upgradePlan")}</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </PartnerLayout>
   );
