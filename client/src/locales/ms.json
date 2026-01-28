@@ -885,6 +885,7 @@
     }
   },
   "member": {
+    "logout": "Log Keluar",
     "center": {
       "loading": "Memuatkan...",
       "loginTitle": "Sila Log Masuk",

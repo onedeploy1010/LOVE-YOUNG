@@ -885,6 +885,7 @@
     }
   },
   "member": {
+    "logout": "退出登录",
     "center": {
       "loading": "加载中...",
       "loginTitle": "请先登录",

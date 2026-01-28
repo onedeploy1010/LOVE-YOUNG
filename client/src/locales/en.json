@@ -885,6 +885,7 @@
     }
   },
   "member": {
+    "logout": "Logout",
     "center": {
       "loading": "Loading...",
       "loginTitle": "Please Login",

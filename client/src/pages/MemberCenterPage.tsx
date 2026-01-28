@@ -17,6 +17,7 @@ import {
   Building2, Boxes, Receipt, PiggyBank, UserPlus
 } from "lucide-react";
 import type { User as UserType, Member, Partner, UserState } from "@shared/schema";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 interface UserStateResponse {
   state: UserState;
@@ -370,6 +371,7 @@ export default function MemberCenter() {
                 {stateInfo.label}
               </Badge>
             </div>
+            <LanguageSwitcher testId="button-language-switcher-member" />
             <Button
               variant="ghost"
               size="icon"
