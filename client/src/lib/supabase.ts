@@ -40,6 +40,7 @@ export async function signUpWithEmail(email: string, password: string, metadata?
     password,
     options: {
       data: metadata,
+      emailRedirectTo: `${window.location.origin}/auth/callback`,
     },
   });
   return { data, error };
