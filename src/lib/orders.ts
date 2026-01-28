@@ -1,0 +1,174 @@
+import { supabase } from "./supabase";
+import type { Order, InsertOrder } from "@shared/types";
+
+// Generate order number
+export function generateOrderNumber(): string {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `LY${year}${month}${day}${random}`;
+}
+
+// Create a new order
+export async function createOrder(
+  orderData: Omit<InsertOrder, "orderNumber">
+): Promise<{ order: Order | null; error: Error | null }> {
+  const orderNumber = generateOrderNumber();
+
+  const { data, error } = await supabase
+    .from("orders")
+    .insert({
+      ...orderData,
+      order_number: orderNumber,
+      status: "pending_payment",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating order:", error);
+    return { order: null, error: new Error(error.message) };
+  }
+
+  return { order: mapOrderFromDb(data), error: null };
+}
+
+// Update order status
+export async function updateOrderStatus(
+  orderId: string,
+  status: string,
+  additionalData?: Partial<{
+    stripePaymentIntentId: string;
+    stripeSessionId: string;
+  }>
+): Promise<{ success: boolean; error: Error | null }> {
+  const updateData: Record<string, unknown> = {
+    status,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (additionalData?.stripePaymentIntentId) {
+    updateData.stripe_payment_intent_id = additionalData.stripePaymentIntentId;
+  }
+  if (additionalData?.stripeSessionId) {
+    updateData.stripe_session_id = additionalData.stripeSessionId;
+  }
+
+  const { error } = await supabase
+    .from("orders")
+    .update(updateData)
+    .eq("id", orderId);
+
+  if (error) {
+    console.error("Error updating order:", error);
+    return { success: false, error: new Error(error.message) };
+  }
+
+  return { success: true, error: null };
+}
+
+// Get order by ID
+export async function getOrderById(
+  orderId: string
+): Promise<{ order: Order | null; error: Error | null }> {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("id", orderId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching order:", error);
+    return { order: null, error: new Error(error.message) };
+  }
+
+  return { order: mapOrderFromDb(data), error: null };
+}
+
+// Get order by order number
+export async function getOrderByNumber(
+  orderNumber: string
+): Promise<{ order: Order | null; error: Error | null }> {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("order_number", orderNumber)
+    .single();
+
+  if (error) {
+    console.error("Error fetching order:", error);
+    return { order: null, error: new Error(error.message) };
+  }
+
+  return { order: mapOrderFromDb(data), error: null };
+}
+
+// Get all orders (for admin)
+export async function getAllOrders(): Promise<{
+  orders: Order[];
+  error: Error | null;
+}> {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching orders:", error);
+    return { orders: [], error: new Error(error.message) };
+  }
+
+  return { orders: (data || []).map(mapOrderFromDb), error: null };
+}
+
+// Get orders by status
+export async function getOrdersByStatus(
+  status: string
+): Promise<{ orders: Order[]; error: Error | null }> {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("status", status)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching orders:", error);
+    return { orders: [], error: new Error(error.message) };
+  }
+
+  return { orders: (data || []).map(mapOrderFromDb), error: null };
+}
+
+// Map database row to Order type (snake_case to camelCase)
+function mapOrderFromDb(row: Record<string, unknown>): Order {
+  return {
+    id: row.id as string,
+    orderNumber: row.order_number as string,
+    memberId: row.member_id as string | null,
+    customerName: row.customer_name as string,
+    customerPhone: row.customer_phone as string,
+    customerEmail: row.customer_email as string | null,
+    status: row.status as string,
+    totalAmount: row.total_amount as number,
+    items: row.items as string,
+    packageType: row.package_type as string | null,
+    shippingAddress: row.shipping_address as string | null,
+    shippingCity: row.shipping_city as string | null,
+    shippingState: row.shipping_state as string | null,
+    shippingPostcode: row.shipping_postcode as string | null,
+    preferredDeliveryDate: row.preferred_delivery_date as string | null,
+    trackingNumber: row.tracking_number as string | null,
+    notes: row.notes as string | null,
+    source: row.source as string | null,
+    erpnextId: row.erpnext_id as string | null,
+    metaOrderId: row.meta_order_id as string | null,
+    pointsEarned: row.points_earned as number | null,
+    pointsRedeemed: row.points_redeemed as number | null,
+    createdAt: row.created_at as string | null,
+    updatedAt: row.updated_at as string | null,
+  };
+}
