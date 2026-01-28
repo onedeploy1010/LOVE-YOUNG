@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PartnerLayout } from "@/components/PartnerLayout";
+import { useTranslation } from "@/lib/i18n";
 import {
   Share2, Download, Copy, Image, FileText, Video,
   ExternalLink, Check, QrCode, Smartphone
@@ -30,6 +31,7 @@ const materials = {
 };
 
 export default function PartnerMaterialsPage() {
+  const { t } = useTranslation();
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const copyLink = (id: string) => {
@@ -42,8 +44,8 @@ export default function PartnerMaterialsPage() {
     <PartnerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-materials-title">推广物料</h1>
-          <p className="text-muted-foreground">获取分享素材，助力您的推广</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-materials-title">{t("partner.materials.title")}</h1>
+          <p className="text-muted-foreground">{t("partner.materials.subtitle")}</p>
         </div>
 
       <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">

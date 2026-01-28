@@ -32,7 +32,9 @@
     "amount": "金额",
     "none": "无",
     "yes": "是",
-    "no": "否"
+    "no": "否",
+    "viewDetails": "查看详情",
+    "whatsappConsult": "WhatsApp咨询"
   },
   "nav": {
     "products": "产品系列",
@@ -42,6 +44,8 @@
     "partner": "成为经营人",
     "brand": "品牌故事",
     "member": "会员中心",
+    "memberCenter": "会员中心",
+    "home": "首页",
     "admin": "管理后台"
   },
   "header": {

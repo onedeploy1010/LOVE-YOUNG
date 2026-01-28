@@ -32,7 +32,9 @@
     "amount": "Amount",
     "none": "None",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "viewDetails": "View Details",
+    "whatsappConsult": "WhatsApp Inquiry"
   },
   "nav": {
     "products": "Products",
@@ -42,6 +44,8 @@
     "partner": "Be a Partner",
     "brand": "Brand Story",
     "member": "Member Center",
+    "memberCenter": "Member Center",
+    "home": "Home",
     "admin": "Admin Panel"
   },
   "header": {

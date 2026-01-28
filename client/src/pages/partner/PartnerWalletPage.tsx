@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { PartnerLayout } from "@/components/PartnerLayout";
+import { useTranslation } from "@/lib/i18n";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +46,7 @@ const statusConfig: Record<string, { label: string; icon: React.ElementType; col
 };
 
 export default function PartnerWalletPage() {
+  const { t } = useTranslation();
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
 
@@ -52,8 +54,8 @@ export default function PartnerWalletPage() {
     <PartnerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-wallet-title">现金钱包</h1>
-          <p className="text-muted-foreground">收益查看与提现申请</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-wallet-title">{t("partner.wallet.title")}</h1>
+          <p className="text-muted-foreground">{t("partner.wallet.subtitle")}</p>
         </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { PartnerLayout } from "@/components/PartnerLayout";
+import { useTranslation } from "@/lib/i18n";
 import {
   TrendingUp, DollarSign, Award, Users, ShoppingBag,
   Calendar, Download, Filter, ArrowUpRight, PieChart
@@ -36,14 +37,15 @@ const typeConfig: Record<string, { label: string; icon: React.ElementType; color
 };
 
 export default function PartnerEarningsPage() {
+  const { t } = useTranslation();
   const growthPercent = ((stats.thisMonthEarnings - stats.lastMonthEarnings) / stats.lastMonthEarnings * 100).toFixed(1);
 
   return (
     <PartnerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-earnings-title">收益记录</h1>
-          <p className="text-muted-foreground">查看返现分红与RWA奖金历史</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-earnings-title">{t("partner.earnings.title")}</h1>
+          <p className="text-muted-foreground">{t("partner.earnings.subtitle")}</p>
         </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">

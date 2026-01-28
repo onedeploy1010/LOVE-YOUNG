@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { PartnerLayout } from "@/components/PartnerLayout";
+import { useTranslation } from "@/lib/i18n";
 import {
   Users, UserPlus, Search, ChevronRight, Crown,
   TrendingUp, Star, Filter
@@ -26,6 +27,7 @@ const levelColors: Record<number, string> = {
 };
 
 export default function PartnerReferralsPage() {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [levelFilter, setLevelFilter] = useState<number | null>(null);
 
@@ -48,8 +50,8 @@ export default function PartnerReferralsPage() {
     <PartnerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-referrals-title">推荐网络</h1>
-          <p className="text-muted-foreground">查看您的团队成员与下线网络</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-referrals-title">{t("partner.referrals.title")}</h1>
+          <p className="text-muted-foreground">{t("partner.referrals.subtitle")}</p>
         </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

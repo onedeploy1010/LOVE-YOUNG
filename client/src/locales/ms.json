@@ -32,7 +32,9 @@
     "amount": "Amaun",
     "none": "Tiada",
     "yes": "Ya",
-    "no": "Tidak"
+    "no": "Tidak",
+    "viewDetails": "Lihat Butiran",
+    "whatsappConsult": "Pertanyaan WhatsApp"
   },
   "nav": {
     "products": "Produk",
@@ -42,6 +44,8 @@
     "partner": "Jadi Rakan",
     "brand": "Kisah Jenama",
     "member": "Pusat Ahli",
+    "memberCenter": "Pusat Ahli",
+    "home": "Laman Utama",
     "admin": "Panel Admin"
   },
   "header": {

@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 import type { Product } from "@shared/schema";
 
 interface ProductCardProps {
@@ -9,6 +10,8 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onViewDetails }: ProductCardProps) {
+  const { t } = useTranslation();
+
   return (
     <Card
       className="group overflow-visible transition-all duration-300 hover:-translate-y-1"
@@ -53,7 +56,7 @@ export function ProductCard({ product, onViewDetails }: ProductCardProps) {
             data-testid={`button-view-product-${product.id}`}
           >
             <Eye className="w-4 h-4" />
-            查看详情
+            {t("common.viewDetails")}
           </Button>
         </div>
       </div>

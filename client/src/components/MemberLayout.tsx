@@ -117,7 +117,7 @@ export function MemberLayout({ children }: MemberLayoutProps) {
         </div>
 
         <div>
-          <p className="text-xs text-muted-foreground mb-2 px-2">{t("memberCenter.sections.member.title")}</p>
+          <p className="text-xs text-muted-foreground mb-2 px-2">{t("member.center.sections.member.title")}</p>
           <div className="space-y-1">
             {memberItems.map((item) => {
               const Icon = item.icon;

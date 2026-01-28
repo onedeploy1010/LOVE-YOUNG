@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { PartnerLayout } from "@/components/PartnerLayout";
+import { useTranslation } from "@/lib/i18n";
 import {
   Award, TrendingUp, Clock, CheckCircle, Coins,
   Calendar, PiggyBank, Users, ChevronRight, Info
@@ -31,14 +32,15 @@ const stats = {
 };
 
 export default function PartnerRwaPage() {
+  const { t } = useTranslation();
   const activeCycle = mockCycles.find(c => c.status === "active");
 
   return (
     <PartnerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-rwa-title">RWA奖金池</h1>
-          <p className="text-muted-foreground">查看分红周期与令牌持有</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-rwa-title">{t("partner.rwa.title")}</h1>
+          <p className="text-muted-foreground">{t("partner.rwa.subtitle")}</p>
         </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

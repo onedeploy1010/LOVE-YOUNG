@@ -174,7 +174,7 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
                 </AvatarFallback>
               </Avatar>
               <span className="hidden md:block text-sm font-medium" data-testid="text-user-name">
-                {member?.name || user?.firstName || t("memberCenter.sections.partner.title")}
+                {member?.name || user?.firstName || t("member.center.sections.partner.title")}
               </span>
             </div>
 
