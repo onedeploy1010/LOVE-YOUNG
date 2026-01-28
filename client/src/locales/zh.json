@@ -621,7 +621,16 @@
       "stepCleaning": "清洗消毒",
       "stepCooking": "炖煮",
       "stepColdStorage": "冷藏入库",
-      "stepInspection": "质检"
+      "stepInspection": "质检",
+      "statusPlanned": "待生产",
+      "statusMaterialPrep": "备料中",
+      "statusCleaning": "清洗消毒",
+      "statusCooking": "炖煮中",
+      "statusColdStorage": "冷藏入库",
+      "statusInspection": "质检中",
+      "statusCompleted": "已完成",
+      "statusCancelled": "已取消",
+      "statusUnknown": "未知"
     },
     "totalRevenue": "总收入",
     "totalOrders": "总订单",

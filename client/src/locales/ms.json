@@ -621,7 +621,16 @@
       "stepCleaning": "Pembersihan",
       "stepCooking": "Masakan",
       "stepColdStorage": "Penyimpanan Sejuk",
-      "stepInspection": "Pemeriksaan"
+      "stepInspection": "Pemeriksaan",
+      "statusPlanned": "Dirancang",
+      "statusMaterialPrep": "Menyediakan",
+      "statusCleaning": "Membersih",
+      "statusCooking": "Memasak",
+      "statusColdStorage": "Penyimpanan Sejuk",
+      "statusInspection": "Memeriksa",
+      "statusCompleted": "Selesai",
+      "statusCancelled": "Dibatalkan",
+      "statusUnknown": "Tidak diketahui"
     },
     "totalRevenue": "Jumlah Hasil",
     "totalOrders": "Jumlah Pesanan",

@@ -621,7 +621,16 @@
       "stepCleaning": "Cleaning",
       "stepCooking": "Cooking",
       "stepColdStorage": "Cold Storage",
-      "stepInspection": "Inspection"
+      "stepInspection": "Inspection",
+      "statusPlanned": "Planned",
+      "statusMaterialPrep": "Preparing",
+      "statusCleaning": "Cleaning",
+      "statusCooking": "Cooking",
+      "statusColdStorage": "Cold Storage",
+      "statusInspection": "Inspecting",
+      "statusCompleted": "Completed",
+      "statusCancelled": "Cancelled",
+      "statusUnknown": "Unknown"
     },
     "totalRevenue": "Total Revenue",
     "totalOrders": "Total Orders",

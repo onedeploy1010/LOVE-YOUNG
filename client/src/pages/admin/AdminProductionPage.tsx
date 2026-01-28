@@ -68,12 +68,18 @@ const mockMaterials = [
   { id: "3", batchId: "1", name: "冰糖", planned: 150, actual: 150, wastage: 0, unit: "g" },
 ];
 
-const stepLabels = ["备料", "清洗消毒", "炖煮", "冷藏入库", "质检"];
-
 export default function AdminProductionPage() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBatch, setSelectedBatch] = useState<string | null>(null);
+
+  const stepLabels = [
+    t("admin.productionPage.stepMaterialPrep"),
+    t("admin.productionPage.stepCleaning"),
+    t("admin.productionPage.stepCooking"),
+    t("admin.productionPage.stepColdStorage"),
+    t("admin.productionPage.stepInspection")
+  ];
 
   const filteredBatches = mockBatches.filter(batch =>
     searchQuery === "" ||
@@ -90,15 +96,15 @@ export default function AdminProductionPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "planned": return <Badge variant="outline"><Clock className="w-3 h-3 mr-1" />待生产</Badge>;
-      case "material_prep": return <Badge className="bg-blue-500"><Package className="w-3 h-3 mr-1" />备料中</Badge>;
-      case "cleaning": return <Badge className="bg-cyan-500"><Beaker className="w-3 h-3 mr-1" />清洗消毒</Badge>;
-      case "cooking": return <Badge className="bg-orange-500"><Thermometer className="w-3 h-3 mr-1" />炖煮中</Badge>;
-      case "cold_storage": return <Badge className="bg-indigo-500"><Thermometer className="w-3 h-3 mr-1" />冷藏入库</Badge>;
-      case "inspection": return <Badge className="bg-purple-500"><ClipboardCheck className="w-3 h-3 mr-1" />质检中</Badge>;
-      case "completed": return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />已完成</Badge>;
-      case "cancelled": return <Badge className="bg-red-500"><AlertTriangle className="w-3 h-3 mr-1" />已取消</Badge>;
-      default: return <Badge variant="outline">未知</Badge>;
+      case "planned": return <Badge variant="outline"><Clock className="w-3 h-3 mr-1" />{t("admin.productionPage.statusPlanned")}</Badge>;
+      case "material_prep": return <Badge className="bg-blue-500"><Package className="w-3 h-3 mr-1" />{t("admin.productionPage.statusMaterialPrep")}</Badge>;
+      case "cleaning": return <Badge className="bg-cyan-500"><Beaker className="w-3 h-3 mr-1" />{t("admin.productionPage.statusCleaning")}</Badge>;
+      case "cooking": return <Badge className="bg-orange-500"><Thermometer className="w-3 h-3 mr-1" />{t("admin.productionPage.statusCooking")}</Badge>;
+      case "cold_storage": return <Badge className="bg-indigo-500"><Thermometer className="w-3 h-3 mr-1" />{t("admin.productionPage.statusColdStorage")}</Badge>;
+      case "inspection": return <Badge className="bg-purple-500"><ClipboardCheck className="w-3 h-3 mr-1" />{t("admin.productionPage.statusInspection")}</Badge>;
+      case "completed": return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />{t("admin.productionPage.statusCompleted")}</Badge>;
+      case "cancelled": return <Badge className="bg-red-500"><AlertTriangle className="w-3 h-3 mr-1" />{t("admin.productionPage.statusCancelled")}</Badge>;
+      default: return <Badge variant="outline">{t("admin.productionPage.statusUnknown")}</Badge>;
     }
   };
 
@@ -107,7 +113,7 @@ export default function AdminProductionPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif text-primary" data-testid="text-production-title">
+            <h1 className="text-2xl font-serif" data-testid="text-production-title">
               {t("admin.productionPage.title")}
             </h1>
             <p className="text-muted-foreground">{t("admin.productionPage.subtitle")}</p>
