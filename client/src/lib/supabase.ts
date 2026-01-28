@@ -46,6 +46,27 @@ export async function signUpWithEmail(email: string, password: string, metadata?
   return { data, error };
 }
 
+// OTP Authentication - Send OTP to email
+export async function sendOTP(email: string) {
+  const { data, error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: true,
+    },
+  });
+  return { data, error };
+}
+
+// Verify OTP code
+export async function verifyOTP(email: string, token: string) {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'email',
+  });
+  return { data, error };
+}
+
 export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',

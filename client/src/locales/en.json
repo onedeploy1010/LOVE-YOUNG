@@ -8,7 +8,7 @@
     "confirmPassword": "Confirm Password",
     "firstName": "First Name",
     "lastName": "Last Name",
-    "welcomeBack": "Welcome Back",
+    "welcomeBack": "Welcome",
     "or": "or",
     "continueWithGoogle": "Continue with Google",
     "loginSuccess": "Login successful",
@@ -20,7 +20,18 @@
     "forgotPassword": "Forgot password?",
     "resetPassword": "Reset Password",
     "noAccount": "Don't have an account?",
-    "hasAccount": "Already have an account?"
+    "hasAccount": "Already have an account?",
+    "sendOTP": "Send Verification Code",
+    "enterOTP": "Enter Verification Code",
+    "verifyOTP": "Verify",
+    "otpSent": "Verification code sent",
+    "otpResent": "Verification code resent",
+    "checkEmailForOTP": "Check your email for a 6-digit code",
+    "otpSentTo": "Verification code sent to",
+    "sendOTPFailed": "Failed to send verification code",
+    "verifyOTPFailed": "Verification failed",
+    "resendOTP": "Resend Code",
+    "changeEmail": "Change Email"
   },
   "common": {
     "loading": "Loading...",

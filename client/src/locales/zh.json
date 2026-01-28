@@ -8,7 +8,7 @@
     "confirmPassword": "确认密码",
     "firstName": "名",
     "lastName": "姓",
-    "welcomeBack": "欢迎回来",
+    "welcomeBack": "欢迎登录",
     "or": "或",
     "continueWithGoogle": "使用Google登录",
     "loginSuccess": "登录成功",
@@ -20,7 +20,18 @@
     "forgotPassword": "忘记密码？",
     "resetPassword": "重置密码",
     "noAccount": "没有账户？",
-    "hasAccount": "已有账户？"
+    "hasAccount": "已有账户？",
+    "sendOTP": "发送验证码",
+    "enterOTP": "输入验证码",
+    "verifyOTP": "验证",
+    "otpSent": "验证码已发送",
+    "otpResent": "验证码已重新发送",
+    "checkEmailForOTP": "请查看您的邮箱获取6位验证码",
+    "otpSentTo": "验证码已发送至",
+    "sendOTPFailed": "发送验证码失败",
+    "verifyOTPFailed": "验证失败",
+    "resendOTP": "重新发送验证码",
+    "changeEmail": "更换邮箱"
   },
   "common": {
     "loading": "加载中...",

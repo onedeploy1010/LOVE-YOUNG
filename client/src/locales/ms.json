@@ -8,7 +8,7 @@
     "confirmPassword": "Sahkan Kata Laluan",
     "firstName": "Nama Pertama",
     "lastName": "Nama Akhir",
-    "welcomeBack": "Selamat Kembali",
+    "welcomeBack": "Selamat Datang",
     "or": "atau",
     "continueWithGoogle": "Teruskan dengan Google",
     "loginSuccess": "Log masuk berjaya",
@@ -20,7 +20,18 @@
     "forgotPassword": "Lupa kata laluan?",
     "resetPassword": "Tetapkan Semula Kata Laluan",
     "noAccount": "Tiada akaun?",
-    "hasAccount": "Sudah ada akaun?"
+    "hasAccount": "Sudah ada akaun?",
+    "sendOTP": "Hantar Kod Pengesahan",
+    "enterOTP": "Masukkan Kod Pengesahan",
+    "verifyOTP": "Sahkan",
+    "otpSent": "Kod pengesahan dihantar",
+    "otpResent": "Kod pengesahan dihantar semula",
+    "checkEmailForOTP": "Semak e-mel anda untuk kod 6 digit",
+    "otpSentTo": "Kod pengesahan dihantar ke",
+    "sendOTPFailed": "Gagal menghantar kod pengesahan",
+    "verifyOTPFailed": "Pengesahan gagal",
+    "resendOTP": "Hantar Semula Kod",
+    "changeEmail": "Tukar E-mel"
   },
   "common": {
     "loading": "Memuatkan...",

@@ -9,6 +9,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
+  sendOTP: (email: string) => Promise<{ error: Error | null }>;
+  verifyOTP: (email: string, token: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   getAccessToken: () => Promise<string | null>;
 }
@@ -93,6 +95,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error ? new Error(error.message) : null };
   };
 
+  const sendOTP = async (email: string) => {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: true,
+      },
+    });
+    return { error: error ? new Error(error.message) : null };
+  };
+
+  const verifyOTP = async (email: string, token: string) => {
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email',
+    });
+    return { error: error ? new Error(error.message) : null };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -112,6 +133,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signUp,
       signInWithGoogle,
+      sendOTP,
+      verifyOTP,
       signOut,
       getAccessToken,
     }}>

@@ -4,37 +4,68 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/lib/i18n";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, ArrowLeft } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
+
+type AuthStep = "email" | "otp";
 
 export default function AuthLoginPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const { signIn, signUp, signInWithGoogle, loading: authLoading } = useAuth();
+  const { sendOTP, verifyOTP, signInWithGoogle, loading: authLoading } = useAuth();
   
+  const [step, setStep] = useState<AuthStep>("email");
   const [isLoading, setIsLoading] = useState(false);
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [signupEmail, setSignupEmail] = useState("");
-  const [signupPassword, setSignupPassword] = useState("");
-  const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [otpCode, setOtpCode] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email) return;
+    
     setIsLoading(true);
     
     try {
-      const { error } = await signIn(loginEmail, loginPassword);
+      const { error } = await sendOTP(email);
       if (error) {
         toast({
-          title: t("auth.loginFailed"),
+          title: t("auth.sendOTPFailed"),
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({ 
+          title: t("auth.otpSent"),
+          description: t("auth.checkEmailForOTP"),
+        });
+        setStep("otp");
+      }
+    } catch (err: any) {
+      toast({
+        title: t("auth.sendOTPFailed"),
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpCode) return;
+    
+    setIsLoading(true);
+    
+    try {
+      const { error } = await verifyOTP(email, otpCode);
+      if (error) {
+        toast({
+          title: t("auth.verifyOTPFailed"),
           description: error.message,
           variant: "destructive",
         });
@@ -44,48 +75,7 @@ export default function AuthLoginPage() {
       }
     } catch (err: any) {
       toast({
-        title: t("auth.loginFailed"),
-        description: err.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (signupPassword !== signupConfirmPassword) {
-      toast({
-        title: t("auth.passwordMismatch"),
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      const { error } = await signUp(signupEmail, signupPassword, {
-        first_name: firstName,
-        last_name: lastName,
-      });
-      if (error) {
-        toast({
-          title: t("auth.signupFailed"),
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({ 
-          title: t("auth.signupSuccess"),
-          description: t("auth.checkEmail"),
-        });
-      }
-    } catch (err: any) {
-      toast({
-        title: t("auth.signupFailed"),
+        title: t("auth.verifyOTPFailed"),
         description: err.message,
         variant: "destructive",
       });
@@ -116,6 +106,38 @@ export default function AuthLoginPage() {
     }
   };
 
+  const handleBack = () => {
+    setStep("email");
+    setOtpCode("");
+  };
+
+  const handleResendOTP = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await sendOTP(email);
+      if (error) {
+        toast({
+          title: t("auth.sendOTPFailed"),
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({ 
+          title: t("auth.otpResent"),
+          description: t("auth.checkEmailForOTP"),
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: t("auth.sendOTPFailed"),
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -131,45 +153,36 @@ export default function AuthLoginPage() {
           <CardTitle className="text-2xl font-serif text-primary">LOVEYOUNG</CardTitle>
           <CardDescription>{t("auth.welcomeBack")}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login" data-testid="tab-login">{t("auth.login")}</TabsTrigger>
-              <TabsTrigger value="signup" data-testid="tab-signup">{t("auth.signup")}</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login" className="space-y-4 mt-4">
-              <form onSubmit={handleLogin} className="space-y-4">
+        <CardContent className="space-y-4">
+          {step === "email" ? (
+            <>
+              <form onSubmit={handleSendOTP} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email">{t("auth.email")}</Label>
+                  <Label htmlFor="email">{t("auth.email")}</Label>
                   <Input
-                    id="login-email"
+                    id="email"
                     type="email"
                     placeholder="email@example.com"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
-                    data-testid="input-login-email"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">{t("auth.password")}</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    required
-                    data-testid="input-login-password"
+                    data-testid="input-email"
                   />
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full" 
-                  disabled={isLoading}
-                  data-testid="button-login"
+                  className="w-full gap-2" 
+                  disabled={isLoading || !email}
+                  data-testid="button-send-otp"
                 >
-                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("auth.login")}
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4" />
+                      {t("auth.sendOTP")}
+                    </>
+                  )}
                 </Button>
               </form>
 
@@ -192,95 +205,63 @@ export default function AuthLoginPage() {
                 <SiGoogle className="w-4 h-4" />
                 {t("auth.continueWithGoogle")}
               </Button>
-            </TabsContent>
+            </>
+          ) : (
+            <>
+              <div className="text-center space-y-2 mb-4">
+                <p className="text-sm text-muted-foreground">
+                  {t("auth.otpSentTo")} <strong>{email}</strong>
+                </p>
+              </div>
 
-            <TabsContent value="signup" className="space-y-4 mt-4">
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="first-name">{t("auth.firstName")}</Label>
-                    <Input
-                      id="first-name"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      data-testid="input-first-name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="last-name">{t("auth.lastName")}</Label>
-                    <Input
-                      id="last-name"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      data-testid="input-last-name"
-                    />
-                  </div>
-                </div>
+              <form onSubmit={handleVerifyOTP} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">{t("auth.email")}</Label>
+                  <Label htmlFor="otp">{t("auth.enterOTP")}</Label>
                   <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="email@example.com"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
+                    id="otp"
+                    type="text"
+                    placeholder="123456"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                     required
-                    data-testid="input-signup-email"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">{t("auth.password")}</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    required
-                    data-testid="input-signup-password"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password">{t("auth.confirmPassword")}</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    value={signupConfirmPassword}
-                    onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                    required
-                    data-testid="input-confirm-password"
+                    maxLength={6}
+                    className="text-center text-2xl tracking-widest"
+                    data-testid="input-otp"
                   />
                 </div>
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={isLoading}
-                  data-testid="button-signup"
+                  disabled={isLoading || otpCode.length !== 6}
+                  data-testid="button-verify-otp"
                 >
-                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("auth.signup")}
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("auth.verifyOTP")}
                 </Button>
               </form>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">{t("auth.or")}</span>
-                </div>
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="ghost"
+                  className="w-full"
+                  onClick={handleResendOTP}
+                  disabled={isLoading}
+                  data-testid="button-resend-otp"
+                >
+                  {t("auth.resendOTP")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full gap-2"
+                  onClick={handleBack}
+                  disabled={isLoading}
+                  data-testid="button-back"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  {t("auth.changeEmail")}
+                </Button>
               </div>
-
-              <Button
-                variant="outline"
-                className="w-full gap-2"
-                onClick={handleGoogleLogin}
-                disabled={isLoading}
-                data-testid="button-google-signup"
-              >
-                <SiGoogle className="w-4 h-4" />
-                {t("auth.continueWithGoogle")}
-              </Button>
-            </TabsContent>
-          </Tabs>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
