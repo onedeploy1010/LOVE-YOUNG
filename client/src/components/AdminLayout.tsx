@@ -52,6 +52,7 @@ const getCoreItems = (t: (key: string) => string) => [
 
 const getErpItems = (t: (key: string) => string) => [
   { path: "/admin/inventory", label: t("admin.menu.inventory"), icon: Boxes },
+  { path: "/admin/production", label: t("admin.menu.production"), icon: Factory },
   { path: "/admin/purchase", label: t("admin.menu.purchase"), icon: ClipboardCheck },
   { path: "/admin/logistics", label: t("admin.menu.logistics"), icon: Thermometer },
   { path: "/admin/bills", label: t("admin.menu.bills"), icon: FileText },

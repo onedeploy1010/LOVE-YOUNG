@@ -41,6 +41,7 @@ import AdminPurchasePage from "@/pages/admin/AdminPurchasePage";
 import AdminLogisticsPage from "@/pages/admin/AdminLogisticsPage";
 import AdminBillsPage from "@/pages/admin/AdminBillsPage";
 import AdminFinancePage from "@/pages/admin/AdminFinancePage";
+import AdminProductionPage from "@/pages/admin/AdminProductionPage";
 import MemberSettingsPage from "@/pages/member/MemberSettingsPage";
 import MemberNotificationsPage from "@/pages/member/MemberNotificationsPage";
 import MemberHelpPage from "@/pages/member/MemberHelpPage";
@@ -85,6 +86,7 @@ function Router() {
       <Route path="/admin/members" component={AdminMembersPage} />
       <Route path="/admin/bonus-pool" component={AdminBonusPoolPage} />
       <Route path="/admin/inventory" component={AdminInventoryPage} />
+      <Route path="/admin/production" component={AdminProductionPage} />
       <Route path="/admin/purchase" component={AdminPurchasePage} />
       <Route path="/admin/logistics" component={AdminLogisticsPage} />
       <Route path="/admin/bills" component={AdminBillsPage} />

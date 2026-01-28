@@ -2,6 +2,7 @@ import {
   users, products, testimonials, contactMessages, orders,
   members, memberAddresses, memberPointsLedger,
   partners, lyPointsLedger, cashWalletLedger, bonusPoolCycles,
+  productionBatches, productionSteps, productionMaterials, inventory, inventoryLedger,
   type User, type UpsertUser,
   type Product, type InsertProduct, 
   type Testimonial, type InsertTestimonial, 
@@ -13,7 +14,11 @@ import {
   type Partner, type InsertPartner,
   type LyPointsLedger, type InsertLyPointsLedger,
   type CashWalletLedger, type InsertCashWalletLedger,
-  type BonusPoolCycle, type InsertBonusPoolCycle
+  type BonusPoolCycle, type InsertBonusPoolCycle,
+  type ProductionBatch, type InsertProductionBatch,
+  type ProductionStep, type InsertProductionStep,
+  type ProductionMaterial, type InsertProductionMaterial,
+  type Inventory, type InsertInventory
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, or, desc, sql, count } from "drizzle-orm";
@@ -83,6 +88,27 @@ export interface IStorage {
   // Stats methods
   getPartnerReferralStats(partnerId: string): Promise<{ directReferrals: number; totalNetwork: number; monthlyEarnings: number }>;
   getAdminDashboardStats(): Promise<{ activePartners: number; monthlyOrders: number; monthlySales: number; poolBalance: number }>;
+  
+  // Production line methods
+  getProductionBatches(): Promise<ProductionBatch[]>;
+  getProductionBatch(id: string): Promise<ProductionBatch | undefined>;
+  createProductionBatch(batch: InsertProductionBatch): Promise<ProductionBatch>;
+  updateProductionBatch(id: string, batch: Partial<InsertProductionBatch>): Promise<ProductionBatch | undefined>;
+  
+  getProductionSteps(batchId: string): Promise<ProductionStep[]>;
+  createProductionStep(step: InsertProductionStep): Promise<ProductionStep>;
+  updateProductionStep(id: string, step: Partial<InsertProductionStep>): Promise<ProductionStep | undefined>;
+  
+  getProductionMaterials(batchId: string): Promise<ProductionMaterial[]>;
+  createProductionMaterial(material: InsertProductionMaterial): Promise<ProductionMaterial>;
+  updateProductionMaterial(id: string, material: Partial<InsertProductionMaterial>): Promise<ProductionMaterial | undefined>;
+  
+  // Inventory methods
+  getInventoryItems(): Promise<Inventory[]>;
+  getInventoryItem(id: string): Promise<Inventory | undefined>;
+  createInventoryItem(item: InsertInventory): Promise<Inventory>;
+  updateInventoryItem(id: string, item: Partial<InsertInventory>): Promise<Inventory | undefined>;
+  deductInventory(inventoryId: string, quantity: number, referenceType: string, referenceId: string, notes?: string): Promise<void>;
   
   seedDefaultData(): Promise<void>;
 }
@@ -556,6 +582,122 @@ export class DatabaseStorage implements IStorage {
         await this.createOrder(order);
       }
     }
+  }
+
+  // Production line methods
+  async getProductionBatches(): Promise<ProductionBatch[]> {
+    return await db.select().from(productionBatches).orderBy(desc(productionBatches.createdAt));
+  }
+
+  async getProductionBatch(id: string): Promise<ProductionBatch | undefined> {
+    const [batch] = await db.select().from(productionBatches).where(eq(productionBatches.id, id));
+    return batch || undefined;
+  }
+
+  async createProductionBatch(batch: InsertProductionBatch): Promise<ProductionBatch> {
+    const [newBatch] = await db.insert(productionBatches).values(batch).returning();
+    return newBatch;
+  }
+
+  async updateProductionBatch(id: string, batch: Partial<InsertProductionBatch>): Promise<ProductionBatch | undefined> {
+    const [updated] = await db
+      .update(productionBatches)
+      .set({ ...batch, updatedAt: sql`now()` })
+      .where(eq(productionBatches.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async getProductionSteps(batchId: string): Promise<ProductionStep[]> {
+    return await db
+      .select()
+      .from(productionSteps)
+      .where(eq(productionSteps.batchId, batchId))
+      .orderBy(productionSteps.stepOrder);
+  }
+
+  async createProductionStep(step: InsertProductionStep): Promise<ProductionStep> {
+    const [newStep] = await db.insert(productionSteps).values(step).returning();
+    return newStep;
+  }
+
+  async updateProductionStep(id: string, step: Partial<InsertProductionStep>): Promise<ProductionStep | undefined> {
+    const [updated] = await db
+      .update(productionSteps)
+      .set(step)
+      .where(eq(productionSteps.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async getProductionMaterials(batchId: string): Promise<ProductionMaterial[]> {
+    return await db
+      .select()
+      .from(productionMaterials)
+      .where(eq(productionMaterials.batchId, batchId));
+  }
+
+  async createProductionMaterial(material: InsertProductionMaterial): Promise<ProductionMaterial> {
+    const [newMaterial] = await db.insert(productionMaterials).values(material).returning();
+    return newMaterial;
+  }
+
+  async updateProductionMaterial(id: string, material: Partial<InsertProductionMaterial>): Promise<ProductionMaterial | undefined> {
+    const [updated] = await db
+      .update(productionMaterials)
+      .set(material)
+      .where(eq(productionMaterials.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  // Inventory methods
+  async getInventoryItems(): Promise<Inventory[]> {
+    return await db.select().from(inventory).orderBy(inventory.name);
+  }
+
+  async getInventoryItem(id: string): Promise<Inventory | undefined> {
+    const [item] = await db.select().from(inventory).where(eq(inventory.id, id));
+    return item || undefined;
+  }
+
+  async createInventoryItem(item: InsertInventory): Promise<Inventory> {
+    const [newItem] = await db.insert(inventory).values(item).returning();
+    return newItem;
+  }
+
+  async updateInventoryItem(id: string, item: Partial<InsertInventory>): Promise<Inventory | undefined> {
+    const [updated] = await db
+      .update(inventory)
+      .set({ ...item, updatedAt: sql`now()` })
+      .where(eq(inventory.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async deductInventory(inventoryId: string, quantity: number, referenceType: string, referenceId: string, notes?: string): Promise<void> {
+    // Get current inventory
+    const item = await this.getInventoryItem(inventoryId);
+    if (!item) throw new Error("Inventory item not found");
+
+    // Deduct quantity
+    await db
+      .update(inventory)
+      .set({ 
+        quantity: (item.quantity || 0) - quantity,
+        updatedAt: sql`now()`
+      })
+      .where(eq(inventory.id, inventoryId));
+
+    // Create ledger entry
+    await db.insert(inventoryLedger).values({
+      inventoryId,
+      type: "out",
+      quantity: -quantity,
+      referenceType,
+      referenceId,
+      notes
+    });
   }
 }
 
