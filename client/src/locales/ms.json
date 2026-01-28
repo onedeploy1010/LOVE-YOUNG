@@ -895,12 +895,25 @@
       "user": "Pengguna",
       "defaultUser": "Pengguna",
       "version": "LOVE YOUNG v1.0",
+      "backToCenter": "Kembali ke Pusat Ahli",
+      "memberBadge": "Ahli",
       "sections": {
-        "account": "Akaun",
-        "member": "Perkhidmatan Ahli",
-        "partner": "Pusat Rakan Kongsi",
-        "adminCore": "Panel Admin",
-        "erp": "Sistem ERP"
+        "account": {
+          "title": "Akaun"
+        },
+        "member": {
+          "title": "Perkhidmatan Ahli"
+        },
+        "partner": {
+          "title": "Pusat Rakan Kongsi",
+          "dashboard": "Gambaran Keseluruhan"
+        },
+        "adminCore": {
+          "title": "Panel Admin"
+        },
+        "erp": {
+          "title": "Sistem ERP"
+        }
       },
       "sectionDesc": {
         "account": "Urus tetapan akaun dan pilihan anda",

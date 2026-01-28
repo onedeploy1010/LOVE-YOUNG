@@ -895,12 +895,25 @@
       "user": "User",
       "defaultUser": "User",
       "version": "LOVE YOUNG v1.0",
+      "backToCenter": "Back to Member Center",
+      "memberBadge": "Member",
       "sections": {
-        "account": "Account",
-        "member": "Member Services",
-        "partner": "Partner Center",
-        "adminCore": "Admin Panel",
-        "erp": "ERP System"
+        "account": {
+          "title": "Account"
+        },
+        "member": {
+          "title": "Member Services"
+        },
+        "partner": {
+          "title": "Partner Center",
+          "dashboard": "Overview"
+        },
+        "adminCore": {
+          "title": "Admin Panel"
+        },
+        "erp": {
+          "title": "ERP System"
+        }
       },
       "sectionDesc": {
         "account": "Manage your account settings and preferences",

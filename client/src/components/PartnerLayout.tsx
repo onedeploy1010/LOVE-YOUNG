@@ -20,6 +20,8 @@ import {
   ChevronRight,
   LogOut
 } from "lucide-react";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useTranslation } from "@/lib/i18n";
 import type { User as UserType, Member, Partner, UserState } from "@shared/schema";
 
 interface PartnerLayoutProps {
@@ -33,17 +35,19 @@ interface UserStateResponse {
   partner: Partner | null;
 }
 
-const menuItems = [
-  { path: "/member/partner", label: "经营概览", icon: LayoutDashboard },
-  { path: "/member/partner/referrals", label: "推荐网络", icon: Users },
-  { path: "/member/partner/materials", label: "推广物料", icon: FileText },
-  { path: "/member/partner/ly-points", label: "LY积分", icon: Star },
-  { path: "/member/partner/wallet", label: "现金钱包", icon: Wallet },
-  { path: "/member/partner/rwa", label: "RWA奖金池", icon: PieChart },
-  { path: "/member/partner/earnings", label: "收益记录", icon: TrendingUp },
+const getMenuItems = (t: (key: string) => string) => [
+  { path: "/member/partner", label: t("member.center.sections.partner.dashboard"), icon: LayoutDashboard },
+  { path: "/member/partner/referrals", label: t("partner.referrals.title"), icon: Users },
+  { path: "/member/partner/materials", label: t("partner.materials.title"), icon: FileText },
+  { path: "/member/partner/ly-points", label: t("partner.lyPoints.title"), icon: Star },
+  { path: "/member/partner/wallet", label: t("partner.wallet.title"), icon: Wallet },
+  { path: "/member/partner/rwa", label: t("partner.rwa.title"), icon: PieChart },
+  { path: "/member/partner/earnings", label: t("partner.earnings.title"), icon: TrendingUp },
 ];
 
 export function PartnerLayout({ children }: PartnerLayoutProps) {
+  const { t } = useTranslation();
+  const menuItems = getMenuItems(t);
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
 
@@ -74,7 +78,7 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
             <Crown className="w-5 h-5 text-secondary" />
           </div>
           <div>
-            <h2 className="font-semibold text-primary">经营人中心</h2>
+            <h2 className="font-semibold text-primary">{t("member.center.sections.partner.title")}</h2>
             <Badge variant="outline" className="text-xs">Phase 1</Badge>
           </div>
         </div>
@@ -105,15 +109,18 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
         <Link href="/member">
           <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-back-member">
             <ArrowLeft className="w-4 h-4" />
-            返回会员中心
+            {t("member.center.backToCenter")}
           </Button>
         </Link>
         <Link href="/">
           <Button variant="ghost" className="w-full justify-start gap-2" data-testid="button-back-home">
             <Home className="w-4 h-4" />
-            返回首页
+            {t("nav.home")}
           </Button>
         </Link>
+        <div className="mt-3">
+          <LanguageSwitcher testId="button-language-switcher-sidebar" />
+        </div>
       </div>
     </div>
   );
@@ -140,7 +147,7 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
 
             <div className="hidden lg:flex items-center gap-2 ml-4">
               <Crown className="w-5 h-5 text-secondary" />
-              <span className="text-sm font-medium">经营人中心</span>
+              <span className="text-sm font-medium">{t("member.center.sections.partner.title")}</span>
               {currentPage && (
                 <>
                   <ChevronRight className="w-4 h-4 text-primary-foreground/60" />
@@ -151,10 +158,11 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
           </div>
 
           <div className="flex items-center gap-3">
+            <LanguageSwitcher testId="button-language-switcher-header" />
             <Link href="/member" className="hidden sm:block">
               <Button variant="ghost" size="sm" className="text-primary-foreground gap-2" data-testid="button-header-member">
                 <ArrowLeft className="w-4 h-4" />
-                返回会员中心
+                {t("member.center.backToCenter")}
               </Button>
             </Link>
 
@@ -166,7 +174,7 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
                 </AvatarFallback>
               </Avatar>
               <span className="hidden md:block text-sm font-medium" data-testid="text-user-name">
-                {member?.name || user?.firstName || "经营人"}
+                {member?.name || user?.firstName || t("memberCenter.sections.partner.title")}
               </span>
             </div>
 

@@ -895,12 +895,25 @@
       "user": "用户",
       "defaultUser": "用户",
       "version": "LOVE YOUNG 养乐 v1.0",
+      "backToCenter": "返回会员中心",
+      "memberBadge": "会员",
       "sections": {
-        "account": "账户管理",
-        "member": "会员服务",
-        "partner": "经营人中心",
-        "adminCore": "管理后台",
-        "erp": "ERP系统"
+        "account": {
+          "title": "账户管理"
+        },
+        "member": {
+          "title": "会员服务"
+        },
+        "partner": {
+          "title": "经营人中心",
+          "dashboard": "经营概览"
+        },
+        "adminCore": {
+          "title": "管理后台"
+        },
+        "erp": {
+          "title": "ERP系统"
+        }
       },
       "sectionDesc": {
         "account": "管理您的账户信息和偏好设置",

@@ -45,7 +45,7 @@ type MenuSection = {
 const getMenuSections = (t: (key: string) => string): MenuSection[] => [
   {
     id: "account",
-    title: t("member.center.sections.account"),
+    title: t("member.center.sections.account.title"),
     icon: User,
     items: [
       { icon: Home, label: t("member.center.menuItems.personalCenter"), href: "/member", description: t("member.center.menuItems.personalCenterDesc") },
@@ -56,7 +56,7 @@ const getMenuSections = (t: (key: string) => string): MenuSection[] => [
   },
   {
     id: "member",
-    title: t("member.center.sections.member"),
+    title: t("member.center.sections.member.title"),
     icon: Star,
     items: [
       { icon: ShoppingBag, label: t("member.center.menuItems.orderHistory"), href: "/member/orders", description: t("member.center.menuItems.orderHistoryDesc") },
@@ -67,7 +67,7 @@ const getMenuSections = (t: (key: string) => string): MenuSection[] => [
   },
   {
     id: "partner",
-    title: t("member.center.sections.partner"),
+    title: t("member.center.sections.partner.title"),
     icon: Crown,
     items: [
       { icon: TrendingUp, label: t("member.center.menuItems.overview"), href: "/member/partner", description: t("member.center.menuItems.overviewDesc") },
@@ -81,7 +81,7 @@ const getMenuSections = (t: (key: string) => string): MenuSection[] => [
   },
   {
     id: "admin-core",
-    title: t("member.center.sections.adminCore"),
+    title: t("member.center.sections.adminCore.title"),
     icon: Shield,
     items: [
       { icon: BarChart3, label: t("member.center.menuItems.dashboard"), href: "/admin", description: t("member.center.menuItems.dashboardDesc") },
@@ -94,7 +94,7 @@ const getMenuSections = (t: (key: string) => string): MenuSection[] => [
   },
   {
     id: "erp",
-    title: t("member.center.sections.erp"),
+    title: t("member.center.sections.erp.title"),
     icon: Building2,
     items: [
       { icon: Boxes, label: t("member.center.menuItems.inventory"), href: "/admin/inventory", description: t("member.center.menuItems.inventoryDesc") },

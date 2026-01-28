@@ -36,22 +36,24 @@ interface UserStateResponse {
   partner: Partner | null;
 }
 
-const accountItems = [
-  { path: "/member/settings", label: "账户设置", icon: Settings },
-  { path: "/member/notifications", label: "消息通知", icon: Bell },
-  { path: "/member/help", label: "帮助中心", icon: HelpCircle },
+const getAccountItems = (t: (key: string) => string) => [
+  { path: "/member/settings", label: t("member.settings.title"), icon: Settings },
+  { path: "/member/notifications", label: t("member.notifications.title"), icon: Bell },
+  { path: "/member/help", label: t("member.help.title"), icon: HelpCircle },
 ];
 
-const memberItems = [
-  { path: "/member/orders", label: "订单记录", icon: ShoppingBag },
-  { path: "/member/addresses", label: "地址管理", icon: MapPin },
-  { path: "/member/points", label: "积分中心", icon: Gift },
-  { path: "/member/payment", label: "支付方式", icon: CreditCard },
+const getMemberItems = (t: (key: string) => string) => [
+  { path: "/member/orders", label: t("member.orders.title"), icon: ShoppingBag },
+  { path: "/member/addresses", label: t("member.addresses.title"), icon: MapPin },
+  { path: "/member/points", label: t("member.points.title"), icon: Gift },
+  { path: "/member/payment", label: t("member.payment.title"), icon: CreditCard },
 ];
-
-const allItems = [...accountItems, ...memberItems];
 
 export function MemberLayout({ children }: MemberLayoutProps) {
+  const { t } = useTranslation();
+  const accountItems = getAccountItems(t);
+  const memberItems = getMemberItems(t);
+  const allItems = [...accountItems, ...memberItems];
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
 
@@ -80,10 +82,10 @@ export function MemberLayout({ children }: MemberLayoutProps) {
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium">{member?.name || user?.firstName || "会员"}</p>
+            <p className="font-medium">{member?.name || user?.firstName || t("member.center.defaultUser")}</p>
             <Badge variant="default" className="gap-1 text-xs">
               <Star className="w-3 h-3" />
-              会员
+              {t("member.center.memberBadge")}
             </Badge>
           </div>
         </div>
@@ -91,7 +93,7 @@ export function MemberLayout({ children }: MemberLayoutProps) {
       
       <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
         <div>
-          <p className="text-xs text-muted-foreground mb-2 px-2">账户管理</p>
+          <p className="text-xs text-muted-foreground mb-2 px-2">{t("member.center.sections.account.title")}</p>
           <div className="space-y-1">
             {accountItems.map((item) => {
               const Icon = item.icon;
@@ -115,7 +117,7 @@ export function MemberLayout({ children }: MemberLayoutProps) {
         </div>
 
         <div>
-          <p className="text-xs text-muted-foreground mb-2 px-2">会员服务</p>
+          <p className="text-xs text-muted-foreground mb-2 px-2">{t("memberCenter.sections.member.title")}</p>
           <div className="space-y-1">
             {memberItems.map((item) => {
               const Icon = item.icon;
@@ -146,13 +148,13 @@ export function MemberLayout({ children }: MemberLayoutProps) {
         <Link href="/member">
           <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-back-center">
             <ArrowLeft className="w-4 h-4" />
-            返回会员中心
+            {t("member.center.backToCenter")}
           </Button>
         </Link>
         <Link href="/">
           <Button variant="ghost" className="w-full justify-start gap-2" data-testid="button-back-home">
             <Home className="w-4 h-4" />
-            返回首页
+            {t("nav.home")}
           </Button>
         </Link>
       </div>
@@ -181,7 +183,7 @@ export function MemberLayout({ children }: MemberLayoutProps) {
 
             <div className="hidden lg:flex items-center gap-2 ml-4">
               <User className="w-5 h-5 text-secondary" />
-              <span className="text-sm font-medium">会员中心</span>
+              <span className="text-sm font-medium">{t("nav.memberCenter")}</span>
               {currentPage && (
                 <>
                   <ChevronRight className="w-4 h-4 text-primary-foreground/60" />
@@ -196,7 +198,7 @@ export function MemberLayout({ children }: MemberLayoutProps) {
             <Link href="/member" className="hidden sm:block">
               <Button variant="ghost" size="sm" className="text-primary-foreground gap-2" data-testid="button-header-center">
                 <ArrowLeft className="w-4 h-4" />
-                返回仪表盘
+                {t("member.center.backToCenter")}
               </Button>
             </Link>
 
@@ -208,7 +210,7 @@ export function MemberLayout({ children }: MemberLayoutProps) {
                 </AvatarFallback>
               </Avatar>
               <span className="hidden md:block text-sm font-medium" data-testid="text-user-name">
-                {member?.name || user?.firstName || "会员"}
+                {member?.name || user?.firstName || t("member.center.defaultUser")}
               </span>
             </div>
 
