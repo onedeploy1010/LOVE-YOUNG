@@ -15,18 +15,18 @@ import {
   isWhatsAppConfigured,
   isTextMessage,
 } from "./services/whatsapp";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupSupabaseAuth, isSupabaseAuthenticated, optionalSupabaseAuth } from "./supabaseAuth";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   
-  await setupAuth(app);
+  await setupSupabaseAuth(app);
 
-  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
+  app.get("/api/auth/user", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -37,9 +37,9 @@ export async function registerRoutes(
 
   // Get user state - returns user's current role/state in the system
   // States: user (basic), member (has orders), partner (active partner), admin
-  app.get("/api/auth/state", isAuthenticated, async (req: any, res) => {
+  app.get("/api/auth/state", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -106,9 +106,9 @@ export async function registerRoutes(
   });
 
   // Member profile endpoints
-  app.get("/api/members/me", isAuthenticated, async (req: any, res) => {
+  app.get("/api/members/me", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(404).json({ error: "Member profile not found" });
@@ -120,9 +120,9 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/members/me", isAuthenticated, async (req: any, res) => {
+  app.post("/api/members/me", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const existingMember = await storage.getMemberByUserId(userId);
       if (existingMember) {
         return res.status(400).json({ error: "Member profile already exists" });
@@ -141,9 +141,9 @@ export async function registerRoutes(
     }
   });
 
-  app.put("/api/members/me", isAuthenticated, async (req: any, res) => {
+  app.put("/api/members/me", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(404).json({ error: "Member profile not found" });
@@ -164,9 +164,9 @@ export async function registerRoutes(
   });
 
   // Member addresses endpoints
-  app.get("/api/members/me/addresses", isAuthenticated, async (req: any, res) => {
+  app.get("/api/members/me/addresses", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(404).json({ error: "Member profile not found" });
@@ -180,9 +180,9 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/members/me/addresses", isAuthenticated, async (req: any, res) => {
+  app.post("/api/members/me/addresses", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(404).json({ error: "Member profile not found" });
@@ -208,9 +208,9 @@ export async function registerRoutes(
     }
   });
 
-  app.put("/api/members/me/addresses/:addressId", isAuthenticated, async (req: any, res) => {
+  app.put("/api/members/me/addresses/:addressId", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(404).json({ error: "Member profile not found" });
@@ -229,9 +229,9 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/members/me/addresses/:addressId", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/members/me/addresses/:addressId", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(404).json({ error: "Member profile not found" });
@@ -250,9 +250,9 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/members/me/addresses/:addressId/default", isAuthenticated, async (req: any, res) => {
+  app.post("/api/members/me/addresses/:addressId/default", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(404).json({ error: "Member profile not found" });
@@ -272,9 +272,9 @@ export async function registerRoutes(
   });
 
   // Member points endpoints
-  app.get("/api/members/me/points", isAuthenticated, async (req: any, res) => {
+  app.get("/api/members/me/points", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(404).json({ error: "Member profile not found" });
@@ -292,9 +292,9 @@ export async function registerRoutes(
   });
 
   // Member order history
-  app.get("/api/members/me/orders", isAuthenticated, async (req: any, res) => {
+  app.get("/api/members/me/orders", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(404).json({ error: "Member profile not found" });
@@ -559,9 +559,9 @@ export async function registerRoutes(
   // ============ Partner (经营人) API Routes ============
 
   // Get partner profile
-  app.get("/api/partner/profile", isAuthenticated, async (req: any, res) => {
+  app.get("/api/partner/profile", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(404).json({ error: "Member profile not found" });
@@ -584,9 +584,9 @@ export async function registerRoutes(
     referralCode: z.string().optional(),
   });
 
-  app.post("/api/partner/join", isAuthenticated, async (req: any, res) => {
+  app.post("/api/partner/join", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(400).json({ error: "Please create a member profile first" });
@@ -690,9 +690,9 @@ export async function registerRoutes(
   });
 
   // Get LY points ledger
-  app.get("/api/partner/ly-ledger", isAuthenticated, async (req: any, res) => {
+  app.get("/api/partner/ly-ledger", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(404).json({ error: "Member profile not found" });
@@ -712,9 +712,9 @@ export async function registerRoutes(
   });
 
   // Get cash wallet ledger
-  app.get("/api/partner/cash-ledger", isAuthenticated, async (req: any, res) => {
+  app.get("/api/partner/cash-ledger", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(404).json({ error: "Member profile not found" });
@@ -734,9 +734,9 @@ export async function registerRoutes(
   });
 
   // Get referral stats
-  app.get("/api/partner/referral-stats", isAuthenticated, async (req: any, res) => {
+  app.get("/api/partner/referral-stats", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(404).json({ error: "Member profile not found" });
@@ -756,9 +756,9 @@ export async function registerRoutes(
   });
 
   // Get current bonus pool cycle
-  app.get("/api/partner/current-cycle", isAuthenticated, async (req: any, res) => {
+  app.get("/api/partner/current-cycle", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member) {
         return res.status(404).json({ error: "Member profile not found" });
@@ -795,9 +795,9 @@ export async function registerRoutes(
   // ============ Admin API Routes ============
 
   // Get all partners (admin only)
-  app.get("/api/admin/partners", isAuthenticated, async (req: any, res) => {
+  app.get("/api/admin/partners", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member || member.role !== "admin") {
         return res.status(403).json({ error: "Admin access required" });
@@ -812,9 +812,9 @@ export async function registerRoutes(
   });
 
   // Activate partner (admin only)
-  app.post("/api/admin/partners/:id/activate", isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/partners/:id/activate", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member || member.role !== "admin") {
         return res.status(403).json({ error: "Admin access required" });
@@ -829,9 +829,9 @@ export async function registerRoutes(
   });
 
   // Get dashboard stats (admin only)
-  app.get("/api/admin/dashboard-stats", isAuthenticated, async (req: any, res) => {
+  app.get("/api/admin/dashboard-stats", isSupabaseAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.supabaseUser.id;
       const member = await storage.getMemberByUserId(userId);
       if (!member || member.role !== "admin") {
         return res.status(403).json({ error: "Admin access required" });

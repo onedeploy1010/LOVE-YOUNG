@@ -45,3 +45,5 @@ integrations = ["javascript_database:1.0.0", "javascript_log_in_with_replit:1.0.
 
 [userenv.shared]
 DATABASE_URL = "postgresql://postgres:loveyoung52017888@db.vpzmhglfwomgrashheol.supabase.co:5432/postgres"
+VITE_SUPABASE_URL = "https://vpzmhglfwomgrashheol.supabase.co"
+VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwem1oZ2xmd29tZ3Jhc2hoZW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NjE1NjQsImV4cCI6MjA4NTAzNzU2NH0.anMz844nf2-sscp4yX5ctLGMMaRjKy24YKjPWAEDUN4"

@@ -1,4 +1,27 @@
 {
+  "auth": {
+    "login": "Log Masuk",
+    "signup": "Daftar",
+    "logout": "Log Keluar",
+    "email": "E-mel",
+    "password": "Kata Laluan",
+    "confirmPassword": "Sahkan Kata Laluan",
+    "firstName": "Nama Pertama",
+    "lastName": "Nama Akhir",
+    "welcomeBack": "Selamat Kembali",
+    "or": "atau",
+    "continueWithGoogle": "Teruskan dengan Google",
+    "loginSuccess": "Log masuk berjaya",
+    "loginFailed": "Log masuk gagal",
+    "signupSuccess": "Pendaftaran berjaya",
+    "signupFailed": "Pendaftaran gagal",
+    "checkEmail": "Sila semak e-mel anda untuk mengesahkan akaun",
+    "passwordMismatch": "Kata laluan tidak sepadan",
+    "forgotPassword": "Lupa kata laluan?",
+    "resetPassword": "Tetapkan Semula Kata Laluan",
+    "noAccount": "Tiada akaun?",
+    "hasAccount": "Sudah ada akaun?"
+  },
   "common": {
     "loading": "Memuatkan...",
     "error": "Ralat berlaku",

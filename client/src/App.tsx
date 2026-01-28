@@ -5,7 +5,10 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/lib/i18n";
+import { AuthProvider } from "@/contexts/AuthContext";
 import NotFound from "@/pages/not-found";
+import AuthLoginPage from "@/pages/auth/AuthLoginPage";
+import AuthCallbackPage from "@/pages/auth/AuthCallbackPage";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -79,6 +82,8 @@ function Router() {
       <Route path="/partner" component={PartnerPage} />
       <Route path="/partner/join" component={PartnerJoinPage} />
       <Route path="/partner/dashboard" component={PartnerDashboardPage} />
+      <Route path="/auth/login" component={AuthLoginPage} />
+      <Route path="/auth/callback" component={AuthCallbackPage} />
       <Route path="/admin" component={AdminDashboardPage} />
       <Route path="/admin/partners" component={AdminPartnersPage} />
       <Route path="/admin/orders" component={AdminOrdersPage} />
@@ -101,10 +106,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </AuthProvider>
       </LanguageProvider>
     </QueryClientProvider>
   );

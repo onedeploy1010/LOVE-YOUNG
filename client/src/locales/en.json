@@ -1,4 +1,27 @@
 {
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "welcomeBack": "Welcome Back",
+    "or": "or",
+    "continueWithGoogle": "Continue with Google",
+    "loginSuccess": "Login successful",
+    "loginFailed": "Login failed",
+    "signupSuccess": "Sign up successful",
+    "signupFailed": "Sign up failed",
+    "checkEmail": "Please check your email to verify your account",
+    "passwordMismatch": "Passwords do not match",
+    "forgotPassword": "Forgot password?",
+    "resetPassword": "Reset Password",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error occurred",

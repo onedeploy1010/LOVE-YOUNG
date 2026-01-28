@@ -1,4 +1,27 @@
 {
+  "auth": {
+    "login": "登录",
+    "signup": "注册",
+    "logout": "退出登录",
+    "email": "邮箱",
+    "password": "密码",
+    "confirmPassword": "确认密码",
+    "firstName": "名",
+    "lastName": "姓",
+    "welcomeBack": "欢迎回来",
+    "or": "或",
+    "continueWithGoogle": "使用Google登录",
+    "loginSuccess": "登录成功",
+    "loginFailed": "登录失败",
+    "signupSuccess": "注册成功",
+    "signupFailed": "注册失败",
+    "checkEmail": "请查看您的邮箱以验证账户",
+    "passwordMismatch": "密码不一致",
+    "forgotPassword": "忘记密码？",
+    "resetPassword": "重置密码",
+    "noAccount": "没有账户？",
+    "hasAccount": "已有账户？"
+  },
   "common": {
     "loading": "加载中...",
     "error": "出错了",
