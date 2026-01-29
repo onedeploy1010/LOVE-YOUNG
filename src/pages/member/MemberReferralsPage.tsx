@@ -43,7 +43,7 @@ export default function MemberReferralsPage() {
   const [activeTab, setActiveTab] = useState("all");
 
   const referralCode = member?.referralCode || "";
-  const referralLink = `${window.location.origin}/register?ref=${referralCode}`;
+  const referralLink = `${window.location.origin}/auth/login?ref=${referralCode}`;
 
   // Fetch referral stats
   const { data: stats } = useQuery<ReferralStats>({

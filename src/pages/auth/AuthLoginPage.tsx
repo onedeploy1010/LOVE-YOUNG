@@ -4,11 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
-import { Loader2, Mail, ArrowLeft, User } from "lucide-react";
+import { Loader2, Mail, ArrowLeft, User, Gift } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
 
 type AuthStep = "email" | "otp" | "profile";
@@ -29,6 +30,34 @@ export default function AuthLoginPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
+
+  // Referral code from URL
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [referrerName, setReferrerName] = useState<string | null>(null);
+
+  // Capture referral code from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    if (ref) {
+      setReferralCode(ref.toUpperCase());
+      // Validate and get referrer name
+      validateReferralCode(ref.toUpperCase());
+    }
+  }, []);
+
+  // Validate referral code and get referrer info
+  const validateReferralCode = async (code: string) => {
+    const { data } = await supabase
+      .from("members")
+      .select("name, referral_code")
+      .eq("referral_code", code)
+      .single();
+
+    if (data) {
+      setReferrerName(data.name || "LOVEYOUNG 会员");
+    }
+  };
 
   // Redirect if already logged in based on role
   useEffect(() => {
@@ -142,20 +171,71 @@ export default function AuthLoginPage() {
       if (!authUser) throw new Error("Not authenticated");
 
       // Update user profile in users table
-      const { error } = await supabase
+      const { error: userError } = await supabase
         .from('users')
         .update({
           first_name: firstName,
           last_name: lastName,
           phone: phone,
+          role: 'member',
         })
         .eq('id', authUser.id);
 
-      if (error) throw error;
+      if (userError) throw userError;
+
+      // Generate unique referral code for new member
+      const generateCode = () => {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let code = "";
+        for (let i = 0; i < 6; i++) {
+          code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+      };
+
+      // Find referrer ID if referral code was provided
+      let referrerId: string | null = null;
+      if (referralCode) {
+        const { data: referrer } = await supabase
+          .from("members")
+          .select("id")
+          .eq("referral_code", referralCode)
+          .single();
+        if (referrer) {
+          referrerId = referrer.id;
+        }
+      }
+
+      // Create member record
+      const { error: memberError } = await supabase
+        .from('members')
+        .insert({
+          user_id: authUser.id,
+          name: `${firstName} ${lastName}`.trim(),
+          phone: phone,
+          email: authUser.email,
+          role: 'member',
+          points_balance: 0,
+          referral_code: generateCode(),
+          referrer_id: referrerId,
+          created_at: new Date().toISOString(),
+        });
+
+      if (memberError && !memberError.message.includes('duplicate')) {
+        console.error("Error creating member:", memberError);
+      }
+
+      // If there's a referrer, notify them (optional)
+      if (referrerId) {
+        toast({
+          title: t("auth.referralApplied") || "推荐码已应用",
+          description: referrerName ? `感谢 ${referrerName} 的推荐！` : undefined,
+        });
+      }
 
       await refreshUserData();
       toast({ title: t("auth.profileSaved") });
-      navigate("/");
+      navigate("/member");
     } catch (err: any) {
       toast({
         title: t("auth.profileSaveFailed"),
@@ -245,6 +325,19 @@ export default function AuthLoginPage() {
         <CardContent className="space-y-4">
           {step === "email" && (
             <>
+              {referralCode && referrerName && (
+                <div className="p-3 bg-secondary/10 border border-secondary/20 rounded-lg mb-4">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Gift className="w-4 h-4 text-secondary" />
+                    <span className="text-muted-foreground">推荐人:</span>
+                    <Badge variant="secondary" className="font-medium">{referrerName}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    注册后将自动绑定推荐关系
+                  </p>
+                </div>
+              )}
+
               <form onSubmit={handleSendOTP} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">{t("auth.email")}</Label>
