@@ -227,13 +227,55 @@ export default function PartnerJoinPage() {
     }
   });
 
-  const handleSubmit = () => {
-    if (!selectedPackage) return;
-    
-    joinMutation.mutate({
-      tier: selectedPackage as "phase1" | "phase2" | "phase3",
-      referralCode: referralCode || undefined,
-    });
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!selectedPackage || !userState?.member) return;
+
+    const selectedPkg = packages.find(p => p.id === selectedPackage);
+    if (!selectedPkg) return;
+
+    setIsProcessingPayment(true);
+
+    try {
+      // Create Stripe checkout session for partner package
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-partner-checkout`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            memberId: userState.member.id,
+            tier: selectedPackage,
+            packageName: selectedPkg.name,
+            price: selectedPkg.price * 100, // Convert to cents
+            referralCode: referralCode || undefined,
+            successUrl: `${window.location.origin}/member/partner?payment=success`,
+            cancelUrl: `${window.location.origin}/partner/join?payment=cancelled`,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || "Failed to create checkout session");
+      }
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      toast({
+        title: t("member.partnerJoin.applicationFailed"),
+        description: error.message,
+        variant: "destructive",
+      });
+      setIsProcessingPayment(false);
+    }
   };
 
   if (isLoading) {
@@ -692,10 +734,10 @@ export default function PartnerJoinPage() {
                   className="w-full bg-secondary text-secondary-foreground gap-2"
                   size="lg"
                   onClick={handleSubmit}
-                  disabled={joinMutation.isPending}
+                  disabled={isProcessingPayment}
                   data-testid="button-pay"
                 >
-                  {joinMutation.isPending ? (
+                  {isProcessingPayment ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
                     <CreditCard className="w-5 h-5" />

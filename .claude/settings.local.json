@@ -11,7 +11,11 @@
       "Bash(git push:*)",
       "Bash(sudo apt-get update:*)",
       "Bash(sudo apt-get install:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(git reset:*)",
+      "Bash(export SUPABASE_ACCESS_TOKEN=sbp_36322fd714029ef4ea78a9ef8e439bb516ee4a13)",
+      "WebFetch(domain:loveyoungmalaysia.com)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_36322fd714029ef4ea78a9ef8e439bb516ee4a13 npx supabase:*)"
     ]
   }
 }

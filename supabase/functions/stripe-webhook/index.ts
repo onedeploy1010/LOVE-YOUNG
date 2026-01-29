@@ -56,13 +56,108 @@ serve(async (req) => {
 
     console.log("Received Stripe event:", event.type);
 
+    // Generate referral code
+    function generateReferralCode(): string {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let code = "";
+      for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    }
+
     // Handle different event types
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         console.log("Checkout session completed:", session.id);
 
-        // Extract order info from metadata
+        const paymentType = session.metadata?.type;
+
+        // Handle partner join payment
+        if (paymentType === "partner_join") {
+          const memberId = session.metadata?.memberId;
+          const tier = session.metadata?.tier;
+          const lyPoints = parseInt(session.metadata?.lyPoints || "0");
+          const rwaTokens = parseInt(session.metadata?.rwaTokens || "0");
+          const referralCode = session.metadata?.referralCode;
+
+          if (memberId && tier) {
+            console.log(`Creating partner for member ${memberId}, tier: ${tier}`);
+
+            // Find referrer if referral code provided
+            let referrerId: string | null = null;
+            if (referralCode) {
+              const { data: referrer } = await supabase
+                .from("partners")
+                .select("id")
+                .eq("referral_code", referralCode.toUpperCase())
+                .eq("status", "active")
+                .single();
+
+              if (referrer) {
+                referrerId = referrer.id;
+              }
+            }
+
+            // Create partner record
+            const { data: partner, error: partnerError } = await supabase
+              .from("partners")
+              .insert({
+                member_id: memberId,
+                referral_code: generateReferralCode(),
+                tier: tier,
+                status: "active",
+                referrer_id: referrerId,
+                ly_balance: lyPoints,
+                cash_wallet_balance: 0,
+                rwa_tokens: rwaTokens,
+                total_sales: 0,
+                total_cashback: 0,
+                payment_amount: session.amount_total,
+                payment_date: new Date().toISOString(),
+                payment_reference: session.payment_intent as string,
+                stripe_session_id: session.id,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              })
+              .select()
+              .single();
+
+            if (partnerError) {
+              console.error("Error creating partner:", partnerError);
+            } else {
+              console.log(`Partner created: ${partner.id}`);
+
+              // Update member role to partner
+              await supabase
+                .from("members")
+                .update({ role: "partner", updated_at: new Date().toISOString() })
+                .eq("id", memberId);
+
+              // Record LY points in ledger
+              await supabase.from("ly_points_ledger").insert({
+                partner_id: partner.id,
+                type: "bonus",
+                points: lyPoints,
+                reference_type: "package",
+                description: `Initial ${tier} package bonus`,
+                created_at: new Date().toISOString(),
+              }).catch(() => {});
+
+              // Record RWA tokens in ledger
+              await supabase.from("rwa_token_ledger").insert({
+                partner_id: partner.id,
+                tokens: rwaTokens,
+                source: "package",
+                created_at: new Date().toISOString(),
+              }).catch(() => {});
+            }
+          }
+          break;
+        }
+
+        // Handle regular order payment
         const orderId = session.metadata?.orderId;
         const orderNumber = session.metadata?.orderNumber;
 
