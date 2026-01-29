@@ -88,8 +88,10 @@ export function PartnerRoute({ children }: { children: React.ReactNode }) {
 }
 
 export function MemberRoute({ children }: { children: React.ReactNode }) {
+  // Allow any authenticated user to access member pages
+  // The page itself will prompt them to complete profile if needed
   return (
-    <ProtectedRoute requiredRole="member" redirectTo="/auth/login">
+    <ProtectedRoute requiredRole="user" redirectTo="/auth/login">
       {children}
     </ProtectedRoute>
   );

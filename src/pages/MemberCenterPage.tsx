@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   User, Crown, Shield, Star,
@@ -15,7 +15,7 @@ import {
   CreditCard, Bell, History, HelpCircle, Share2,
   Building2, Boxes, Receipt, PiggyBank, UserPlus
 } from "lucide-react";
-import type { UserState } from "@shared/types";
+import type { UserState, Partner } from "@shared/types";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n";
 import { useAuth, type UserRole } from "@/contexts/AuthContext";
