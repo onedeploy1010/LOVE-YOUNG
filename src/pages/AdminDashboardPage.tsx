@@ -69,7 +69,7 @@ export default function AdminDashboardPage() {
         <Card className="p-8 max-w-md text-center">
           <h1 className="text-2xl font-bold mb-4">{t("admin.loginRequired")}</h1>
           <p className="text-muted-foreground mb-6">{t("admin.loginRequiredDesc")}</p>
-          <Button onClick={() => window.location.href = "/api/login"} data-testid="button-login">
+          <Button onClick={() => window.location.href = "/auth/login"} data-testid="button-login">
             {t("admin.login")}
           </Button>
         </Card>

@@ -420,7 +420,7 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
   };
 
   const handleLogin = () => {
-    window.location.href = "/login";
+    window.location.href = "/auth/login";
   };
 
   const showAddressSelection = isAuthenticated && member && savedAddresses.length > 0 && !useGuestCheckout;

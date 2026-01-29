@@ -206,7 +206,7 @@ export default function PartnerJoinPage() {
               <Button
                 className="w-full bg-secondary text-secondary-foreground gap-2"
                 size="lg"
-                onClick={() => window.location.href = "/api/login"}
+                onClick={() => window.location.href = "/auth/login"}
                 data-testid="button-login-join"
               >
                 <Crown className="w-5 h-5" />

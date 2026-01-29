@@ -90,7 +90,7 @@ export default function PartnerDashboardPage() {
         <div className="max-w-lg mx-auto px-4 py-20 text-center">
           <h1 className="text-2xl font-bold mb-4">请先登录</h1>
           <p className="text-muted-foreground mb-6">您需要登录才能访问经营人仪表板</p>
-          <Button onClick={() => window.location.href = "/api/login"} data-testid="button-login">
+          <Button onClick={() => window.location.href = "/auth/login"} data-testid="button-login">
             登录
           </Button>
         </div>
