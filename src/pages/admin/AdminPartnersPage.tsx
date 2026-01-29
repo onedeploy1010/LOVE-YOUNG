@@ -1,36 +1,86 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "@/lib/i18n";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminLayout } from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { supabase } from "@/lib/supabase";
 import {
   Users, Search, CheckCircle, XCircle, Clock, Eye,
   TrendingUp, Loader2, UserPlus, Filter
 } from "lucide-react";
-import type { Partner } from "@shared/types";
+
+interface Partner {
+  id: string;
+  referral_code: string;
+  tier: string;
+  status: string;
+  ly_balance: number;
+  rwa_tokens: number;
+  cash_wallet_balance: number;
+  total_sales: number;
+  created_at: string;
+  member_name?: string;
+  member_email?: string;
+}
 
 export default function AdminPartnersPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
 
-  const { data: partners, isLoading } = useQuery<Partner[]>({
-    queryKey: ["/api/admin/partners"],
+  const { data: partners = [], isLoading } = useQuery({
+    queryKey: ["admin-partners"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("partners")
+        .select(`
+          *,
+          members (
+            name,
+            email
+          )
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching partners:", error);
+        return [];
+      }
+
+      return (data || []).map((p): Partner => ({
+        id: p.id,
+        referral_code: p.referral_code,
+        tier: p.tier,
+        status: p.status,
+        ly_balance: p.ly_balance || 0,
+        rwa_tokens: p.rwa_tokens || 0,
+        cash_wallet_balance: p.cash_wallet_balance || 0,
+        total_sales: p.total_sales || 0,
+        created_at: p.created_at,
+        member_name: p.members?.name,
+        member_email: p.members?.email,
+      }));
+    },
   });
 
   const activateMutation = useMutation({
     mutationFn: async (partnerId: string) => {
-      return apiRequest("POST", `/api/admin/partners/${partnerId}/activate`);
+      const { error } = await supabase
+        .from("partners")
+        .update({ status: "active" })
+        .eq("id", partnerId);
+
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/partners"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-partners"] });
       toast({ title: t("admin.partnersPage.activateSuccess"), description: t("admin.partnersPage.activateSuccessDesc") });
     },
     onError: (error: Error) => {
@@ -38,18 +88,20 @@ export default function AdminPartnersPage() {
     }
   });
 
-  const filteredPartners = partners?.filter(p => {
-    const matchesSearch = searchQuery === "" || 
+  const filteredPartners = partners.filter(p => {
+    const matchesSearch = searchQuery === "" ||
       p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (p.referralCode && p.referralCode.toLowerCase().includes(searchQuery.toLowerCase()));
+      (p.referral_code && p.referral_code.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (p.member_name && p.member_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (p.member_email && p.member_email.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesTab = activeTab === "all" || p.status === activeTab;
     return matchesSearch && matchesTab;
-  }) || [];
+  });
 
   const stats = {
-    total: partners?.length || 0,
-    active: partners?.filter(p => p.status === "active").length || 0,
-    pending: partners?.filter(p => p.status === "pending").length || 0,
+    total: partners.length,
+    active: partners.filter(p => p.status === "active").length,
+    pending: partners.filter(p => p.status === "pending").length,
   };
 
   return (
@@ -147,15 +199,17 @@ export default function AdminPartnersPage() {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-sm">{partner.referralCode}</span>
+                              <span className="font-medium">{partner.member_name || "Partner"}</span>
+                              <span className="font-mono text-sm text-muted-foreground">{partner.referral_code}</span>
                               <Badge variant={partner.status === "active" ? "default" : "outline"}>
                                 {partner.status === "active" ? t("admin.partnersPage.activated") : t("admin.partnersPage.pendingReview")}
                               </Badge>
                             </div>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <span>LY: {partner.lyBalance}</span>
-                              <span>RWA: {partner.rwaTokens}</span>
+                              <span>LY: {partner.ly_balance}</span>
+                              <span>RWA: {partner.rwa_tokens}</span>
                               <span>{t("admin.partnersPage.package")}: Phase {partner.tier === "phase1" ? 1 : partner.tier === "phase2" ? 2 : 3}</span>
+                              <span>销售额: RM {(partner.total_sales / 100).toFixed(2)}</span>
                             </div>
                           </div>
                         </div>

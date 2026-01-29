@@ -5,31 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MemberLayout } from "@/components/MemberLayout";
-import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   User, Camera, Phone, Mail, Lock, Shield,
   Bell, Globe, Moon, Save, Loader2
 } from "lucide-react";
-import type { User as UserType, Member } from "@shared/types";
 import { useTranslation } from "@/lib/i18n";
-
-interface UserResponse {
-  user: UserType | null;
-  member: Member | null;
-}
 
 export default function MemberSettingsPage() {
   const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
-  
-  const { data } = useQuery<UserResponse>({
-    queryKey: ["/api/auth/state"],
-  });
-
-  const user = data?.user;
-  const member = data?.member;
+  const { user, member } = useAuth();
 
   const handleSave = () => {
     setIsSaving(true);
@@ -55,9 +43,9 @@ export default function MemberSettingsPage() {
           <CardContent className="space-y-6">
             <div className="flex items-center gap-6">
               <Avatar className="w-20 h-20 border-2 border-secondary">
-                <AvatarImage src={user?.profileImageUrl || undefined} />
+                <AvatarImage src={user?.user_metadata?.avatar_url || undefined} />
                 <AvatarFallback className="bg-secondary text-secondary-foreground text-xl">
-                  {user?.firstName?.charAt(0) || member?.name?.charAt(0) || "U"}
+                  {user?.user_metadata?.first_name?.charAt(0) || member?.name?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
               <Button variant="outline" className="gap-2">
@@ -71,7 +59,7 @@ export default function MemberSettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">{t("member.settings.name")}</Label>
-                <Input id="name" defaultValue={member?.name || user?.firstName || ""} data-testid="input-name" />
+                <Input id="name" defaultValue={member?.name || user?.user_metadata?.first_name || ""} data-testid="input-name" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">{t("member.settings.phone")}</Label>

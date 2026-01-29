@@ -1,27 +1,52 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminLayout } from "@/components/AdminLayout";
+import { supabase } from "@/lib/supabase";
 import {
   FileText, Search, Plus, DollarSign, CheckCircle,
-  Clock, AlertCircle, Eye, Download
+  Clock, AlertCircle, Eye, Download, Loader2
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
-const mockBills = [
-  { id: "BILL-2026-001", vendor: "马来西亚燕窝供应商", amount: 25000, status: "pending", type: "purchase", dueDate: "2026-02-01" },
-  { id: "BILL-2026-002", vendor: "冷链物流公司", amount: 3500, status: "paid", type: "logistics", dueDate: "2026-01-25" },
-  { id: "BILL-2026-003", vendor: "包装材料供应商", amount: 5000, status: "overdue", type: "purchase", dueDate: "2026-01-20" },
-  { id: "BILL-2026-004", vendor: "仓库租赁", amount: 8000, status: "pending", type: "operation", dueDate: "2026-01-31" },
-];
+interface Bill {
+  id: string;
+  bill_number: string;
+  vendor: string;
+  amount: number;
+  status: string;
+  type: string;
+  due_date: string;
+  paid_date: string | null;
+  notes: string | null;
+  created_at: string;
+}
 
 export default function AdminBillsPage() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+
+  const { data: bills = [], isLoading } = useQuery({
+    queryKey: ["admin-bills"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bills")
+        .select("*")
+        .order("due_date", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching bills:", error);
+        return [];
+      }
+
+      return (data || []) as Bill[];
+    },
+  });
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -41,19 +66,37 @@ export default function AdminBillsPage() {
     }
   };
 
-  const filteredBills = mockBills.filter(bill => {
+  const filteredBills = bills.filter(bill => {
     const matchesSearch = searchQuery === "" ||
-      bill.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      bill.bill_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
       bill.vendor.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTab = activeTab === "all" || bill.status === activeTab;
     return matchesSearch && matchesTab;
   });
 
   const stats = {
-    total: mockBills.reduce((sum, b) => sum + b.amount, 0),
-    pending: mockBills.filter(b => b.status === "pending").reduce((sum, b) => sum + b.amount, 0),
-    overdue: mockBills.filter(b => b.status === "overdue").reduce((sum, b) => sum + b.amount, 0),
+    total: bills.reduce((sum, b) => sum + b.amount, 0),
+    pending: bills.filter(b => b.status === "pending").reduce((sum, b) => sum + b.amount, 0),
+    overdue: bills.filter(b => b.status === "overdue").reduce((sum, b) => sum + b.amount, 0),
   };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -76,7 +119,7 @@ export default function AdminBillsPage() {
                 <DollarSign className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">RM {stats.total.toLocaleString()}</p>
+                <p className="text-2xl font-bold">RM {(stats.total / 100).toLocaleString()}</p>
                 <p className="text-sm text-muted-foreground">{t("admin.billsPage.totalBills")}</p>
               </div>
             </CardContent>
@@ -87,7 +130,7 @@ export default function AdminBillsPage() {
                 <Clock className="w-6 h-6 text-yellow-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-yellow-500">RM {stats.pending.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-yellow-500">RM {(stats.pending / 100).toLocaleString()}</p>
                 <p className="text-sm text-muted-foreground">{t("admin.billsPage.pendingPayment")}</p>
               </div>
             </CardContent>
@@ -98,7 +141,7 @@ export default function AdminBillsPage() {
                 <AlertCircle className="w-6 h-6 text-red-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-red-500">RM {stats.overdue.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-red-500">RM {(stats.overdue / 100).toLocaleString()}</p>
                 <p className="text-sm text-muted-foreground">{t("admin.billsPage.overdue")}</p>
               </div>
             </CardContent>
@@ -148,7 +191,7 @@ export default function AdminBillsPage() {
                         <div
                           key={bill.id}
                           className="flex items-center justify-between p-4 border rounded-lg"
-                          data-testid={`bill-${bill.id}`}
+                          data-testid={`bill-${bill.bill_number}`}
                         >
                           <div className="flex items-center gap-4">
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${statusConfig.bg}`}>
@@ -156,23 +199,23 @@ export default function AdminBillsPage() {
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="font-mono text-sm">{bill.id}</span>
+                                <span className="font-mono text-sm">{bill.bill_number}</span>
                                 <Badge variant="outline">{statusConfig.label}</Badge>
                                 <Badge variant="secondary">{getTypeLabel(bill.type)}</Badge>
                               </div>
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                 <span>{bill.vendor}</span>
-                                <span>{t("admin.billsPage.dueDate")}: {bill.dueDate}</span>
+                                <span>{t("admin.billsPage.dueDate")}: {formatDate(bill.due_date)}</span>
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
-                            <span className="font-bold text-primary">RM {bill.amount.toLocaleString()}</span>
+                            <span className="font-bold text-primary">RM {(bill.amount / 100).toLocaleString()}</span>
                             <div className="flex gap-1">
-                              <Button variant="outline" size="sm" className="gap-1" data-testid={`button-view-${bill.id}`}>
+                              <Button variant="outline" size="sm" className="gap-1" data-testid={`button-view-${bill.bill_number}`}>
                                 <Eye className="w-4 h-4" />
                               </Button>
-                              <Button variant="outline" size="sm" className="gap-1" data-testid={`button-download-${bill.id}`}>
+                              <Button variant="outline" size="sm" className="gap-1" data-testid={`button-download-${bill.bill_number}`}>
                                 <Download className="w-4 h-4" />
                               </Button>
                             </div>

@@ -1,25 +1,52 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { AdminLayout } from "@/components/AdminLayout";
+import { supabase } from "@/lib/supabase";
 import {
   Thermometer, Search, Truck, Package, CheckCircle,
-  Clock, MapPin, Eye, AlertTriangle
+  Clock, MapPin, Eye, Loader2
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
-const mockShipments = [
-  { id: "SH-2026-001", order: "LY20260125001", destination: "Kuala Lumpur", status: "in_transit", temp: "-18°C", eta: "2026-01-27" },
-  { id: "SH-2026-002", order: "LY20260124002", destination: "Penang", status: "pending", temp: "-18°C", eta: "2026-01-28" },
-  { id: "SH-2026-003", order: "LY20260123003", destination: "Johor Bahru", status: "delivered", temp: "-18°C", eta: "2026-01-25" },
-  { id: "SH-2026-004", order: "LY20260122004", destination: "Ipoh", status: "in_transit", temp: "-15°C", eta: "2026-01-26" },
-];
+interface Shipment {
+  id: string;
+  shipment_number: string;
+  order_id: string | null;
+  order_number: string | null;
+  destination: string;
+  status: string;
+  temperature: string;
+  eta: string | null;
+  delivered_at: string | null;
+  tracking_number: string | null;
+  carrier: string | null;
+  created_at: string;
+}
 
 export default function AdminLogisticsPage() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { data: shipments = [], isLoading } = useQuery({
+    queryKey: ["admin-shipments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("shipments")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching shipments:", error);
+        return [];
+      }
+
+      return (data || []) as Shipment[];
+    },
+  });
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -30,19 +57,38 @@ export default function AdminLogisticsPage() {
     }
   };
 
-  const filteredShipments = mockShipments.filter(s =>
+  const filteredShipments = shipments.filter(s =>
     searchQuery === "" ||
-    s.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.order.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.shipment_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (s.order_number && s.order_number.toLowerCase().includes(searchQuery.toLowerCase())) ||
     s.destination.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const stats = {
-    total: mockShipments.length,
-    inTransit: mockShipments.filter(s => s.status === "in_transit").length,
-    pending: mockShipments.filter(s => s.status === "pending").length,
-    delivered: mockShipments.filter(s => s.status === "delivered").length,
+    total: shipments.length,
+    inTransit: shipments.filter(s => s.status === "in_transit").length,
+    pending: shipments.filter(s => s.status === "pending").length,
+    delivered: shipments.filter(s => s.status === "delivered").length,
   };
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "-";
+    return new Date(dateStr).toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -117,51 +163,58 @@ export default function AdminLogisticsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {filteredShipments.map((shipment) => {
-                const statusConfig = getStatusConfig(shipment.status);
-                const StatusIcon = statusConfig.icon;
-                return (
-                  <div
-                    key={shipment.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                    data-testid={`shipment-${shipment.id}`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${statusConfig.bg}`}>
-                        <StatusIcon className={`w-5 h-5 ${statusConfig.color}`} />
+            {filteredShipments.length === 0 ? (
+              <div className="text-center py-12">
+                <Truck className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+                <p className="text-muted-foreground">暂无物流记录</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredShipments.map((shipment) => {
+                  const statusConfig = getStatusConfig(shipment.status);
+                  const StatusIcon = statusConfig.icon;
+                  return (
+                    <div
+                      key={shipment.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                      data-testid={`shipment-${shipment.shipment_number}`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${statusConfig.bg}`}>
+                          <StatusIcon className={`w-5 h-5 ${statusConfig.color}`} />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-sm">{shipment.shipment_number}</span>
+                            <Badge variant="outline">{statusConfig.label}</Badge>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span>{t("admin.logisticsPage.order")}: {shipment.order_number || "-"}</span>
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              {shipment.destination}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-sm">{shipment.id}</span>
-                          <Badge variant="outline">{statusConfig.label}</Badge>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right hidden md:block">
+                          <p className="text-sm font-medium flex items-center gap-1">
+                            <Thermometer className="w-4 h-4 text-blue-500" />
+                            {shipment.temperature}
+                          </p>
+                          <p className="text-xs text-muted-foreground">ETA: {formatDate(shipment.eta)}</p>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>{t("admin.logisticsPage.order")}: {shipment.order}</span>
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {shipment.destination}
-                          </span>
-                        </div>
+                        <Button variant="outline" size="sm" className="gap-1" data-testid={`button-track-${shipment.shipment_number}`}>
+                          <Eye className="w-4 h-4" />
+                          {t("admin.logisticsPage.track")}
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right hidden md:block">
-                        <p className="text-sm font-medium flex items-center gap-1">
-                          <Thermometer className="w-4 h-4 text-blue-500" />
-                          {shipment.temp}
-                        </p>
-                        <p className="text-xs text-muted-foreground">ETA: {shipment.eta}</p>
-                      </div>
-                      <Button variant="outline" size="sm" className="gap-1" data-testid={`button-track-${shipment.id}`}>
-                        <Eye className="w-4 h-4" />
-                        {t("admin.logisticsPage.track")}
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

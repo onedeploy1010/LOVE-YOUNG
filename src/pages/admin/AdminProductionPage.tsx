@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,72 +7,85 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { AdminLayout } from "@/components/AdminLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/lib/supabase";
 import {
   Factory, Search, Plus, PlayCircle, CheckCircle, Clock,
-  AlertTriangle, Thermometer, Package, ClipboardCheck, Beaker
+  AlertTriangle, Thermometer, Package, ClipboardCheck, Beaker, Loader2
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
-const mockBatches = [
-  { 
-    id: "1", 
-    batchNumber: "PB-20260128-001", 
-    productName: "原味红枣燕窝", 
-    plannedQty: 100, 
-    actualQty: null,
-    status: "cooking",
-    currentStep: 3,
-    totalSteps: 5,
-    plannedDate: "2026-01-28",
-    startedAt: "2026-01-28 08:00"
-  },
-  { 
-    id: "2", 
-    batchNumber: "PB-20260127-002", 
-    productName: "可可燕麦燕窝", 
-    plannedQty: 80, 
-    actualQty: 78,
-    status: "completed",
-    currentStep: 5,
-    totalSteps: 5,
-    plannedDate: "2026-01-27",
-    completedAt: "2026-01-27 16:30"
-  },
-  { 
-    id: "3", 
-    batchNumber: "PB-20260128-003", 
-    productName: "抹茶燕麦燕窝", 
-    plannedQty: 60, 
-    actualQty: null,
-    status: "material_prep",
-    currentStep: 1,
-    totalSteps: 5,
-    plannedDate: "2026-01-28",
-    startedAt: "2026-01-28 10:00"
-  },
-  { 
-    id: "4", 
-    batchNumber: "PB-20260129-001", 
-    productName: "鲜炖花胶", 
-    plannedQty: 50, 
-    actualQty: null,
-    status: "planned",
-    currentStep: 0,
-    totalSteps: 5,
-    plannedDate: "2026-01-29"
-  },
-];
+interface ProductionBatch {
+  id: string;
+  batch_number: string;
+  product_id: string | null;
+  product_name: string;
+  planned_qty: number;
+  actual_qty: number | null;
+  status: string;
+  current_step: number;
+  total_steps: number;
+  planned_date: string;
+  started_at: string | null;
+  completed_at: string | null;
+  notes: string | null;
+  created_at: string;
+}
 
-const mockMaterials = [
-  { id: "1", batchId: "1", name: "燕窝原料", planned: 500, actual: 480, wastage: 20, unit: "g" },
-  { id: "2", batchId: "1", name: "红枣", planned: 200, actual: 195, wastage: 5, unit: "g" },
-  { id: "3", batchId: "1", name: "冰糖", planned: 150, actual: 150, wastage: 0, unit: "g" },
-];
+interface ProductionMaterial {
+  id: string;
+  batch_id: string;
+  material_name: string;
+  planned_qty: number;
+  actual_qty: number | null;
+  wastage: number;
+  unit: string;
+  created_at: string;
+}
 
 export default function AdminProductionPage() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBatch, setSelectedBatch] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("batches");
+
+  // Fetch production batches
+  const { data: batches = [], isLoading: loadingBatches } = useQuery({
+    queryKey: ["admin-production-batches"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("production_batches")
+        .select("*")
+        .order("planned_date", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching batches:", error);
+        return [];
+      }
+
+      return (data || []) as ProductionBatch[];
+    },
+  });
+
+  // Fetch production materials
+  const { data: materials = [], isLoading: loadingMaterials } = useQuery({
+    queryKey: ["admin-production-materials", selectedBatch],
+    queryFn: async () => {
+      let query = supabase.from("production_materials").select("*");
+
+      if (selectedBatch) {
+        query = query.eq("batch_id", selectedBatch);
+      }
+
+      const { data, error } = await query.order("created_at", { ascending: false }).limit(50);
+
+      if (error) {
+        console.error("Error fetching materials:", error);
+        return [];
+      }
+
+      return (data || []) as ProductionMaterial[];
+    },
+  });
 
   const stepLabels = [
     t("admin.productionPage.stepMaterialPrep"),
@@ -81,17 +95,17 @@ export default function AdminProductionPage() {
     t("admin.productionPage.stepInspection")
   ];
 
-  const filteredBatches = mockBatches.filter(batch =>
+  const filteredBatches = batches.filter(batch =>
     searchQuery === "" ||
-    batch.batchNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    batch.productName.toLowerCase().includes(searchQuery.toLowerCase())
+    batch.batch_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    batch.product_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const stats = {
-    total: mockBatches.length,
-    inProgress: mockBatches.filter(b => !["planned", "completed", "cancelled"].includes(b.status)).length,
-    completed: mockBatches.filter(b => b.status === "completed").length,
-    planned: mockBatches.filter(b => b.status === "planned").length,
+    total: batches.length,
+    inProgress: batches.filter(b => !["planned", "completed", "cancelled"].includes(b.status)).length,
+    completed: batches.filter(b => b.status === "completed").length,
+    planned: batches.filter(b => b.status === "planned").length,
   };
 
   const getStatusBadge = (status: string) => {
@@ -107,6 +121,38 @@ export default function AdminProductionPage() {
       default: return <Badge variant="outline">{t("admin.productionPage.statusUnknown")}</Badge>;
     }
   };
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "-";
+    return new Date(dateStr).toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
+  const formatDateTime = (dateStr: string | null) => {
+    if (!dateStr) return "-";
+    return new Date(dateStr).toLocaleString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const isLoading = loadingBatches || loadingMaterials;
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -171,7 +217,7 @@ export default function AdminProductionPage() {
           </Card>
         </div>
 
-        <Tabs defaultValue="batches" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="batches" data-testid="tab-batches">{t("admin.productionPage.batchList")}</TabsTrigger>
             <TabsTrigger value="materials" data-testid="tab-materials">{t("admin.productionPage.materialUsage")}</TabsTrigger>
@@ -195,92 +241,99 @@ export default function AdminProductionPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {filteredBatches.map((batch) => (
-                    <div 
-                      key={batch.id} 
-                      className="border rounded-lg p-4 hover-elevate cursor-pointer"
-                      onClick={() => setSelectedBatch(batch.id === selectedBatch ? null : batch.id)}
-                      data-testid={`batch-${batch.id}`}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <Factory className="w-5 h-5 text-primary" />
-                          <div>
-                            <p className="font-medium">{batch.batchNumber}</p>
-                            <p className="text-sm text-muted-foreground">{batch.productName}</p>
+                {filteredBatches.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Factory className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+                    <p className="text-muted-foreground">暂无生产批次</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredBatches.map((batch) => (
+                      <div
+                        key={batch.id}
+                        className="border rounded-lg p-4 hover-elevate cursor-pointer"
+                        onClick={() => setSelectedBatch(batch.id === selectedBatch ? null : batch.id)}
+                        data-testid={`batch-${batch.id}`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <Factory className="w-5 h-5 text-primary" />
+                            <div>
+                              <p className="font-medium">{batch.batch_number}</p>
+                              <p className="text-sm text-muted-foreground">{batch.product_name}</p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          {getStatusBadge(batch.status)}
-                          <span className="text-sm text-muted-foreground">
-                            {t("admin.productionPage.qty")}: {batch.actualQty ?? batch.plannedQty}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">{t("admin.productionPage.progress")}</span>
-                          <span>{batch.currentStep}/{batch.totalSteps} {t("admin.productionPage.steps")}</span>
-                        </div>
-                        <Progress value={(batch.currentStep / batch.totalSteps) * 100} className="h-2" />
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          {stepLabels.map((label, idx) => (
-                            <span 
-                              key={idx} 
-                              className={idx < batch.currentStep ? "text-primary font-medium" : ""}
-                            >
-                              {label}
+                          <div className="flex items-center gap-3">
+                            {getStatusBadge(batch.status)}
+                            <span className="text-sm text-muted-foreground">
+                              {t("admin.productionPage.qty")}: {batch.actual_qty ?? batch.planned_qty}
                             </span>
-                          ))}
+                          </div>
                         </div>
-                      </div>
 
-                      {selectedBatch === batch.id && (
-                        <div className="mt-4 pt-4 border-t space-y-3">
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            <div>
-                              <p className="text-muted-foreground">{t("admin.productionPage.plannedDate")}</p>
-                              <p className="font-medium">{batch.plannedDate}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">{t("admin.productionPage.startTime")}</p>
-                              <p className="font-medium">{batch.startedAt || "-"}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">{t("admin.productionPage.plannedQty")}</p>
-                              <p className="font-medium">{batch.plannedQty}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">{t("admin.productionPage.actualQty")}</p>
-                              <p className="font-medium">{batch.actualQty ?? "-"}</p>
-                            </div>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">{t("admin.productionPage.progress")}</span>
+                            <span>{batch.current_step}/{batch.total_steps} {t("admin.productionPage.steps")}</span>
                           </div>
-                          <div className="flex gap-2">
-                            {batch.status !== "completed" && batch.status !== "cancelled" && (
-                              <>
-                                <Button size="sm" className="gap-1" data-testid={`button-next-step-${batch.id}`}>
-                                  <PlayCircle className="w-4 h-4" />
-                                  {t("admin.productionPage.nextStep")}
-                                </Button>
-                                <Button size="sm" variant="outline" data-testid={`button-view-details-${batch.id}`}>
-                                  {t("admin.productionPage.viewDetails")}
-                                </Button>
-                              </>
-                            )}
-                            {batch.status === "completed" && (
-                              <Button size="sm" variant="outline" data-testid={`button-view-report-${batch.id}`}>
-                                <ClipboardCheck className="w-4 h-4 mr-1" />
-                                {t("admin.productionPage.viewReport")}
-                              </Button>
-                            )}
+                          <Progress value={(batch.current_step / batch.total_steps) * 100} className="h-2" />
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            {stepLabels.map((label, idx) => (
+                              <span
+                                key={idx}
+                                className={idx < batch.current_step ? "text-primary font-medium" : ""}
+                              >
+                                {label}
+                              </span>
+                            ))}
                           </div>
                         </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+
+                        {selectedBatch === batch.id && (
+                          <div className="mt-4 pt-4 border-t space-y-3">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <p className="text-muted-foreground">{t("admin.productionPage.plannedDate")}</p>
+                                <p className="font-medium">{formatDate(batch.planned_date)}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">{t("admin.productionPage.startTime")}</p>
+                                <p className="font-medium">{formatDateTime(batch.started_at)}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">{t("admin.productionPage.plannedQty")}</p>
+                                <p className="font-medium">{batch.planned_qty}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">{t("admin.productionPage.actualQty")}</p>
+                                <p className="font-medium">{batch.actual_qty ?? "-"}</p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              {batch.status !== "completed" && batch.status !== "cancelled" && (
+                                <>
+                                  <Button size="sm" className="gap-1" data-testid={`button-next-step-${batch.id}`}>
+                                    <PlayCircle className="w-4 h-4" />
+                                    {t("admin.productionPage.nextStep")}
+                                  </Button>
+                                  <Button size="sm" variant="outline" data-testid={`button-view-details-${batch.id}`}>
+                                    {t("admin.productionPage.viewDetails")}
+                                  </Button>
+                                </>
+                              )}
+                              {batch.status === "completed" && (
+                                <Button size="sm" variant="outline" data-testid={`button-view-report-${batch.id}`}>
+                                  <ClipboardCheck className="w-4 h-4 mr-1" />
+                                  {t("admin.productionPage.viewReport")}
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -291,38 +344,45 @@ export default function AdminProductionPage() {
                 <CardTitle className="text-lg">{t("admin.productionPage.materialUsage")}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b text-left text-sm text-muted-foreground">
-                        <th className="pb-3 font-medium">{t("admin.productionPage.materialName")}</th>
-                        <th className="pb-3 font-medium">{t("admin.productionPage.plannedUsage")}</th>
-                        <th className="pb-3 font-medium">{t("admin.productionPage.actualUsage")}</th>
-                        <th className="pb-3 font-medium">{t("admin.productionPage.wastage")}</th>
-                        <th className="pb-3 font-medium">{t("admin.productionPage.wastageRate")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {mockMaterials.map((material) => (
-                        <tr key={material.id} className="border-b last:border-0">
-                          <td className="py-3 font-medium">{material.name}</td>
-                          <td className="py-3">{material.planned} {material.unit}</td>
-                          <td className="py-3">{material.actual} {material.unit}</td>
-                          <td className="py-3">
-                            <span className={material.wastage > 0 ? "text-orange-500" : "text-green-500"}>
-                              {material.wastage} {material.unit}
-                            </span>
-                          </td>
-                          <td className="py-3">
-                            <Badge variant={material.wastage / material.planned > 0.05 ? "destructive" : "outline"}>
-                              {((material.wastage / material.planned) * 100).toFixed(1)}%
-                            </Badge>
-                          </td>
+                {materials.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Package className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+                    <p className="text-muted-foreground">暂无材料使用记录</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b text-left text-sm text-muted-foreground">
+                          <th className="pb-3 font-medium">{t("admin.productionPage.materialName")}</th>
+                          <th className="pb-3 font-medium">{t("admin.productionPage.plannedUsage")}</th>
+                          <th className="pb-3 font-medium">{t("admin.productionPage.actualUsage")}</th>
+                          <th className="pb-3 font-medium">{t("admin.productionPage.wastage")}</th>
+                          <th className="pb-3 font-medium">{t("admin.productionPage.wastageRate")}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {materials.map((material) => (
+                          <tr key={material.id} className="border-b last:border-0">
+                            <td className="py-3 font-medium">{material.material_name}</td>
+                            <td className="py-3">{material.planned_qty} {material.unit}</td>
+                            <td className="py-3">{material.actual_qty ?? "-"} {material.unit}</td>
+                            <td className="py-3">
+                              <span className={material.wastage > 0 ? "text-orange-500" : "text-green-500"}>
+                                {material.wastage} {material.unit}
+                              </span>
+                            </td>
+                            <td className="py-3">
+                              <Badge variant={material.wastage / material.planned_qty > 0.05 ? "destructive" : "outline"}>
+                                {((material.wastage / material.planned_qty) * 100).toFixed(1)}%
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

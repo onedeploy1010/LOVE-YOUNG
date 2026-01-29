@@ -1,33 +1,85 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminLayout } from "@/components/AdminLayout";
+import { supabase } from "@/lib/supabase";
 import {
   ClipboardCheck, Search, Plus, Building2, Eye,
-  Clock, CheckCircle, Truck, Package
+  Clock, CheckCircle, Truck, Package, Loader2
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
-const mockPurchaseOrders = [
-  { id: "PO-2026-001", supplier: "马来西亚燕窝供应商", total: 25000, status: "pending", items: 5, date: "2026-01-25" },
-  { id: "PO-2026-002", supplier: "香港花胶批发商", total: 18000, status: "approved", items: 3, date: "2026-01-23" },
-  { id: "PO-2026-003", supplier: "包装材料供应商", total: 5000, status: "shipped", items: 8, date: "2026-01-20" },
-  { id: "PO-2026-004", supplier: "马来西亚燕窝供应商", total: 30000, status: "received", items: 6, date: "2026-01-15" },
-];
+interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  supplier_id: string | null;
+  supplier_name: string;
+  total_amount: number;
+  status: string;
+  item_count: number;
+  order_date: string;
+  expected_date: string | null;
+  received_date: string | null;
+  notes: string | null;
+  created_at: string;
+}
 
-const mockSuppliers = [
-  { id: "1", name: "马来西亚燕窝供应商", contact: "Mr. Tan", phone: "+60 12-345 6789", orders: 12 },
-  { id: "2", name: "香港花胶批发商", contact: "陈先生", phone: "+852 1234 5678", orders: 8 },
-  { id: "3", name: "包装材料供应商", contact: "Mdm. Lee", phone: "+60 12-987 6543", orders: 5 },
-];
+interface Supplier {
+  id: string;
+  name: string;
+  contact_person: string | null;
+  phone: string | null;
+  email: string | null;
+  total_orders: number;
+  status: string;
+  created_at: string;
+}
 
 export default function AdminPurchasePage() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("orders");
+
+  // Fetch purchase orders
+  const { data: orders = [], isLoading: loadingOrders } = useQuery({
+    queryKey: ["admin-purchase-orders"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("purchase_orders")
+        .select("*")
+        .order("order_date", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching purchase orders:", error);
+        return [];
+      }
+
+      return (data || []) as PurchaseOrder[];
+    },
+  });
+
+  // Fetch suppliers
+  const { data: suppliers = [], isLoading: loadingSuppliers } = useQuery({
+    queryKey: ["admin-suppliers"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("suppliers")
+        .select("*")
+        .eq("status", "active")
+        .order("name");
+
+      if (error) {
+        console.error("Error fetching suppliers:", error);
+        return [];
+      }
+
+      return (data || []) as Supplier[];
+    },
+  });
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -39,11 +91,31 @@ export default function AdminPurchasePage() {
     }
   };
 
-  const filteredOrders = mockPurchaseOrders.filter(order =>
+  const filteredOrders = orders.filter(order =>
     searchQuery === "" ||
-    order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    order.supplier.toLowerCase().includes(searchQuery.toLowerCase())
+    order.po_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    order.supplier_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
+  const isLoading = loadingOrders || loadingSuppliers;
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -71,7 +143,7 @@ export default function AdminPurchasePage() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <CardTitle className="flex items-center gap-2">
                     <ClipboardCheck className="w-5 h-5 text-primary" />
-                    {t("admin.purchasePage.purchaseOrders")} ({mockPurchaseOrders.length})
+                    {t("admin.purchasePage.purchaseOrders")} ({orders.length})
                   </CardTitle>
                   <div className="relative w-full md:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -86,43 +158,50 @@ export default function AdminPurchasePage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {filteredOrders.map((order) => {
-                    const statusConfig = getStatusConfig(order.status);
-                    const StatusIcon = statusConfig.icon;
-                    return (
-                      <div
-                        key={order.id}
-                        className="flex items-center justify-between p-4 border rounded-lg"
-                        data-testid={`po-${order.id}`}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${statusConfig.bg}`}>
-                            <StatusIcon className={`w-5 h-5 ${statusConfig.color}`} />
+                {filteredOrders.length === 0 ? (
+                  <div className="text-center py-12">
+                    <ClipboardCheck className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+                    <p className="text-muted-foreground">暂无采购订单</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredOrders.map((order) => {
+                      const statusConfig = getStatusConfig(order.status);
+                      const StatusIcon = statusConfig.icon;
+                      return (
+                        <div
+                          key={order.id}
+                          className="flex items-center justify-between p-4 border rounded-lg"
+                          data-testid={`po-${order.po_number}`}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${statusConfig.bg}`}>
+                              <StatusIcon className={`w-5 h-5 ${statusConfig.color}`} />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-sm">{order.po_number}</span>
+                                <Badge variant="outline">{statusConfig.label}</Badge>
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                <span>{order.supplier_name}</span>
+                                <span>{order.item_count} {t("admin.purchasePage.items")}</span>
+                                <span>{formatDate(order.order_date)}</span>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-sm">{order.id}</span>
-                              <Badge variant="outline">{statusConfig.label}</Badge>
-                            </div>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <span>{order.supplier}</span>
-                              <span>{order.items} {t("admin.purchasePage.items")}</span>
-                              <span>{order.date}</span>
-                            </div>
+                          <div className="flex items-center gap-4">
+                            <span className="font-bold text-primary">RM {(order.total_amount / 100).toLocaleString()}</span>
+                            <Button variant="outline" size="sm" className="gap-1" data-testid={`button-view-${order.po_number}`}>
+                              <Eye className="w-4 h-4" />
+                              {t("admin.purchasePage.viewDetails")}
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <span className="font-bold text-primary">RM {order.total.toLocaleString()}</span>
-                          <Button variant="outline" size="sm" className="gap-1" data-testid={`button-view-${order.id}`}>
-                            <Eye className="w-4 h-4" />
-                            {t("admin.purchasePage.viewDetails")}
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -142,33 +221,40 @@ export default function AdminPurchasePage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {mockSuppliers.map((supplier) => (
-                    <div
-                      key={supplier.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                      data-testid={`supplier-${supplier.id}`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Building2 className="w-5 h-5 text-primary" />
+                {suppliers.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Building2 className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+                    <p className="text-muted-foreground">暂无供应商</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {suppliers.map((supplier) => (
+                      <div
+                        key={supplier.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                        data-testid={`supplier-${supplier.id}`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Building2 className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{supplier.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {supplier.contact_person || "-"} · {supplier.phone || "-"}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">{supplier.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {supplier.contact} · {supplier.phone}
-                          </p>
+                        <div className="flex items-center gap-4">
+                          <Badge variant="outline">{supplier.total_orders} {t("admin.purchasePage.orders")}</Badge>
+                          <Button variant="outline" size="sm" data-testid={`button-edit-${supplier.id}`}>
+                            {t("admin.purchasePage.edit")}
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <Badge variant="outline">{supplier.orders} {t("admin.purchasePage.orders")}</Badge>
-                        <Button variant="outline" size="sm" data-testid={`button-edit-${supplier.id}`}>
-                          {t("admin.purchasePage.edit")}
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

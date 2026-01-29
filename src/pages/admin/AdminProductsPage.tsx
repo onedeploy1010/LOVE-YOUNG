@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslation } from "@/lib/i18n";
+import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -126,7 +127,30 @@ export default function AdminProductsPage() {
   });
 
   const { data: products, isLoading } = useQuery<Product[]>({
-    queryKey: ["/api/products"],
+    queryKey: ["admin-products"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching products:", error);
+        return [];
+      }
+
+      return (data || []).map((p): Product => ({
+        id: p.id,
+        name: p.name,
+        nameEn: p.name_en,
+        description: p.description,
+        price: p.price,
+        priceUnit: p.price_unit,
+        image: p.image,
+        category: p.category,
+        featured: p.featured,
+      }));
+    },
   });
 
   const filteredProducts = products?.filter(p => {

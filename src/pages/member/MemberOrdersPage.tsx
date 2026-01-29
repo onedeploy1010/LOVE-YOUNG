@@ -1,59 +1,66 @@
 import { useState } from "react";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MemberLayout } from "@/components/MemberLayout";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 import {
   ShoppingBag, Package, Truck, CheckCircle, Clock,
-  ChevronRight, RefreshCw
+  ChevronRight, RefreshCw, Loader2
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
-const mockOrders = [
-  { 
-    id: "LY20260120001", 
-    date: "2026-01-20", 
-    status: "shipped", 
-    total: 452,
-    items: [
-      { name: "原味红枣燕窝", quantity: 2, price: 226 }
-    ]
-  },
-  { 
-    id: "LY20260115002", 
-    date: "2026-01-15", 
-    status: "delivered", 
-    total: 678,
-    items: [
-      { name: "可可燕麦燕窝", quantity: 1, price: 226 },
-      { name: "鲜炖花胶", quantity: 2, price: 226 }
-    ]
-  },
-  { 
-    id: "LY20260110003", 
-    date: "2026-01-10", 
-    status: "delivered", 
-    total: 226,
-    items: [
-      { name: "抹茶燕麦燕窝", quantity: 1, price: 226 }
-    ]
-  },
-  { 
-    id: "LY20260105004", 
-    date: "2026-01-05", 
-    status: "cancelled", 
-    total: 452,
-    items: [
-      { name: "原味红枣燕窝", quantity: 2, price: 226 }
-    ]
-  },
-];
+interface Order {
+  id: string;
+  order_number: string;
+  created_at: string;
+  status: string;
+  total_amount: number;
+  customer_name: string;
+  items: Array<{
+    product_name: string;
+    quantity: number;
+    price: number;
+  }>;
+}
 
 export default function MemberOrdersPage() {
   const { t } = useTranslation();
+  const { user, member } = useAuth();
   const [activeTab, setActiveTab] = useState("all");
+
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: ["member-orders", user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("customer_email", user.email)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching orders:", error);
+        return [];
+      }
+
+      return (data || []).map((order): Order => ({
+        id: order.id,
+        order_number: order.order_number || `LY${order.id.slice(0, 8).toUpperCase()}`,
+        created_at: order.created_at,
+        status: order.status,
+        total_amount: order.total_amount || 0,
+        customer_name: order.customer_name,
+        items: order.items || [],
+      }));
+    },
+    enabled: !!user?.email,
+  });
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -74,9 +81,27 @@ export default function MemberOrdersPage() {
     }
   };
 
-  const filteredOrders = activeTab === "all" 
-    ? mockOrders 
-    : mockOrders.filter(order => order.status === activeTab);
+  const filteredOrders = activeTab === "all"
+    ? orders
+    : orders.filter(order => order.status === activeTab);
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <MemberLayout>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </MemberLayout>
+    );
+  }
 
   return (
     <MemberLayout>
@@ -113,12 +138,13 @@ export default function MemberOrdersPage() {
                 {filteredOrders.map((order) => {
                   const statusConfig = getStatusConfig(order.status);
                   const StatusIcon = statusConfig.icon;
+                  const totalItems = order.items?.reduce((sum, i) => sum + i.quantity, 0) || 0;
                   return (
                     <Card key={order.id} className="overflow-hidden" data-testid={`order-${order.id}`}>
                       <div className="flex items-center justify-between p-4 bg-muted/30 border-b">
                         <div className="flex items-center gap-3">
-                          <span className="text-sm font-mono text-muted-foreground">#{order.id}</span>
-                          <span className="text-sm text-muted-foreground">{order.date}</span>
+                          <span className="text-sm font-mono text-muted-foreground">#{order.order_number}</span>
+                          <span className="text-sm text-muted-foreground">{formatDate(order.created_at)}</span>
                         </div>
                         <Badge variant={statusConfig.badgeVariant} className="gap-1">
                           <StatusIcon className="w-3 h-3" />
@@ -127,28 +153,39 @@ export default function MemberOrdersPage() {
                       </div>
                       <CardContent className="p-4">
                         <div className="space-y-3">
-                          {order.items.map((item, idx) => (
-                            <div key={idx} className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
-                                  <Package className="w-6 h-6 text-muted-foreground" />
+                          {order.items && order.items.length > 0 ? (
+                            order.items.map((item, idx) => (
+                              <div key={idx} className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
+                                    <Package className="w-6 h-6 text-muted-foreground" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium">{item.product_name}</p>
+                                    <p className="text-sm text-muted-foreground">x{item.quantity}</p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <p className="font-medium">{item.name}</p>
-                                  <p className="text-sm text-muted-foreground">x{item.quantity}</p>
-                                </div>
+                                <span className="font-medium">RM {(item.price / 100).toFixed(2)}</span>
                               </div>
-                              <span className="font-medium">RM {item.price}</span>
+                            ))
+                          ) : (
+                            <div className="flex items-center gap-3">
+                              <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
+                                <Package className="w-6 h-6 text-muted-foreground" />
+                              </div>
+                              <div>
+                                <p className="font-medium">订单商品</p>
+                              </div>
                             </div>
-                          ))}
+                          )}
                         </div>
                         <div className="flex items-center justify-between mt-4 pt-4 border-t">
                           <span className="text-muted-foreground">
-                            {t("member.orders.totalItems").replace("{count}", String(order.items.reduce((sum, i) => sum + i.quantity, 0)))}
+                            {t("member.orders.totalItems").replace("{count}", String(totalItems || 1))}
                           </span>
                           <div className="flex items-center gap-4">
                             <span className="font-bold text-lg">
-                              {t("member.orders.total")}: <span className="text-primary">RM {order.total}</span>
+                              {t("member.orders.total")}: <span className="text-primary">RM {(order.total_amount / 100).toFixed(2)}</span>
                             </span>
                             <Button variant="outline" size="sm" className="gap-1" data-testid={`button-detail-${order.id}`}>
                               {t("member.orders.viewDetails")}

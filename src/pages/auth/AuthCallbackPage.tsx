@@ -2,14 +2,16 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AuthCallbackPage() {
   const [, navigate] = useLocation();
+  const { refreshUserData, role } = useAuth();
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
-      
+
       if (error) {
         console.error("Auth callback error:", error);
         navigate("/auth/login");
@@ -17,25 +19,26 @@ export default function AuthCallbackPage() {
       }
 
       if (session) {
-        try {
-          await fetch('/api/auth/verify', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-        } catch (err) {
-          console.error('Failed to sync user with backend:', err);
+        // Refresh user data to get role info
+        await refreshUserData();
+
+        // Redirect based on role
+        if (role === 'admin') {
+          navigate("/admin");
+        } else if (role === 'partner') {
+          navigate("/member/partner");
+        } else if (role === 'member') {
+          navigate("/member");
+        } else {
+          navigate("/");
         }
-        navigate("/");
       } else {
         navigate("/auth/login");
       }
     };
 
     handleAuthCallback();
-  }, [navigate]);
+  }, [navigate, refreshUserData, role]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

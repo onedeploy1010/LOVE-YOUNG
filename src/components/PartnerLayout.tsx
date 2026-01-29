@@ -1,10 +1,9 @@
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   LayoutDashboard,
   Users,
@@ -22,17 +21,10 @@ import {
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n";
-import type { User as UserType, Member, Partner, UserState } from "@shared/types";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PartnerLayoutProps {
   children: React.ReactNode;
-}
-
-interface UserStateResponse {
-  state: UserState;
-  user: UserType | null;
-  member: Member | null;
-  partner: Partner | null;
 }
 
 const getMenuItems = (t: (key: string) => string) => [
@@ -50,10 +42,7 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
   const menuItems = getMenuItems(t);
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
-
-  const { data: userState } = useQuery<UserStateResponse>({
-    queryKey: ["/api/auth/state"],
-  });
+  const { user, member, partner, signOut } = useAuth();
 
   const isActive = (path: string) => {
     if (path === "/member/partner") {
@@ -63,11 +52,10 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
   };
 
   const currentPage = menuItems.find(item => isActive(item.path));
-  const user = userState?.user;
-  const member = userState?.member;
 
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
+  const handleLogout = async () => {
+    await signOut();
+    window.location.href = "/";
   };
 
   const NavContent = () => (
@@ -168,13 +156,13 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
 
             <div className="flex items-center gap-2">
               <Avatar className="w-8 h-8 border border-secondary/50">
-                <AvatarImage src={user?.profileImageUrl || undefined} />
+                <AvatarImage src={user?.user_metadata?.avatar_url || undefined} />
                 <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
-                  {user?.firstName?.charAt(0) || member?.name?.charAt(0) || "U"}
+                  {user?.user_metadata?.first_name?.charAt(0) || member?.name?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
               <span className="hidden md:block text-sm font-medium" data-testid="text-user-name">
-                {member?.name || user?.firstName || t("member.center.sections.partner.title")}
+                {member?.name || user?.user_metadata?.first_name || t("member.center.sections.partner.title")}
               </span>
             </div>
 

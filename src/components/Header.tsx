@@ -22,16 +22,19 @@ interface HeaderProps {
 
 export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
   const { t } = useLanguage();
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading, signOut } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogin = () => {
-    window.location.href = "/api/login";
+    window.location.href = "/auth/login";
   };
 
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
+  const handleLogout = async () => {
+    if (signOut) {
+      await signOut();
+    }
+    window.location.href = "/";
   };
 
   const getUserInitials = () => {

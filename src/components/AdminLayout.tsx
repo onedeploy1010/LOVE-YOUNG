@@ -1,13 +1,13 @@
 import { Link, useLocation } from "wouter";
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Home,
   LayoutDashboard,
@@ -28,17 +28,9 @@ import {
   Shield,
   Loader2
 } from "lucide-react";
-import type { User as UserType, Member, Partner, UserState } from "@shared/types";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
-}
-
-interface UserStateResponse {
-  state: UserState;
-  user: UserType | null;
-  member: Member | null;
-  partner: Partner | null;
 }
 
 const getCoreItems = (t: (key: string) => string) => [
@@ -63,10 +55,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
-
-  const { data: userState, isLoading } = useQuery<UserStateResponse>({
-    queryKey: ["/api/auth/state"],
-  });
+  const { user, loading: isLoading, signOut } = useAuth();
 
   const coreItems = useMemo(() => getCoreItems(t), [t]);
   const erpItems = useMemo(() => getErpItems(t), [t]);
@@ -75,10 +64,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const isActive = (path: string) => location === path;
 
   const currentPage = allItems.find(item => isActive(item.path));
-  const user = userState?.user;
 
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
+  const handleLogout = async () => {
+    await signOut();
+    window.location.href = "/";
   };
 
   if (isLoading) {
@@ -96,7 +85,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <Shield className="w-12 h-12 mx-auto text-primary mb-4" />
           <h1 className="text-2xl font-bold mb-4">{t("admin.pleaseLogin")}</h1>
           <p className="text-muted-foreground mb-6">{t("admin.adminRequired")}</p>
-          <Button onClick={() => window.location.href = "/api/login"} data-testid="button-login">
+          <Button onClick={() => window.location.href = "/auth/login"} data-testid="button-login">
             {t("admin.login")}
           </Button>
         </Card>
@@ -128,7 +117,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <Shield className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
-            <p className="font-medium">{user?.firstName || t("admin.adminRole")}</p>
+            <p className="font-medium">{user?.user_metadata?.first_name || t("admin.adminRole")}</p>
             <Badge className="bg-primary text-primary-foreground gap-1 text-xs">
               <Shield className="w-3 h-3" />
               {t("admin.adminRole")}
@@ -250,13 +239,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
             <div className="flex items-center gap-2">
               <Avatar className="w-8 h-8 border border-secondary/50">
-                <AvatarImage src={user?.profileImageUrl || undefined} />
+                <AvatarImage src={user?.user_metadata?.avatar_url || undefined} />
                 <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
-                  {user?.firstName?.charAt(0) || "A"}
+                  {user?.user_metadata?.first_name?.charAt(0) || "A"}
                 </AvatarFallback>
               </Avatar>
               <span className="hidden md:block text-sm font-medium" data-testid="text-admin-name">
-                {user?.firstName || t("admin.adminRole")}
+                {user?.user_metadata?.first_name || t("admin.adminRole")}
               </span>
             </div>
 

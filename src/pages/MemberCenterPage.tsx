@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   User, Crown, Shield, Star,
@@ -16,16 +15,10 @@ import {
   CreditCard, Bell, History, HelpCircle, Share2,
   Building2, Boxes, Receipt, PiggyBank, UserPlus
 } from "lucide-react";
-import type { User as UserType, Member, Partner, UserState } from "@shared/types";
+import type { UserState } from "@shared/types";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n";
-
-interface UserStateResponse {
-  state: UserState;
-  user: UserType | null;
-  member: Member | null;
-  partner: Partner | null;
-}
+import { useAuth, type UserRole } from "@/contexts/AuthContext";
 
 type MenuItem = {
   icon: React.ElementType;
@@ -256,12 +249,11 @@ export default function MemberCenter() {
   const [activeSection, setActiveSection] = useState("account");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const { data: userState, isLoading, error } = useQuery<UserStateResponse>({
-    queryKey: ["/api/auth/state"],
-  });
+  const { user, member, partner, role, loading: isLoading, signOut } = useAuth();
 
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
+  const handleLogout = async () => {
+    await signOut();
+    window.location.href = "/";
   };
 
   const ALL_MENU_SECTIONS = getMenuSections(t);
@@ -277,7 +269,7 @@ export default function MemberCenter() {
     );
   }
 
-  if (error || !userState) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
@@ -288,7 +280,7 @@ export default function MemberCenter() {
           <CardContent>
             <Button
               className="w-full bg-secondary text-secondary-foreground"
-              onClick={() => window.location.href = "/api/login"}
+              onClick={() => window.location.href = "/auth/login"}
               data-testid="button-login"
             >
               {t("member.center.loginButton")}
@@ -299,7 +291,7 @@ export default function MemberCenter() {
     );
   }
 
-  const { state, user, member, partner } = userState;
+  const state: UserState = role as UserState;
   const stateInfo = getStateLabel(state, t);
   const StateIcon = stateInfo.icon;
   const currentSection = ALL_MENU_SECTIONS.find(s => s.id === activeSection) || ALL_MENU_SECTIONS[0];
@@ -320,13 +312,13 @@ export default function MemberCenter() {
                 <div className="p-4 border-b">
                   <div className="flex items-center gap-3">
                     <Avatar className="w-12 h-12 border-2 border-secondary">
-                      <AvatarImage src={user?.profileImageUrl || undefined} />
+                      <AvatarImage src={user?.user_metadata?.avatar_url || undefined} />
                       <AvatarFallback className="bg-secondary text-secondary-foreground">
-                        {user?.firstName?.charAt(0) || member?.name?.charAt(0) || "U"}
+                        {user?.user_metadata?.first_name?.charAt(0) || member?.name?.charAt(0) || "U"}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium">{member?.name || user?.firstName || t("member.center.defaultUser")}</p>
+                      <p className="font-medium">{member?.name || user?.user_metadata?.first_name || t("member.center.defaultUser")}</p>
                       <Badge variant={stateInfo.variant} className="gap-1 text-xs">
                         <StateIcon className="w-3 h-3" />
                         {stateInfo.label}
@@ -363,13 +355,13 @@ export default function MemberCenter() {
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2">
               <Avatar className="w-8 h-8 border border-secondary/50">
-                <AvatarImage src={user?.profileImageUrl || undefined} />
+                <AvatarImage src={user?.user_metadata?.avatar_url || undefined} />
                 <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
-                  {user?.firstName?.charAt(0) || member?.name?.charAt(0) || "U"}
+                  {user?.user_metadata?.first_name?.charAt(0) || member?.name?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
               <span className="text-sm font-medium" data-testid="text-user-name">
-                {member?.name || user?.firstName || t("member.center.defaultUser")}
+                {member?.name || user?.user_metadata?.first_name || t("member.center.defaultUser")}
               </span>
               <Badge variant={stateInfo.variant} className="gap-1 text-xs" data-testid="badge-user-state">
                 <StateIcon className="w-3 h-3" />
