@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,11 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { supabase } from "@/lib/supabase";
 import { createPartner, getPartnerByMemberId, PARTNER_TIERS } from "@/lib/partner";
-import { getMemberByUserId } from "@/lib/members";
+import { getMemberByUserId, createOrGetMember } from "@/lib/members";
 import {
   Crown, ArrowLeft, CheckCircle, Loader2, Star, Gift,
   Users, TrendingUp, Award, ShieldCheck, CreditCard,
-  Building2, Wallet, AlertCircle, PartyPopper
+  Building2, Wallet, AlertCircle, PartyPopper, User
 } from "lucide-react";
 import type { User as UserType, Member, Partner } from "@shared/types";
 import { useTranslation } from "@/lib/i18n";
@@ -89,13 +89,18 @@ export default function PartnerJoinPage() {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<string>("fpx");
   const [referralCode, setReferralCode] = useState("");
-  const [step, setStep] = useState<"package" | "payment" | "success">("package");
-  
+  const [step, setStep] = useState<"profile" | "package" | "payment" | "success">("profile");
+
+  // Profile form state
+  const [profileName, setProfileName] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [isCreatingProfile, setIsCreatingProfile] = useState(false);
+
   const packages = getPackages(t);
   const paymentMethods = getPaymentMethods(t);
 
   // Fetch current user state from Supabase
-  const { data: userState, isLoading } = useQuery<UserStateData>({
+  const { data: userState, isLoading, refetch: refetchUserState } = useQuery<UserStateData>({
     queryKey: ["partner-join-state"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -118,6 +123,69 @@ export default function PartnerJoinPage() {
       };
     },
   });
+
+  // Determine initial step based on user state
+  useEffect(() => {
+    if (userState) {
+      if (userState.member) {
+        // Has member profile, go to package selection
+        setStep("package");
+      } else if (userState.user) {
+        // Has user but no member profile, show profile form
+        setStep("profile");
+      }
+    }
+  }, [userState]);
+
+  // Handle profile creation
+  const handleCreateProfile = async () => {
+    if (!profileName.trim() || !profilePhone.trim()) {
+      toast({
+        title: t("auth.fillRequired") || "请填写必填项",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!userState?.user) return;
+
+    setIsCreatingProfile(true);
+    try {
+      const { member, error } = await createOrGetMember(userState.user.id, {
+        name: profileName.trim(),
+        phone: profilePhone.trim(),
+        email: userState.user.email,
+      });
+
+      if (error) throw error;
+
+      // Also update users table
+      await supabase
+        .from("users")
+        .update({
+          first_name: profileName.trim(),
+          phone: profilePhone.trim(),
+          role: "member",
+        })
+        .eq("id", userState.user.id);
+
+      toast({
+        title: t("auth.profileSaved") || "资料已保存",
+      });
+
+      // Refetch user state and proceed to package selection
+      await refetchUserState();
+      setStep("package");
+    } catch (err: any) {
+      toast({
+        title: t("auth.profileSaveFailed") || "保存失败",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingProfile(false);
+    }
+  };
 
   const joinMutation = useMutation({
     mutationFn: async (data: { tier: "phase1" | "phase2" | "phase3"; referralCode?: string }) => {
@@ -326,12 +394,90 @@ export default function PartnerJoinPage() {
             </div>
           </div>
           <Badge variant="outline" className="text-primary-foreground border-primary-foreground/30">
-            {step === "package" ? t("member.partnerJoin.step1") : t("member.partnerJoin.step2")}
+            {step === "profile"
+              ? (t("member.partnerJoin.stepProfile") || "步骤 1/3")
+              : step === "package"
+                ? (t("member.partnerJoin.step1") || "步骤 2/3")
+                : (t("member.partnerJoin.step2") || "步骤 3/3")}
           </Badge>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
+        {/* Profile Step - Show when user is logged in but has no member profile */}
+        {step === "profile" && userState?.user && !userState?.member && (
+          <div className="max-w-md mx-auto space-y-6">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-4">
+                <User className="w-8 h-8 text-secondary" />
+              </div>
+              <h1 className="text-2xl font-serif text-primary mb-2">
+                {t("member.partnerJoin.completeProfile") || "完善个人资料"}
+              </h1>
+              <p className="text-muted-foreground">
+                {t("member.partnerJoin.profileDesc") || "成为经营人前，请先填写基本信息"}
+              </p>
+            </div>
+
+            <Card>
+              <CardContent className="p-6 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="profileName">
+                    {t("auth.firstName") || "姓名"} *
+                  </Label>
+                  <Input
+                    id="profileName"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    placeholder={t("member.partnerJoin.namePlaceholder") || "请输入您的姓名"}
+                    data-testid="input-profile-name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profilePhone">
+                    {t("auth.phone") || "手机号码"} *
+                  </Label>
+                  <Input
+                    id="profilePhone"
+                    type="tel"
+                    value={profilePhone}
+                    onChange={(e) => setProfilePhone(e.target.value)}
+                    placeholder="+60 12-345 6789"
+                    data-testid="input-profile-phone"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground">
+                    {t("auth.email") || "邮箱"}
+                  </Label>
+                  <Input
+                    value={userState.user.email || ""}
+                    disabled
+                    className="bg-muted"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button
+              className="w-full bg-secondary text-secondary-foreground gap-2"
+              size="lg"
+              onClick={handleCreateProfile}
+              disabled={isCreatingProfile || !profileName.trim() || !profilePhone.trim()}
+              data-testid="button-save-profile"
+            >
+              {isCreatingProfile ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <CheckCircle className="w-5 h-5" />
+              )}
+              {t("member.partnerJoin.continueToPackage") || "继续选择配套"}
+            </Button>
+          </div>
+        )}
+
         {step === "package" && (
           <div className="space-y-6">
             <div className="text-center mb-8">

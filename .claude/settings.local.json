@@ -5,7 +5,13 @@
       "Bash(npm run build:*)",
       "Bash(PGPASSWORD=loveyoung52017888 psql:*)",
       "Bash(npx:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(sudo apt-get update:*)",
+      "Bash(sudo apt-get install:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

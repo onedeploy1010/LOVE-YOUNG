@@ -230,36 +230,50 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
     createOrderMutation.mutate();
   };
 
-  // Handle Stripe Payment
+  // Handle Stripe Payment - Create checkout session and redirect
   const handleStripePayment = async () => {
-    if (!selectedPackage || !orderId) return;
+    if (!orderId || !orderNumber) return;
 
     setIsProcessingPayment(true);
     setPaymentError(null);
 
     try {
-      const stripe = await getStripe();
-      if (!stripe) {
-        throw new Error("Stripe is not configured. Please set VITE_STRIPE_PUBLISHABLE_KEY.");
+      // Call Supabase Edge Function to create Stripe Checkout session
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            orderId,
+            orderNumber,
+            amount: currentPrice * 100, // Convert to cents (sen)
+            customerEmail: user?.email || null,
+            customerName: deliveryInfo.customerName,
+            successUrl: `${window.location.origin}/order-tracking?order=${orderNumber}&status=success`,
+            cancelUrl: `${window.location.origin}/?payment=cancelled`,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create checkout session");
       }
 
-      const priceInfo = PRODUCT_PRICES[selectedPackage];
-
-      // For production, you should create a Checkout Session via your backend/Supabase Edge Function
-      // This is a simplified demo using Stripe's client-side redirect
-      // In production: call your backend to create a checkout session
-
-      // Demo: Update order status and show success
-      // In production, this should happen via Stripe webhook
-      await updateOrderStatus(orderId, "pending", {
-        stripeSessionId: `demo_${Date.now()}`,
-      });
-
-      setStep("success");
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
     } catch (err) {
       console.error("Payment error:", err);
       setPaymentError(err instanceof Error ? err.message : "Payment failed. Please try again.");
-    } finally {
       setIsProcessingPayment(false);
     }
   };
@@ -951,25 +965,27 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
                 <Button
                   className="w-full gap-3"
                   size="lg"
-                  onClick={handleMarkAsPaid}
+                  onClick={handleStripePayment}
                   disabled={isProcessingPayment}
                   data-testid="button-pay-stripe"
                 >
                   {isProcessingPayment ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Processing...
+                      {language === "zh" ? "跳转支付中..." : "Redirecting to payment..."}
                     </>
                   ) : (
                     <>
                       <CreditCard className="w-5 h-5" />
-                      Pay with Stripe
+                      {language === "zh" ? "前往支付" : "Proceed to Payment"}
                     </>
                   )}
                 </Button>
 
                 <p className="text-xs text-center text-muted-foreground">
-                  Secure payment powered by Stripe. Your card details are encrypted.
+                  {language === "zh"
+                    ? "安全支付由 Stripe 提供。支持信用卡、FPX、GrabPay。"
+                    : "Secure payment powered by Stripe. Supports Credit Card, FPX, GrabPay."}
                 </p>
               </div>
             </div>
