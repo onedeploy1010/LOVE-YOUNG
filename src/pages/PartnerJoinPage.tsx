@@ -103,25 +103,32 @@ export default function PartnerJoinPage() {
   const { data: userState, isLoading, refetch: refetchUserState } = useQuery<UserStateData>({
     queryKey: ["partner-join-state"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { user: null, member: null, partner: null };
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { user: null, member: null, partner: null };
 
-      // Get member
-      const { member } = await getMemberByUserId(user.id);
+        // Get member
+        const { member } = await getMemberByUserId(user.id);
 
-      // Get partner if member exists
-      let partner: Partner | null = null;
-      if (member) {
-        const partnerResult = await getPartnerByMemberId(member.id);
-        partner = partnerResult.partner;
+        // Get partner if member exists
+        let partner: Partner | null = null;
+        if (member) {
+          const partnerResult = await getPartnerByMemberId(member.id);
+          partner = partnerResult.partner;
+        }
+
+        return {
+          user: { id: user.id, email: user.email } as UserType,
+          member,
+          partner,
+        };
+      } catch (error) {
+        console.error("Error fetching user state:", error);
+        return { user: null, member: null, partner: null };
       }
-
-      return {
-        user: { id: user.id, email: user.email } as UserType,
-        member,
-        partner,
-      };
     },
+    retry: 1,
+    staleTime: 0,
   });
 
   // Determine initial step based on user state

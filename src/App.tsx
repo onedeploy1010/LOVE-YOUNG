@@ -75,8 +75,8 @@ function Router() {
         <Route path="/products" component={ProductsPage} />
         <Route path="/order-tracking" component={OrderTrackingPage} />
         <Route path="/christmas" component={ChristmasPromoPage} />
-        <Route path="/partner" component={PartnerPage} />
         <Route path="/partner/join" component={PartnerJoinPage} />
+        <Route path="/partner" component={PartnerPage} />
         <Route path="/auth/login" component={AuthLoginPage} />
         <Route path="/auth/callback" component={AuthCallbackPage} />
 
