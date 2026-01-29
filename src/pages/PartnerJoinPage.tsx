@@ -95,6 +95,7 @@ export default function PartnerJoinPage() {
   const [profileName, setProfileName] = useState("");
   const [profilePhone, setProfilePhone] = useState("");
   const [isCreatingProfile, setIsCreatingProfile] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const packages = getPackages(t);
   const paymentMethods = getPaymentMethods(t);
@@ -226,8 +227,6 @@ export default function PartnerJoinPage() {
       });
     }
   });
-
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const handleSubmit = async () => {
     if (!selectedPackage || !userState?.member) return;
