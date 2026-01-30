@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AdminRoute, PartnerRoute, MemberRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { FloatingReferralButton } from "@/components/FloatingReferralButton";
 import NotFound from "@/pages/not-found";
 import AuthLoginPage from "@/pages/auth/AuthLoginPage";
 import AuthCallbackPage from "@/pages/auth/AuthCallbackPage";
@@ -193,6 +194,7 @@ function App() {
             <TooltipProvider>
               <Toaster />
               <Router />
+              <FloatingReferralButton />
             </TooltipProvider>
           </AuthProvider>
         </LanguageProvider>
