@@ -135,6 +135,19 @@ serve(async (req) => {
                 .update({ role: "partner", updated_at: new Date().toISOString() })
                 .eq("id", memberId);
 
+              // Also update users table role
+              const { data: memberRecord } = await supabase
+                .from("members")
+                .select("user_id")
+                .eq("id", memberId)
+                .single();
+              if (memberRecord?.user_id) {
+                await supabase
+                  .from("users")
+                  .update({ role: "partner" })
+                  .eq("id", memberRecord.user_id);
+              }
+
               // Record LY points in ledger
               await supabase.from("ly_points_ledger").insert({
                 partner_id: partner.id,

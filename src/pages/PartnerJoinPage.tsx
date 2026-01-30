@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { getPartnerByMemberId } from "@/lib/partner";
 import { getMemberByUserId, createOrGetMember } from "@/lib/members";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Crown, ArrowLeft, CheckCircle, Loader2, Star, Gift,
   TrendingUp, Award, ShieldCheck, CreditCard,
@@ -78,6 +79,7 @@ export default function PartnerJoinPage() {
   const { t } = useTranslation();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { refreshUserData } = useAuth();
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [referralCode, setReferralCode] = useState("");
   const [step, setStep] = useState<"profile" | "package" | "payment" | "success">("profile");
@@ -122,9 +124,23 @@ export default function PartnerJoinPage() {
     staleTime: 0,
   });
 
+  // Handle payment=success redirect from Stripe
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") === "success") {
+      setStep("success");
+      // Clean up the URL
+      window.history.replaceState({}, "", window.location.pathname);
+      // Refresh user data so auth context picks up the new partner role
+      refetchUserState();
+      // Also refresh the global auth context so partner menu appears
+      refreshUserData();
+    }
+  }, []);
+
   // Determine initial step based on user state
   useEffect(() => {
-    if (userState) {
+    if (userState && step !== "success") {
       if (userState.member) {
         // Has member profile, go to package selection
         setStep("package");
@@ -209,7 +225,7 @@ export default function PartnerJoinPage() {
             packageName: selectedPkg.name,
             price: selectedPkg.price * 100, // Convert to cents
             referralCode: referralCode || undefined,
-            successUrl: `${window.location.origin}/member/partner?payment=success`,
+            successUrl: `${window.location.origin}/partner/join?payment=success`,
             cancelUrl: `${window.location.origin}/partner/join?payment=cancelled`,
           }),
         }
@@ -363,18 +379,26 @@ export default function PartnerJoinPage() {
                   {t("member.partnerJoin.reviewProcess")}
                 </p>
                 <div className="flex items-center gap-2 text-sm">
-                  <AlertCircle className="w-4 h-4 text-primary" />
+                  <CheckCircle className="w-4 h-4 text-green-500" />
                   <span>{t("member.partnerJoin.ensurePayment")}</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Link href="/member">
-                  <Button variant="outline" className="w-full">{t("member.partnerJoin.backToMember")}</Button>
+              <div className="space-y-3">
+                <Link href="/member/partner">
+                  <Button className="w-full bg-secondary text-secondary-foreground gap-2">
+                    <TrendingUp className="w-5 h-5" />
+                    {t("member.partnerJoin.goToDashboard")}
+                  </Button>
                 </Link>
-                <Link href="/">
-                  <Button variant="ghost" className="w-full">{t("member.partnerJoin.backToHome")}</Button>
-                </Link>
+                <div className="grid grid-cols-2 gap-4">
+                  <Link href="/member">
+                    <Button variant="outline" className="w-full">{t("member.partnerJoin.backToMember")}</Button>
+                  </Link>
+                  <Link href="/">
+                    <Button variant="ghost" className="w-full">{t("member.partnerJoin.backToHome")}</Button>
+                  </Link>
+                </div>
               </div>
             </CardContent>
           </Card>
