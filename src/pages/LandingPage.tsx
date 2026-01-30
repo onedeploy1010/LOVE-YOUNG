@@ -696,11 +696,9 @@ export default function LandingPage() {
       <Footer whatsappLink={whatsappLink} metaShopLink={META_SHOP_LINK} />
       <WhatsAppButton whatsappLink={whatsappLink} />
       <FlavorModal open={flavorModalOpen} onOpenChange={setFlavorModalOpen} />
-      <OrderModal 
-        open={orderModalOpen} 
-        onOpenChange={setOrderModalOpen} 
-        whatsappLink={whatsappLink}
-        metaShopLink={META_SHOP_LINK}
+      <OrderModal
+        open={orderModalOpen}
+        onOpenChange={setOrderModalOpen}
       />
     </div>
   );

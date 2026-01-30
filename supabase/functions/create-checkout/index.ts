@@ -23,7 +23,7 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    const { orderId, orderNumber, amount, customerEmail, customerName, successUrl, cancelUrl } = await req.json();
+    const { orderId, orderNumber, amount, customerEmail, customerName, successUrl, cancelUrl, productName, productDescription, productImage } = await req.json();
 
     if (!orderId || !amount) {
       throw new Error("Missing required fields: orderId and amount");
@@ -39,9 +39,9 @@ serve(async (req) => {
           price_data: {
             currency: "myr",
             product_data: {
-              name: "2026发财礼盒 Fortune Gift Box",
-              description: `Order #${orderNumber}`,
-              images: ["https://loveyoung.my/images/fortune-box.jpg"],
+              name: productName || "LOVEYOUNG Order",
+              description: productDescription || `Order #${orderNumber}`,
+              ...(productImage ? { images: [productImage] } : {}),
             },
             unit_amount: amount, // Amount in cents (sen)
           },

@@ -1,5 +1,6 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { ProductCheckoutModal } from "@/components/ProductCheckoutModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingBag, Star, Leaf, Award, Truck, Gift, ArrowRight } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { useLanguage } from "@/lib/i18n";
 
 const WHATSAPP_PHONE = "60178228658";
@@ -130,12 +132,30 @@ const PRODUCT_BENEFITS = [
 
 export default function ProductsPage() {
   const { t } = useLanguage();
-  
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<{
+    id: string;
+    name: string;
+    price: number;
+    originalPrice: number;
+    image: string;
+  } | null>(null);
+
   const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(t("productsPage.whatsappMessage"))}`;
 
-  const handleOrderProduct = (productName: string) => {
-    const message = encodeURIComponent(t("productsPage.orderMessage", `您好，我想订购 ${productName}。`).replace("{productName}", productName));
-    window.open(`https://wa.me/${WHATSAPP_PHONE}?text=${message}`, "_blank");
+  const handleOrderProduct = (product: typeof PRODUCTS[0]) => {
+    setSelectedProduct({
+      id: product.id,
+      name: t(product.nameKey),
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.image,
+    });
+    setCheckoutOpen(true);
+  };
+
+  const scrollToProducts = () => {
+    document.getElementById("products-grid")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -161,7 +181,7 @@ export default function ProductsPage() {
                 <Button
                   size="lg"
                   className="gap-2"
-                  onClick={() => window.open(META_SHOP_LINK, "_blank")}
+                  onClick={scrollToProducts}
                   data-testid="button-shop-now"
                 >
                   <ShoppingBag className="w-5 h-5" />
@@ -201,7 +221,7 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      <section className="py-16" data-testid="section-product-list">
+      <section id="products-grid" className="py-16" data-testid="section-product-list">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <Tabs defaultValue="all" className="w-full">
             <div className="flex justify-center mb-10">
@@ -281,21 +301,13 @@ export default function ProductsPage() {
                             </div>
                           </CardContent>
                           <CardFooter className="pt-0 gap-2">
-                            <Button 
+                            <Button
                               className="flex-1 gap-2"
-                              onClick={() => handleOrderProduct(t(product.nameKey))}
+                              onClick={() => handleOrderProduct(product)}
                               data-testid={`button-order-${product.id}`}
                             >
-                              <SiWhatsapp className="w-4 h-4" />
-                              {t("products.orderNow")}
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="icon"
-                              onClick={() => window.open(META_SHOP_LINK, "_blank")}
-                              data-testid={`button-shop-${product.id}`}
-                            >
                               <ShoppingBag className="w-4 h-4" />
+                              {t("products.orderNow")}
                             </Button>
                           </CardFooter>
                         </Card>
@@ -369,10 +381,10 @@ export default function ProductsPage() {
             {t("productsPage.cta.description")}
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="gap-2 bg-secondary text-secondary-foreground"
-              onClick={() => window.open(META_SHOP_LINK, "_blank")}
+              onClick={scrollToProducts}
               data-testid="button-final-shop"
             >
               <ShoppingBag className="w-5 h-5" />
@@ -393,6 +405,11 @@ export default function ProductsPage() {
       </section>
 
       <Footer whatsappLink={WHATSAPP_LINK} metaShopLink={META_SHOP_LINK} />
+      <ProductCheckoutModal
+        open={checkoutOpen}
+        onOpenChange={setCheckoutOpen}
+        product={selectedProduct}
+      />
     </div>
   );
 }

@@ -20,9 +20,27 @@ export async function createOrder(
   const { data, error } = await supabase
     .from("orders")
     .insert({
-      ...orderData,
       order_number: orderNumber,
+      member_id: orderData.memberId,
+      customer_name: orderData.customerName,
+      customer_phone: orderData.customerPhone,
+      customer_email: orderData.customerEmail,
       status: "pending_payment",
+      total_amount: orderData.totalAmount,
+      items: orderData.items,
+      package_type: orderData.packageType,
+      shipping_address: orderData.shippingAddress,
+      shipping_city: orderData.shippingCity,
+      shipping_state: orderData.shippingState,
+      shipping_postcode: orderData.shippingPostcode,
+      preferred_delivery_date: orderData.preferredDeliveryDate,
+      tracking_number: orderData.trackingNumber,
+      notes: orderData.notes,
+      source: orderData.source,
+      erpnext_id: orderData.erpnextId,
+      meta_order_id: orderData.metaOrderId,
+      points_earned: orderData.pointsEarned,
+      points_redeemed: orderData.pointsRedeemed,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })

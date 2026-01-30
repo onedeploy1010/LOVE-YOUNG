@@ -1,22 +1,20 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
 import { supabase } from "@/lib/supabase";
-import { createPartner, getPartnerByMemberId, PARTNER_TIERS } from "@/lib/partner";
+import { getPartnerByMemberId } from "@/lib/partner";
 import { getMemberByUserId, createOrGetMember } from "@/lib/members";
 import {
   Crown, ArrowLeft, CheckCircle, Loader2, Star, Gift,
-  Users, TrendingUp, Award, ShieldCheck, CreditCard,
-  Building2, Wallet, AlertCircle, PartyPopper, User
+  TrendingUp, Award, ShieldCheck, CreditCard,
+  AlertCircle, PartyPopper, User
 } from "lucide-react";
 import type { User as UserType, Member, Partner } from "@shared/types";
 import { useTranslation } from "@/lib/i18n";
@@ -76,18 +74,11 @@ const getPackages = (t: (key: string) => string) => [
   }
 ];
 
-const getPaymentMethods = (t: (key: string) => string) => [
-  { id: "fpx", name: t("member.partnerJoin.paymentMethods.fpx"), icon: Building2 },
-  { id: "tng", name: t("member.partnerJoin.paymentMethods.tng"), icon: Wallet },
-  { id: "card", name: t("member.partnerJoin.paymentMethods.card"), icon: CreditCard },
-];
-
 export default function PartnerJoinPage() {
   const { t } = useTranslation();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
-  const [selectedPayment, setSelectedPayment] = useState<string>("fpx");
   const [referralCode, setReferralCode] = useState("");
   const [step, setStep] = useState<"profile" | "package" | "payment" | "success">("profile");
 
@@ -98,7 +89,6 @@ export default function PartnerJoinPage() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const packages = getPackages(t);
-  const paymentMethods = getPaymentMethods(t);
 
   // Fetch current user state from Supabase
   const { data: userState, isLoading, refetch: refetchUserState } = useQuery<UserStateData>({
@@ -194,39 +184,6 @@ export default function PartnerJoinPage() {
       setIsCreatingProfile(false);
     }
   };
-
-  const joinMutation = useMutation({
-    mutationFn: async (data: { tier: "phase1" | "phase2" | "phase3"; referralCode?: string }) => {
-      if (!userState?.member) {
-        throw new Error("Please complete your member profile first");
-      }
-
-      const { partner, error } = await createPartner(
-        userState.member.id,
-        data.tier,
-        data.referralCode,
-        `PAY_${Date.now()}` // Payment reference - in production, get from Stripe
-      );
-
-      if (error) throw error;
-      return partner;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["partner-join-state"] });
-      setStep("success");
-      toast({
-        title: t("member.partnerJoin.applicationSubmitted"),
-        description: t("member.partnerJoin.applicationDesc"),
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: t("member.partnerJoin.applicationFailed"),
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  });
 
   const handleSubmit = async () => {
     if (!selectedPackage || !userState?.member) return;
@@ -620,130 +577,102 @@ export default function PartnerJoinPage() {
               {t("member.partnerJoin.backToPackage")}
             </Button>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t("member.partnerJoin.orderConfirm")}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {selectedPackage && (
-                      <>
+            <div className="max-w-lg mx-auto space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t("member.partnerJoin.orderConfirm")}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {selectedPackage && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">{t("member.partnerJoin.package")}</span>
+                        <span className="font-medium">
+                          {packages.find(p => p.id === selectedPackage)?.name}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">{t("member.partnerDashboard.lyPoints")}</span>
+                        <span className="font-medium text-secondary">
+                          +{packages.find(p => p.id === selectedPackage)?.lyPoints}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">{t("member.partnerDashboard.rwaToken")}</span>
+                        <span className="font-medium text-primary">
+                          +{packages.find(p => p.id === selectedPackage)?.rwaTokens}
+                        </span>
+                      </div>
+                      {referralCode && (
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">{t("member.partnerJoin.package")}</span>
-                          <span className="font-medium">
-                            {packages.find(p => p.id === selectedPackage)?.name}
-                          </span>
+                          <span className="text-muted-foreground">{t("member.partnerJoin.referralCodeLabel")}</span>
+                          <span className="font-mono">{referralCode}</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">{t("member.partnerDashboard.lyPoints")}</span>
-                          <span className="font-medium text-secondary">
-                            +{packages.find(p => p.id === selectedPackage)?.lyPoints}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">{t("member.partnerDashboard.rwaToken")}</span>
-                          <span className="font-medium text-primary">
-                            +{packages.find(p => p.id === selectedPackage)?.rwaTokens}
-                          </span>
-                        </div>
-                        {referralCode && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">{t("member.partnerJoin.referralCodeLabel")}</span>
-                            <span className="font-mono">{referralCode}</span>
-                          </div>
-                        )}
-                        <Separator />
-                        <div className="flex justify-between text-lg font-bold">
-                          <span>{t("member.partnerJoin.amountToPay")}</span>
-                          <span className="text-primary">
-                            RM {packages.find(p => p.id === selectedPackage)?.price.toLocaleString()}
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t("member.partnerJoin.selectPayment")}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <RadioGroup value={selectedPayment} onValueChange={setSelectedPayment}>
-                      {paymentMethods.map((method) => {
-                        const Icon = method.icon;
-                        return (
-                          <div 
-                            key={method.id}
-                            className={`flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors ${
-                              selectedPayment === method.id ? "border-secondary bg-secondary/5" : ""
-                            }`}
-                            onClick={() => setSelectedPayment(method.id)}
-                          >
-                            <RadioGroupItem value={method.id} id={method.id} />
-                            <Label htmlFor={method.id} className="flex items-center gap-3 cursor-pointer flex-1">
-                              <Icon className="w-5 h-5" />
-                              {method.name}
-                            </Label>
-                          </div>
-                        );
-                      })}
-                    </RadioGroup>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="space-y-6">
-                <Card className="bg-gradient-to-br from-secondary/10 to-primary/10">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ShieldCheck className="w-5 h-5 text-primary" />
-                      {t("member.partnerJoin.securityGuarantee")}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 text-sm">
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                      <span>{t("member.partnerJoin.encryptedTransaction")}</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                      <span>{t("member.partnerJoin.activationTime")}</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                      <span>{t("member.partnerJoin.support24h")}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-4 text-sm text-muted-foreground">
-                    <p className="flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                      <span>
-                        {t("member.partnerJoin.paymentNote")}
-                      </span>
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Button
-                  className="w-full bg-secondary text-secondary-foreground gap-2"
-                  size="lg"
-                  onClick={handleSubmit}
-                  disabled={isProcessingPayment}
-                  data-testid="button-pay"
-                >
-                  {isProcessingPayment ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <CreditCard className="w-5 h-5" />
+                      )}
+                      <Separator />
+                      <div className="flex justify-between text-lg font-bold">
+                        <span>{t("member.partnerJoin.amountToPay")}</span>
+                        <span className="text-primary">
+                          RM {packages.find(p => p.id === selectedPackage)?.price.toLocaleString()}
+                        </span>
+                      </div>
+                    </>
                   )}
-                  {t("member.partnerJoin.confirmPay")} RM {packages.find(p => p.id === selectedPackage)?.price.toLocaleString()}
-                </Button>
-              </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-secondary/10 to-primary/10">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-primary" />
+                    {t("member.partnerJoin.securityGuarantee")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
+                    <span>{t("member.partnerJoin.encryptedTransaction")}</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
+                    <span>{t("member.partnerJoin.activationTime")}</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
+                    <span>{t("member.partnerJoin.support24h")}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4 text-sm text-muted-foreground">
+                  <p className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>
+                      {t("member.partnerJoin.paymentNote")}
+                    </span>
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Button
+                className="w-full bg-[#635BFF] hover:bg-[#5851DB] text-white gap-2"
+                size="lg"
+                onClick={handleSubmit}
+                disabled={isProcessingPayment}
+                data-testid="button-pay"
+              >
+                {isProcessingPayment ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <CreditCard className="w-5 h-5" />
+                )}
+                {t("member.partnerJoin.confirmPay")} RM {packages.find(p => p.id === selectedPackage)?.price.toLocaleString()}
+              </Button>
+
+              <p className="text-xs text-center text-muted-foreground">
+                {t("member.partnerJoin.stripePaymentNote") || "支持信用卡、FPX、GrabPay 等支付方式"}
+              </p>
             </div>
           </div>
         )}
