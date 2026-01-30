@@ -1,4 +1,4 @@
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -52,7 +52,7 @@ const getErpItems = (t: (key: string) => string) => [
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
   const { user, loading: isLoading, signOut } = useAuth();
@@ -93,22 +93,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
 
-  // TODO: 最后再启用管理员权限检查
-  // if (userState?.state !== "admin") {
-  //   return (
-  //     <div className="min-h-screen bg-background flex items-center justify-center">
-  //       <Card className="p-8 max-w-md text-center">
-  //         <Shield className="w-12 h-12 mx-auto text-destructive mb-4" />
-  //         <h1 className="text-2xl font-bold mb-4">权限不足</h1>
-  //         <p className="text-muted-foreground mb-6">您没有管理员权限访问此页面</p>
-  //         <Link href="/">
-  //           <Button data-testid="button-go-home">返回首页</Button>
-  //         </Link>
-  //       </Card>
-  //     </div>
-  //   );
-  // }
-
   const NavContent = () => (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b">
@@ -125,7 +109,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </div>
       </div>
-      
+
       <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
         <div>
           <p className="text-xs text-muted-foreground mb-2 px-2">{t("admin.adminPanel")}</p>
@@ -134,18 +118,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               const Icon = item.icon;
               const active = isActive(item.path);
               return (
-                <Link key={item.path} href={item.path}>
-                  <Button
-                    variant={active ? "secondary" : "ghost"}
-                    className={`w-full justify-start gap-3 ${active ? "bg-primary/20 text-primary font-medium" : ""}`}
-                    onClick={() => setOpen(false)}
-                    data-testid={`nav-${item.path.split('/').pop()}`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {item.label}
-                    {active && <ChevronRight className="w-4 h-4 ml-auto" />}
-                  </Button>
-                </Link>
+                <Button
+                  key={item.path}
+                  variant={active ? "secondary" : "ghost"}
+                  className={`w-full justify-start gap-3 ${active ? "bg-primary/20 text-primary font-medium" : ""}`}
+                  onClick={() => { navigate(item.path); setOpen(false); }}
+                  data-testid={`nav-${item.path.split('/').pop()}`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                  {active && <ChevronRight className="w-4 h-4 ml-auto" />}
+                </Button>
               );
             })}
           </div>
@@ -158,18 +141,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               const Icon = item.icon;
               const active = isActive(item.path);
               return (
-                <Link key={item.path} href={item.path}>
-                  <Button
-                    variant={active ? "secondary" : "ghost"}
-                    className={`w-full justify-start gap-3 ${active ? "bg-primary/20 text-primary font-medium" : ""}`}
-                    onClick={() => setOpen(false)}
-                    data-testid={`nav-${item.path.split('/').pop()}`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {item.label}
-                    {active && <ChevronRight className="w-4 h-4 ml-auto" />}
-                  </Button>
-                </Link>
+                <Button
+                  key={item.path}
+                  variant={active ? "secondary" : "ghost"}
+                  className={`w-full justify-start gap-3 ${active ? "bg-primary/20 text-primary font-medium" : ""}`}
+                  onClick={() => { navigate(item.path); setOpen(false); }}
+                  data-testid={`nav-${item.path.split('/').pop()}`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                  {active && <ChevronRight className="w-4 h-4 ml-auto" />}
+                </Button>
               );
             })}
           </div>
@@ -180,18 +162,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <div className="mb-3">
           <LanguageSwitcher testId="button-language-switcher-sidebar" />
         </div>
-        <Link href="/member">
-          <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-back-member">
-            <ArrowLeft className="w-4 h-4" />
-            {t("admin.backToMember")}
-          </Button>
-        </Link>
-        <Link href="/">
-          <Button variant="ghost" className="w-full justify-start gap-2" data-testid="button-back-home">
-            <Home className="w-4 h-4" />
-            {t("admin.backToHome")}
-          </Button>
-        </Link>
+        <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigate("/member")} data-testid="button-back-member">
+          <ArrowLeft className="w-4 h-4" />
+          {t("admin.backToMember")}
+        </Button>
+        <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => navigate("/")} data-testid="button-back-home">
+          <Home className="w-4 h-4" />
+          {t("admin.backToHome")}
+        </Button>
       </div>
     </div>
   );
@@ -212,9 +190,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </SheetContent>
             </Sheet>
 
-            <Link href="/">
-              <span className="font-serif text-xl font-bold text-secondary cursor-pointer" data-testid="link-logo">LOVE YOUNG</span>
-            </Link>
+            <span className="font-serif text-xl font-bold text-secondary cursor-pointer" onClick={() => navigate("/")} data-testid="link-logo">LOVE YOUNG</span>
 
             <div className="hidden lg:flex items-center gap-2 ml-4">
               <Shield className="w-5 h-5 text-secondary" />
@@ -230,12 +206,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
           <div className="flex items-center gap-3">
             <LanguageSwitcher testId="button-language-switcher-header" />
-            <Link href="/member" className="hidden sm:block">
-              <Button variant="ghost" size="sm" className="text-primary-foreground gap-2" data-testid="button-header-member">
-                <ArrowLeft className="w-4 h-4" />
-                {t("admin.memberCenter")}
-              </Button>
-            </Link>
+            <Button variant="ghost" size="sm" className="hidden sm:flex text-primary-foreground gap-2" onClick={() => navigate("/member")} data-testid="button-header-member">
+              <ArrowLeft className="w-4 h-4" />
+              {t("admin.memberCenter")}
+            </Button>
 
             <div className="flex items-center gap-2">
               <Avatar className="w-8 h-8 border border-secondary/50">

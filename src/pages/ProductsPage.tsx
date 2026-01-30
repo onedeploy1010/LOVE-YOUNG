@@ -9,7 +9,7 @@ import { SiWhatsapp } from "react-icons/si";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/lib/i18n";
 
-const WHATSAPP_PHONE = "60124017174";
+const WHATSAPP_PHONE = "60178228658";
 const META_SHOP_LINK = "https://www.facebook.com/loveyoung.birdnest/shop";
 
 const fadeInUp = {

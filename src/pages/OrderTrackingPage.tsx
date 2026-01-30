@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Order } from "@shared/types";
 import { apiRequest } from "@/lib/queryClient";
 
-const WHATSAPP_PHONE = "601234567890";
+const WHATSAPP_PHONE = "60178228658";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent("您好，我想查询我的订单状态。")}`;
 const META_SHOP_LINK = "https://www.facebook.com/loveyoung.birdnest/shop";
 

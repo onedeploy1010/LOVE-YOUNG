@@ -8,7 +8,7 @@ import { useLocation } from "wouter";
 
 import christmasGiftImage from "@assets/generated_images/christmas_luxury_gift_box.png";
 
-const WHATSAPP_PHONE = "60124017174";
+const WHATSAPP_PHONE = "60178228658";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent("您好，我想预订圣诞限定礼盒，请问还有库存吗？")}`;
 
 const fadeInUp = {

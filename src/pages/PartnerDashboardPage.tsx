@@ -28,7 +28,7 @@ import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import type { Partner, LyPointsLedger, CashWalletLedger } from "@shared/types";
 
-const WHATSAPP_PHONE = "60124017174";
+const WHATSAPP_PHONE = "60178228658";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_PHONE}`;
 const META_SHOP_LINK = "https://www.facebook.com/loveyoung.birdnest/shop";
 

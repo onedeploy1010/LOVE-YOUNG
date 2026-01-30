@@ -127,15 +127,6 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
               <SiWhatsapp className="w-4 h-4" />
               <span className="hidden lg:inline">{t("header.whatsapp")}</span>
             </Button>
-            <Button
-              size="default"
-              className="gap-2"
-              onClick={() => window.open(metaShopLink, "_blank")}
-              data-testid="button-header-meta-shop"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              <span className="hidden lg:inline">{t("header.shop")}</span>
-            </Button>
             {!isLoading && (
               isAuthenticated ? (
                 <DropdownMenu>
@@ -232,14 +223,6 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
                   >
                     <SiWhatsapp className="w-4 h-4" />
                     {t("header.whatsapp")}
-                  </Button>
-                  <Button
-                    className="w-full gap-2 justify-center"
-                    onClick={() => window.open(metaShopLink, "_blank")}
-                    data-testid="button-mobile-meta-shop"
-                  >
-                    <ShoppingBag className="w-4 h-4" />
-                    {t("header.shop")}
                   </Button>
                   {!isLoading && (
                     isAuthenticated ? (

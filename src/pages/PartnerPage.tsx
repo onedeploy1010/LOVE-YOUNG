@@ -42,7 +42,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Member, Partner } from "@shared/types";
 
-const WHATSAPP_PHONE = "60124017174";
+const WHATSAPP_PHONE = "60178228658";
 const META_SHOP_LINK = "https://www.facebook.com/loveyoung.birdnest/shop";
 
 const fadeInUp = {

@@ -130,7 +130,7 @@ export default function MemberHelpPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <a href="https://wa.me/60123456789" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/60178228658" target="_blank" rel="noopener noreferrer">
                 <Card className="p-4 hover-elevate cursor-pointer h-full">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">

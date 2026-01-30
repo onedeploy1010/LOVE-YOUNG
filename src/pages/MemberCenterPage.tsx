@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation, Link } from "wouter";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -154,38 +154,39 @@ function SidebarNav({
 }
 
 function MenuGrid({ items, t }: { items: MenuItem[]; t: (key: string) => string }) {
+  const [, navigate] = useLocation();
   const pendingBadge = t("member.center.badges.pendingActivation");
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {items.map((item) => {
         const ItemIcon = item.icon;
         return (
-          <Link key={item.href} href={item.href}>
-            <Card 
-              className="h-full hover-elevate cursor-pointer group"
-              data-testid={`menu-card-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
-            >
-              <CardContent className="p-4 flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-secondary/20 transition-colors">
-                  <ItemIcon className="w-6 h-6 text-secondary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-foreground">{item.label}</span>
-                    {item.badge && (
-                      <Badge variant={item.badge === pendingBadge ? "outline" : "default"} className="text-xs">
-                        {item.badge}
-                      </Badge>
-                    )}
-                  </div>
-                  {item.description && (
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
+          <Card
+            key={item.href}
+            className="h-full hover-elevate cursor-pointer group"
+            onClick={() => navigate(item.href)}
+            data-testid={`menu-card-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+          >
+            <CardContent className="p-4 flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-secondary/20 transition-colors">
+                <ItemIcon className="w-6 h-6 text-secondary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-foreground">{item.label}</span>
+                  {item.badge && (
+                    <Badge variant={item.badge === pendingBadge ? "outline" : "default"} className="text-xs">
+                      {item.badge}
+                    </Badge>
                   )}
                 </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </CardContent>
-            </Card>
-          </Link>
+                {item.description && (
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
+                )}
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </CardContent>
+          </Card>
         );
       })}
     </div>
@@ -347,9 +348,7 @@ export default function MemberCenter() {
               </SheetContent>
             </Sheet>
 
-            <Link href="/">
-              <span className="font-serif text-xl font-bold text-secondary cursor-pointer">LOVE YOUNG</span>
-            </Link>
+            <span className="font-serif text-xl font-bold text-secondary cursor-pointer" onClick={() => navigate("/")}>LOVE YOUNG</span>
           </div>
 
           <div className="flex items-center gap-3">

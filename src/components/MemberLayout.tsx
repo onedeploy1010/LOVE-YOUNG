@@ -1,4 +1,4 @@
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -46,7 +46,7 @@ export function MemberLayout({ children }: MemberLayoutProps) {
   const accountItems = getAccountItems(t);
   const memberItems = getMemberItems(t);
   const allItems = [...accountItems, ...memberItems];
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [open, setOpen] = useState(false);
   const { user, member, signOut } = useAuth();
 
@@ -87,18 +87,17 @@ export function MemberLayout({ children }: MemberLayoutProps) {
               const Icon = item.icon;
               const active = isActive(item.path);
               return (
-                <Link key={item.path} href={item.path}>
-                  <Button
-                    variant={active ? "secondary" : "ghost"}
-                    className={`w-full justify-start gap-3 ${active ? "bg-secondary/20 text-secondary font-medium" : ""}`}
-                    onClick={() => setOpen(false)}
-                    data-testid={`nav-${item.path.split('/').pop()}`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {item.label}
-                    {active && <ChevronRight className="w-4 h-4 ml-auto" />}
-                  </Button>
-                </Link>
+                <Button
+                  key={item.path}
+                  variant={active ? "secondary" : "ghost"}
+                  className={`w-full justify-start gap-3 ${active ? "bg-secondary/20 text-secondary font-medium" : ""}`}
+                  onClick={() => { navigate(item.path); setOpen(false); }}
+                  data-testid={`nav-${item.path.split('/').pop()}`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                  {active && <ChevronRight className="w-4 h-4 ml-auto" />}
+                </Button>
               );
             })}
           </div>
@@ -111,18 +110,17 @@ export function MemberLayout({ children }: MemberLayoutProps) {
               const Icon = item.icon;
               const active = isActive(item.path);
               return (
-                <Link key={item.path} href={item.path}>
-                  <Button
-                    variant={active ? "secondary" : "ghost"}
-                    className={`w-full justify-start gap-3 ${active ? "bg-secondary/20 text-secondary font-medium" : ""}`}
-                    onClick={() => setOpen(false)}
-                    data-testid={`nav-${item.path.split('/').pop()}`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {item.label}
-                    {active && <ChevronRight className="w-4 h-4 ml-auto" />}
-                  </Button>
-                </Link>
+                <Button
+                  key={item.path}
+                  variant={active ? "secondary" : "ghost"}
+                  className={`w-full justify-start gap-3 ${active ? "bg-secondary/20 text-secondary font-medium" : ""}`}
+                  onClick={() => { navigate(item.path); setOpen(false); }}
+                  data-testid={`nav-${item.path.split('/').pop()}`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                  {active && <ChevronRight className="w-4 h-4 ml-auto" />}
+                </Button>
               );
             })}
           </div>
@@ -133,18 +131,14 @@ export function MemberLayout({ children }: MemberLayoutProps) {
         <div className="mb-3">
           <LanguageSwitcher testId="button-language-switcher-sidebar" />
         </div>
-        <Link href="/member">
-          <Button variant="outline" className="w-full justify-start gap-2" data-testid="button-back-center">
-            <ArrowLeft className="w-4 h-4" />
-            {t("member.center.backToCenter")}
-          </Button>
-        </Link>
-        <Link href="/">
-          <Button variant="ghost" className="w-full justify-start gap-2" data-testid="button-back-home">
-            <Home className="w-4 h-4" />
-            {t("nav.home")}
-          </Button>
-        </Link>
+        <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigate("/member")} data-testid="button-back-center">
+          <ArrowLeft className="w-4 h-4" />
+          {t("member.center.backToCenter")}
+        </Button>
+        <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => navigate("/")} data-testid="button-back-home">
+          <Home className="w-4 h-4" />
+          {t("nav.home")}
+        </Button>
       </div>
     </div>
   );
@@ -165,9 +159,7 @@ export function MemberLayout({ children }: MemberLayoutProps) {
               </SheetContent>
             </Sheet>
 
-            <Link href="/">
-              <span className="font-serif text-xl font-bold text-secondary cursor-pointer" data-testid="link-logo">LOVE YOUNG</span>
-            </Link>
+            <span className="font-serif text-xl font-bold text-secondary cursor-pointer" onClick={() => navigate("/")} data-testid="link-logo">LOVE YOUNG</span>
 
             <div className="hidden lg:flex items-center gap-2 ml-4">
               <User className="w-5 h-5 text-secondary" />
@@ -183,12 +175,10 @@ export function MemberLayout({ children }: MemberLayoutProps) {
 
           <div className="flex items-center gap-3">
             <LanguageSwitcher testId="button-language-switcher-header" />
-            <Link href="/member" className="hidden sm:block">
-              <Button variant="ghost" size="sm" className="text-primary-foreground gap-2" data-testid="button-header-center">
-                <ArrowLeft className="w-4 h-4" />
-                {t("member.center.backToCenter")}
-              </Button>
-            </Link>
+            <Button variant="ghost" size="sm" className="hidden sm:flex text-primary-foreground gap-2" onClick={() => navigate("/member")} data-testid="button-header-center">
+              <ArrowLeft className="w-4 h-4" />
+              {t("member.center.backToCenter")}
+            </Button>
 
             <div className="flex items-center gap-2">
               <Avatar className="w-8 h-8 border border-secondary/50">

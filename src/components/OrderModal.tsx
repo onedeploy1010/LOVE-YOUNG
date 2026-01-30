@@ -280,7 +280,7 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
 
       // Fallback: Show WhatsApp payment option
       const message = `Hi, I would like to pay for order #${orderNumber}\n\nAmount: RM ${currentPrice}\nName: ${deliveryInfo.customerName}\nPhone: ${deliveryInfo.phone}`;
-      const whatsappUrl = `https://wa.me/60124017174?text=${encodeURIComponent(message)}`;
+      const whatsappUrl = `https://wa.me/60178228658?text=${encodeURIComponent(message)}`;
 
       // Open WhatsApp for manual payment
       window.open(whatsappUrl, "_blank");
@@ -1018,7 +1018,7 @@ export function OrderModal({ open, onOpenChange, whatsappLink, metaShopLink }: O
                   size="lg"
                   onClick={() => {
                     const message = `您好，我要支付订单 #${orderNumber}\n\n金额: RM ${currentPrice}\n姓名: ${deliveryInfo.customerName}\n电话: ${deliveryInfo.phone}`;
-                    window.open(`https://wa.me/60124017174?text=${encodeURIComponent(message)}`, "_blank");
+                    window.open(`https://wa.me/60178228658?text=${encodeURIComponent(message)}`, "_blank");
                   }}
                   data-testid="button-pay-whatsapp"
                 >

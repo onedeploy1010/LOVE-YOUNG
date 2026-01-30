@@ -6,8 +6,8 @@ export const PARTNER_TIERS = {
   phase1: {
     name: "Phase 1 - 启航经营人",
     price: 100000, // RM 1000 in cents
-    initialLyPoints: 2000,
-    initialRwaTokens: 2,
+    initialLyPoints: 1000,
+    initialRwaTokens: 1,
     cashbackRate: { first5: 0.5, next5: 0.3, beyond: 0.2 },
     weight: 1.0,
   },
@@ -15,15 +15,15 @@ export const PARTNER_TIERS = {
     name: "Phase 2 - 成长经营人",
     price: 130000, // RM 1300 in cents
     initialLyPoints: 2600,
-    initialRwaTokens: 3,
+    initialRwaTokens: 1,
     cashbackRate: { first5: 0.5, next5: 0.3, beyond: 0.2 },
     weight: 1.2,
   },
   phase3: {
     name: "Phase 3 - 卓越经营人",
     price: 150000, // RM 1500 in cents
-    initialLyPoints: 3000,
-    initialRwaTokens: 4,
+    initialLyPoints: 3800,
+    initialRwaTokens: 1,
     cashbackRate: { first5: 0.5, next5: 0.3, beyond: 0.2 },
     weight: 1.5,
   },
@@ -48,9 +48,9 @@ export const ORDER_CASHBACK_CONFIG = {
   maxCashbackPerCycle: 10, // Maximum 10 cashback events per 30-day cycle
   cycleDays: 30, // 30 days per cycle reset
   tiers: {
-    tier1: { minBoxes: 0, maxBoxes: 2, rate: 0.20 },   // 20% for boxes 1-2
+    tier1: { minBoxes: 0, maxBoxes: 2, rate: 0.50 },   // 20% for boxes 1-2
     tier2: { minBoxes: 2, maxBoxes: 5, rate: 0.30 },   // 30% for boxes 3-5
-    tier3: { minBoxes: 5, maxBoxes: 10, rate: 0.50 },  // 50% for boxes 6-10
+    tier3: { minBoxes: 5, maxBoxes: 10, rate: 0.20 },  // 50% for boxes 6-10
   },
 };
 

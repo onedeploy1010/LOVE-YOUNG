@@ -35,7 +35,7 @@ const productImage2 = "/pics/love_young_gift_box_design_20260106043236_1.png";
 const brandImage = "/pics/love_young_founders_story_20260106043351_1.png";
 const productImage3 = "/pics/love_young_wellness_journey_20260106043338_1.png";
 
-const WHATSAPP_PHONE = "60124017174";
+const WHATSAPP_PHONE = "60178228658";
 const META_SHOP_LINK = "https://www.facebook.com/loveyoung.birdnest/shop";
 
 const fadeInUp = {
