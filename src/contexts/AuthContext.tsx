@@ -122,6 +122,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Safety timeout: ensure loading is set to false within 5 seconds no matter what
+    const safetyTimeout = setTimeout(() => {
+      setLoading(false);
+    }, 5000);
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
@@ -131,11 +136,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           user_metadata: session.user.user_metadata,
         };
         setUser(supabaseUser);
-        fetchUserData(session.user.id).finally(() => setLoading(false));
+        fetchUserData(session.user.id).finally(() => {
+          clearTimeout(safetyTimeout);
+          setLoading(false);
+        });
       } else {
+        clearTimeout(safetyTimeout);
         setLoading(false);
       }
     }).catch(() => {
+      clearTimeout(safetyTimeout);
       setLoading(false);
     });
 
@@ -159,11 +169,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setPartner(null);
           setRole('user');
         }
+        clearTimeout(safetyTimeout);
         setLoading(false);
       }
     );
 
     return () => {
+      clearTimeout(safetyTimeout);
       subscription.unsubscribe();
     };
   }, []);
