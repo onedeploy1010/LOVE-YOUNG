@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<UserRole>('user');
   const [loading, setLoading] = useState(true);
 
-  // Fetch member and partner data for a user
+  // Fetch member and partner data for a user (runs in background, does NOT block loading)
   const fetchUserData = async (userId: string) => {
     try {
       // First check if user is admin in users table
@@ -122,12 +122,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Safety timeout: ensure loading is set to false within 5 seconds no matter what
-    const safetyTimeout = setTimeout(() => {
-      setLoading(false);
-    }, 5000);
+    let mounted = true;
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
       setSession(session);
       if (session?.user) {
         const supabaseUser: SupabaseUser = {
@@ -136,21 +134,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           user_metadata: session.user.user_metadata,
         };
         setUser(supabaseUser);
-        fetchUserData(session.user.id).finally(() => {
-          clearTimeout(safetyTimeout);
-          setLoading(false);
-        });
+        // Set loading false IMMEDIATELY - user/session is known
+        // fetchUserData runs in background to populate member/partner/role
+        setLoading(false);
+        fetchUserData(session.user.id);
       } else {
-        clearTimeout(safetyTimeout);
         setLoading(false);
       }
     }).catch(() => {
-      clearTimeout(safetyTimeout);
-      setLoading(false);
+      if (mounted) setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: AuthChangeEvent, session: Session | null) => {
+        if (!mounted) return;
         setSession(session);
         if (session?.user) {
           const supabaseUser: SupabaseUser = {
@@ -159,23 +156,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             user_metadata: session.user.user_metadata,
           };
           setUser(supabaseUser);
+          setLoading(false);
 
           if (event === 'SIGNED_IN') {
-            await fetchUserData(session.user.id);
+            fetchUserData(session.user.id);
           }
         } else {
           setUser(null);
           setMember(null);
           setPartner(null);
           setRole('user');
+          setLoading(false);
         }
-        clearTimeout(safetyTimeout);
-        setLoading(false);
       }
     );
 
     return () => {
-      clearTimeout(safetyTimeout);
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
