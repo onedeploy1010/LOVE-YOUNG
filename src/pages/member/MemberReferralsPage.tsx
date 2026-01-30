@@ -37,7 +37,7 @@ interface ReferralStats {
 
 export default function MemberReferralsPage() {
   const { t } = useTranslation();
-  const { member } = useAuth();
+  const { user, member } = useAuth();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
@@ -163,11 +163,21 @@ export default function MemberReferralsPage() {
     });
   };
 
-  if (!member) {
+  if (!user) {
     return (
       <MemberLayout>
         <div className="flex items-center justify-center py-12">
           <p className="text-muted-foreground">请先登录</p>
+        </div>
+      </MemberLayout>
+    );
+  }
+
+  if (!member) {
+    return (
+      <MemberLayout>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       </MemberLayout>
     );

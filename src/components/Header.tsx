@@ -31,8 +31,10 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
   };
 
   const handleLogout = async () => {
-    if (signOut) {
-      await signOut();
+    try {
+      if (signOut) await signOut();
+    } catch (err) {
+      console.error('Logout error:', err);
     }
     window.location.href = "/";
   };

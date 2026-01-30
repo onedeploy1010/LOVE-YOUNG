@@ -253,7 +253,7 @@ export default function MemberCenter() {
   const { user, member, partner, role, loading: isLoading, signOut } = useAuth();
 
   const handleLogout = async () => {
-    await signOut();
+    try { await signOut(); } catch (e) { console.error('Logout error:', e); }
     window.location.href = "/";
   };
 

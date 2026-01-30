@@ -59,7 +59,7 @@ export function MemberLayout({ children }: MemberLayoutProps) {
   const currentPage = allItems.find(item => isActive(item.path));
 
   const handleLogout = async () => {
-    await signOut();
+    try { await signOut(); } catch (e) { console.error('Logout error:', e); }
     window.location.href = "/";
   };
 

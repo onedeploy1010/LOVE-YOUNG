@@ -54,7 +54,7 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
   const currentPage = menuItems.find(item => isActive(item.path));
 
   const handleLogout = async () => {
-    await signOut();
+    try { await signOut(); } catch (e) { console.error('Logout error:', e); }
     window.location.href = "/";
   };
 
