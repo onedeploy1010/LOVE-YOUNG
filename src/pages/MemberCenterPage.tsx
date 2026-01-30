@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,6 +19,7 @@ import type { UserState, Partner } from "@shared/types";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n";
 import { useAuth, type UserRole } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 type MenuItem = {
   icon: React.ElementType;
@@ -244,6 +245,61 @@ function QuickStatsCards({ partner, t }: { partner: Partner | null; t: (key: str
   );
 }
 
+function AdminQuickStats({ t }: { t: (key: string) => string }) {
+  const [stats, setStats] = useState({ activePartners: 0, monthlyOrders: 0, monthlySales: 0, bonusPool: 0 });
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+    const monthStartISO = monthStart.toISOString();
+
+    async function fetchStats() {
+      const [partnersRes, ordersRes, salesRes, poolRes] = await Promise.all([
+        supabase.from("partners").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", monthStartISO),
+        supabase.from("orders").select("total_amount").gte("created_at", monthStartISO),
+        supabase.from("bonus_pool_cycles").select("pool_amount").order("created_at", { ascending: false }).limit(1),
+      ]);
+
+      const totalSales = (salesRes.data || []).reduce((sum, o) => sum + (o.total_amount || 0), 0);
+      const poolAmount = poolRes.data?.[0]?.pool_amount || 0;
+
+      setStats({
+        activePartners: partnersRes.count || 0,
+        monthlyOrders: ordersRes.count || 0,
+        monthlySales: totalSales,
+        bonusPool: poolAmount,
+      });
+      setLoaded(true);
+    }
+
+    fetchStats();
+  }, []);
+
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <Card className="p-4 bg-primary/5">
+        <div className="text-2xl font-bold text-primary">{loaded ? stats.activePartners : "--"}</div>
+        <div className="text-xs text-muted-foreground">{t("member.center.quickStats.activePartners")}</div>
+      </Card>
+      <Card className="p-4 bg-primary/5">
+        <div className="text-2xl font-bold text-primary">{loaded ? stats.monthlyOrders : "--"}</div>
+        <div className="text-xs text-muted-foreground">{t("member.center.quickStats.monthlyOrders")}</div>
+      </Card>
+      <Card className="p-4 bg-primary/5">
+        <div className="text-2xl font-bold text-primary">{loaded ? `RM ${(stats.monthlySales / 100).toFixed(0)}` : "--"}</div>
+        <div className="text-xs text-muted-foreground">{t("member.center.quickStats.monthlySales")}</div>
+      </Card>
+      <Card className="p-4 bg-primary/5">
+        <div className="text-2xl font-bold text-primary">{loaded ? `RM ${(stats.bonusPool / 100).toFixed(0)}` : "--"}</div>
+        <div className="text-xs text-muted-foreground">{t("member.center.quickStats.bonusPoolBalance")}</div>
+      </Card>
+    </div>
+  );
+}
+
 export default function MemberCenter() {
   const { t } = useTranslation();
   const [, navigate] = useLocation();
@@ -257,7 +313,11 @@ export default function MemberCenter() {
     window.location.href = "/";
   };
 
-  const ALL_MENU_SECTIONS = getMenuSections(t);
+  const ALL_MENU_SECTIONS = getMenuSections(t).filter(section => {
+    if (section.id === "admin-core" || section.id === "erp") return role === "admin";
+    if (section.id === "partner") return role === "partner" || role === "admin";
+    return true;
+  });
 
   if (isLoading) {
     return (
@@ -420,24 +480,7 @@ export default function MemberCenter() {
             )}
 
             {activeSection === "admin-core" && (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <Card className="p-4 bg-primary/5">
-                  <div className="text-2xl font-bold text-primary">--</div>
-                  <div className="text-xs text-muted-foreground">{t("member.center.quickStats.activePartners")}</div>
-                </Card>
-                <Card className="p-4 bg-primary/5">
-                  <div className="text-2xl font-bold text-primary">--</div>
-                  <div className="text-xs text-muted-foreground">{t("member.center.quickStats.monthlyOrders")}</div>
-                </Card>
-                <Card className="p-4 bg-primary/5">
-                  <div className="text-2xl font-bold text-primary">--</div>
-                  <div className="text-xs text-muted-foreground">{t("member.center.quickStats.monthlySales")}</div>
-                </Card>
-                <Card className="p-4 bg-primary/5">
-                  <div className="text-2xl font-bold text-primary">--</div>
-                  <div className="text-xs text-muted-foreground">{t("member.center.quickStats.bonusPoolBalance")}</div>
-                </Card>
-              </div>
+              <AdminQuickStats t={t} />
             )}
 
             <MenuGrid items={currentSection.items} t={t} />

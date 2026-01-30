@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -80,12 +80,14 @@ const categoryFormSchema = z.object({
 
 type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
-const mockProductCategories = [
-  { id: "bird-nest", name: "燕窝", nameEn: "Bird's Nest", description: "精选燕窝产品", color: "emerald" },
-  { id: "fish-maw", name: "花胶", nameEn: "Fish Maw", description: "优质花胶系列", color: "amber" },
-  { id: "gift-set", name: "礼盒", nameEn: "Gift Set", description: "精美礼盒套装", color: "rose" },
-  { id: "combo", name: "套餐", nameEn: "Combo", description: "超值组合套餐", color: "blue" },
-];
+type ProductCategory = {
+  id: string;
+  name: string;
+  nameEn?: string;
+  name_en?: string;
+  description?: string;
+  color: string;
+};
 
 export default function AdminProductsPage() {
   const { t } = useTranslation();
@@ -98,9 +100,27 @@ export default function AdminProductsPage() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
-  const [editingCategory, setEditingCategory] = useState<typeof mockProductCategories[0] | null>(null);
+  const [editingCategory, setEditingCategory] = useState<ProductCategory | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [categories, setCategories] = useState(mockProductCategories);
+  const queryClient = useQueryClient();
+
+  const { data: categories = [] } = useQuery<ProductCategory[]>({
+    queryKey: ["product-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_categories")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (error) { console.error("Error fetching categories:", error); return []; }
+      return (data || []).map((c): ProductCategory => ({
+        id: c.id,
+        name: c.name,
+        nameEn: c.name_en,
+        description: c.description,
+        color: c.color || "emerald",
+      }));
+    },
+  });
 
   const productForm = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -149,6 +169,7 @@ export default function AdminProductsPage() {
         image: p.image,
         category: p.category,
         featured: p.featured,
+        erpnextItemCode: p.erpnext_item_code || null,
       }));
     },
   });
@@ -162,7 +183,7 @@ export default function AdminProductsPage() {
   }) || [];
 
   const getCategoryLabel = (cat: string) => {
-    const category = mockProductCategories.find(c => c.id === cat);
+    const category = categories.find(c => c.id === cat);
     return category?.name || cat;
   };
 
@@ -176,7 +197,7 @@ export default function AdminProductsPage() {
     return colors[color] || colors.emerald;
   };
 
-  const handleEditCategory = (category: typeof mockProductCategories[0]) => {
+  const handleEditCategory = (category: ProductCategory) => {
     setEditingCategory(category);
     categoryForm.reset({
       name: category.name,
@@ -244,19 +265,29 @@ export default function AdminProductsPage() {
     productForm.reset();
   };
 
+  const categorySaveMutation = useMutation({
+    mutationFn: async (data: CategoryFormValues) => {
+      if (editingCategory) {
+        await supabase
+          .from("product_categories")
+          .update({ name: data.name, name_en: data.nameEn, description: data.description, color: data.color })
+          .eq("id", editingCategory.id);
+      } else {
+        const newId = data.name.toLowerCase().replace(/\s+/g, '-');
+        await supabase
+          .from("product_categories")
+          .insert({ id: newId, name: data.name, name_en: data.nameEn, description: data.description, color: data.color });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["product-categories"] });
+      setShowCategoryModal(false);
+      categoryForm.reset();
+    },
+  });
+
   const onSubmitCategory = (data: CategoryFormValues) => {
-    if (editingCategory) {
-      setCategories(prev => prev.map(c => 
-        c.id === editingCategory.id 
-          ? { ...c, ...data }
-          : c
-      ));
-    } else {
-      const newId = data.name.toLowerCase().replace(/\s+/g, '-');
-      setCategories(prev => [...prev, { id: newId, ...data }]);
-    }
-    setShowCategoryModal(false);
-    categoryForm.reset();
+    categorySaveMutation.mutate(data);
   };
 
   const handleConfirmDelete = () => {
@@ -349,7 +380,7 @@ export default function AdminProductsPage() {
           >
             {t("admin.productsPage.allCategories")}
           </Badge>
-          {mockProductCategories.map((cat) => (
+          {categories.map((cat) => (
             <Badge
               key={cat.id}
               variant="outline"
@@ -426,7 +457,7 @@ export default function AdminProductsPage() {
             ) : viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredProducts.map((product) => {
-                  const category = mockProductCategories.find(c => c.id === product.category);
+                  const category = categories.find(c => c.id === product.category);
                   return (
                     <Card key={product.id} className="overflow-hidden hover-elevate" data-testid={`product-${product.id}`}>
                       <div className="aspect-video bg-muted flex items-center justify-center relative">
@@ -486,7 +517,7 @@ export default function AdminProductsPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredProducts.map((product) => {
-                    const category = mockProductCategories.find(c => c.id === product.category);
+                    const category = categories.find(c => c.id === product.category);
                     return (
                       <TableRow key={product.id} data-testid={`product-row-${product.id}`}>
                         <TableCell>

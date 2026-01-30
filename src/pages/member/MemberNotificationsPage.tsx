@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,16 +10,36 @@ import { MemberLayout } from "@/components/MemberLayout";
 import { useTranslation } from "@/lib/i18n";
 import {
   Bell, ShoppingBag, Gift, TrendingUp, MessageSquare,
-  Check, CheckCheck, Trash2, Clock
+  Check, CheckCheck, Trash2, Clock, Loader2
 } from "lucide-react";
 
-const getMockNotifications = (t: (key: string) => string) => [
-  { id: 1, type: "order", title: t("member.notifications.tabs.order"), content: "Order #LY20260120001 shipped", time: "2h ago", read: false },
-  { id: 2, type: "earning", title: t("member.notifications.tabs.earning"), content: "RWA dividend RM 95.00 received", time: "1d ago", read: false },
-  { id: 3, type: "promo", title: t("member.notifications.tabs.promo"), content: "New Year special - 20% off", time: "2d ago", read: true },
-  { id: 4, type: "system", title: "System", content: "Maintenance scheduled Jan 26, 2:00-4:00 AM", time: "3d ago", read: true },
-  { id: 5, type: "order", title: t("member.notifications.tabs.order"), content: "Order #LY20260118002 confirmed", time: "1w ago", read: true },
-];
+type Notification = {
+  id: string;
+  user_id: string | null;
+  member_id: string | null;
+  type: "order" | "earning" | "promo" | "system";
+  title: string;
+  content: string;
+  read: boolean;
+  created_at: string;
+};
+
+function formatRelativeTime(dateStr: string): string {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  const diffWeeks = Math.floor(diffDays / 7);
+
+  if (diffMinutes < 1) return "just now";
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffWeeks < 4) return `${diffWeeks}w ago`;
+  return date.toLocaleDateString();
+}
 
 const getIcon = (type: string) => {
   switch (type) {
@@ -40,28 +63,61 @@ const getIconBg = (type: string) => {
 
 export default function MemberNotificationsPage() {
   const { t } = useTranslation();
-  const [notifications, setNotifications] = useState(() => getMockNotifications(t));
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("all");
+
+  const { data: notifications = [], isLoading } = useQuery<Notification[]>({
+    queryKey: ["notifications", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (error) { console.error("Error fetching notifications:", error); return []; }
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const filteredNotifications = activeTab === "all" 
-    ? notifications 
-    : activeTab === "unread" 
+  const filteredNotifications = activeTab === "all"
+    ? notifications
+    : activeTab === "unread"
       ? notifications.filter(n => !n.read)
       : notifications.filter(n => n.type === activeTab);
 
-  const markAllRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
-  };
+  const markAllReadMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) return;
+      await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("user_id", user.id)
+        .eq("read", false);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+  });
 
-  const markAsRead = (id: number) => {
-    setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
-  };
+  const markAsReadMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("id", id);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+  });
 
-  const deleteNotification = (id: number) => {
-    setNotifications(notifications.filter(n => n.id !== id));
-  };
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await supabase.from("notifications").delete().eq("id", id);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+  });
 
   return (
     <MemberLayout>
@@ -70,13 +126,20 @@ export default function MemberNotificationsPage() {
           <div>
             <h1 className="text-2xl font-serif text-primary" data-testid="text-notifications-title">{t("member.notifications.title")}</h1>
             <p className="text-muted-foreground">
-              {unreadCount > 0 
+              {unreadCount > 0
                 ? t("member.notifications.unreadCount").replace("{count}", String(unreadCount))
                 : t("member.notifications.noUnread")}
             </p>
           </div>
           {unreadCount > 0 && (
-            <Button variant="outline" size="sm" className="gap-2" onClick={markAllRead} data-testid="button-mark-all-read">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => markAllReadMutation.mutate()}
+              disabled={markAllReadMutation.isPending}
+              data-testid="button-mark-all-read"
+            >
               <CheckCheck className="w-4 h-4" />
               {t("member.notifications.markAllRead")}
             </Button>
@@ -103,7 +166,11 @@ export default function MemberNotificationsPage() {
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-4">
-            {filteredNotifications.length === 0 ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : filteredNotifications.length === 0 ? (
               <Card>
                 <CardContent className="p-12 text-center">
                   <Bell className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
@@ -116,8 +183,8 @@ export default function MemberNotificationsPage() {
                   const Icon = getIcon(notification.type);
                   const iconClass = getIconBg(notification.type);
                   return (
-                    <Card 
-                      key={notification.id} 
+                    <Card
+                      key={notification.id}
                       className={`transition-colors ${!notification.read ? "bg-primary/5 border-primary/20" : ""}`}
                       data-testid={`notification-${notification.id}`}
                     >
@@ -136,26 +203,28 @@ export default function MemberNotificationsPage() {
                             <p className="text-sm text-muted-foreground line-clamp-2">{notification.content}</p>
                             <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
                               <Clock className="w-3 h-3" />
-                              {notification.time}
+                              {formatRelativeTime(notification.created_at)}
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
                             {!notification.read && (
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 className="h-8 w-8"
-                                onClick={() => markAsRead(notification.id)}
+                                onClick={() => markAsReadMutation.mutate(notification.id)}
+                                disabled={markAsReadMutation.isPending}
                                 data-testid={`button-read-${notification.id}`}
                               >
                                 <Check className="w-4 h-4" />
                               </Button>
                             )}
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-8 w-8 text-muted-foreground hover:text-red-500"
-                              onClick={() => deleteNotification(notification.id)}
+                              onClick={() => deleteMutation.mutate(notification.id)}
+                              disabled={deleteMutation.isPending}
                               data-testid={`button-delete-${notification.id}`}
                             >
                               <Trash2 className="w-4 h-4" />

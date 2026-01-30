@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!mounted) return;
       setSession(session);
       if (session?.user) {
@@ -131,10 +131,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           user_metadata: session.user.user_metadata,
         };
         setUser(supabaseUser);
-        // Set loading false IMMEDIATELY - user/session is known
-        // fetchUserData runs in background to populate member/partner/role
-        setLoading(false);
-        fetchUserData(session.user.id).catch(() => {});
+        // Wait for role to be determined before clearing loading,
+        // so ProtectedRoute won't redirect prematurely.
+        await fetchUserData(session.user.id).catch(() => {});
+        if (mounted) setLoading(false);
       } else {
         setLoading(false);
       }
@@ -153,11 +153,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             user_metadata: session.user.user_metadata,
           };
           setUser(supabaseUser);
-          setLoading(false);
 
-          if (event === 'SIGNED_IN') {
-            fetchUserData(session.user.id).catch(() => {});
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            await fetchUserData(session.user.id).catch(() => {});
           }
+          if (mounted) setLoading(false);
         } else {
           setUser(null);
           setMember(null);
