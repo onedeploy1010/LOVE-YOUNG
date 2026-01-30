@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, ShoppingBag, User, LogOut } from "lucide-react";
+import { Menu, User, LogOut } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "@/lib/i18n";
