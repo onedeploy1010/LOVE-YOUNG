@@ -14,6 +14,16 @@ import {
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
+interface OrderItem {
+  product_name?: string;
+  productName?: string;
+  flavorName?: string;
+  name?: string;
+  quantity: number;
+  price?: number;
+  unitPrice?: number;
+}
+
 interface Order {
   id: string;
   order_number: string;
@@ -21,11 +31,23 @@ interface Order {
   status: string;
   total_amount: number;
   customer_name: string;
-  items: Array<{
-    product_name: string;
-    quantity: number;
-    price: number;
-  }>;
+  items: string;
+}
+
+function parseItems(itemsRaw: unknown): OrderItem[] {
+  if (Array.isArray(itemsRaw)) return itemsRaw;
+  if (typeof itemsRaw === "string") {
+    try { return JSON.parse(itemsRaw); } catch { return []; }
+  }
+  return [];
+}
+
+function getItemName(item: OrderItem): string {
+  return item.product_name || item.productName || item.flavorName || item.name || "Order Item";
+}
+
+function getItemPrice(item: OrderItem): number {
+  return item.price || item.unitPrice || 0;
 }
 
 export default function MemberOrdersPage() {
@@ -56,7 +78,7 @@ export default function MemberOrdersPage() {
         status: order.status,
         total_amount: order.total_amount || 0,
         customer_name: order.customer_name,
-        items: order.items || [],
+        items: order.items || "[]",
       }));
     },
     enabled: !!user?.email,
@@ -138,7 +160,8 @@ export default function MemberOrdersPage() {
                 {filteredOrders.map((order) => {
                   const statusConfig = getStatusConfig(order.status);
                   const StatusIcon = statusConfig.icon;
-                  const totalItems = order.items?.reduce((sum, i) => sum + i.quantity, 0) || 0;
+                  const items = parseItems(order.items);
+                  const totalItems = items.reduce((sum, i) => sum + (i.quantity || 1), 0);
                   return (
                     <Card key={order.id} className="overflow-hidden" data-testid={`order-${order.id}`}>
                       <div className="flex items-center justify-between p-4 bg-muted/30 border-b">
@@ -153,19 +176,21 @@ export default function MemberOrdersPage() {
                       </div>
                       <CardContent className="p-4">
                         <div className="space-y-3">
-                          {order.items && order.items.length > 0 ? (
-                            order.items.map((item, idx) => (
+                          {items.length > 0 ? (
+                            items.map((item, idx) => (
                               <div key={idx} className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                   <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
                                     <Package className="w-6 h-6 text-muted-foreground" />
                                   </div>
                                   <div>
-                                    <p className="font-medium">{item.product_name}</p>
-                                    <p className="text-sm text-muted-foreground">x{item.quantity}</p>
+                                    <p className="font-medium">{getItemName(item)}</p>
+                                    <p className="text-sm text-muted-foreground">x{item.quantity || 1}</p>
                                   </div>
                                 </div>
-                                <span className="font-medium">RM {(item.price / 100).toFixed(2)}</span>
+                                {getItemPrice(item) > 0 && (
+                                  <span className="font-medium">RM {(getItemPrice(item) / 100).toFixed(2)}</span>
+                                )}
                               </div>
                             ))
                           ) : (
@@ -174,7 +199,7 @@ export default function MemberOrdersPage() {
                                 <Package className="w-6 h-6 text-muted-foreground" />
                               </div>
                               <div>
-                                <p className="font-medium">订单商品</p>
+                                <p className="font-medium">{t("member.orders.orderItems") || "Order Items"}</p>
                               </div>
                             </div>
                           )}
