@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { getCachedReferralCode, clearCachedReferralCode } from "@/pages/auth/AuthLoginPage";
 
 export default function AuthCallbackPage() {
   const [, navigate] = useLocation();
@@ -22,9 +23,8 @@ export default function AuthCallbackPage() {
 
         if (session) {
           // Wait for user data to be fetched and role to be determined
-          await refreshUserData();
+          await refreshUserData().catch(() => {});
 
-          // After refresh, get the latest role from database
           const userId = session.user.id;
 
           // Check user role from users table
@@ -42,16 +42,37 @@ export default function AuthCallbackPage() {
           // Check member role
           const { data: memberData } = await supabase
             .from('members')
-            .select('role')
+            .select('id, role, referrer_id')
             .eq('user_id', userId)
             .single();
+
+          // If member exists but has no referrer, apply cached referral code
+          if (memberData && !memberData.referrer_id) {
+            const cachedRef = getCachedReferralCode();
+            if (cachedRef) {
+              const { data: referrer } = await supabase
+                .from("members")
+                .select("id")
+                .eq("referral_code", cachedRef)
+                .single();
+              if (referrer) {
+                await supabase
+                  .from("members")
+                  .update({ referrer_id: referrer.id })
+                  .eq("id", memberData.id);
+              }
+              clearCachedReferralCode();
+            }
+          }
 
           if (memberData?.role === 'partner' || memberData?.role === 'admin') {
             navigate("/member/partner");
           } else if (memberData) {
             navigate("/member");
           } else {
-            navigate("/");
+            // No member record — redirect to login for profile completion
+            // Keep cached referral code for the profile step
+            navigate("/auth/login");
           }
         } else {
           navigate("/auth/login");
@@ -64,9 +85,8 @@ export default function AuthCallbackPage() {
       }
     };
 
-    // Only run once when component mounts
     handleAuthCallback();
-  }, []); // Remove dependencies to run only once
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

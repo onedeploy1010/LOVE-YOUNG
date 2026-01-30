@@ -14,6 +14,23 @@ import { SiGoogle } from "react-icons/si";
 
 type AuthStep = "email" | "otp" | "profile";
 
+const REFERRAL_STORAGE_KEY = "loveyoung_referral_code";
+
+/** Save referral code to localStorage so it survives redirects and page reloads */
+function cacheReferralCode(code: string) {
+  try { localStorage.setItem(REFERRAL_STORAGE_KEY, code); } catch {}
+}
+
+/** Read cached referral code */
+export function getCachedReferralCode(): string | null {
+  try { return localStorage.getItem(REFERRAL_STORAGE_KEY); } catch { return null; }
+}
+
+/** Clear cached referral code after it's been applied */
+export function clearCachedReferralCode() {
+  try { localStorage.removeItem(REFERRAL_STORAGE_KEY); } catch {}
+}
+
 export default function AuthLoginPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -31,18 +48,27 @@ export default function AuthLoginPage() {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
 
-  // Referral code from URL
+  // Referral code from URL or localStorage cache
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [referrerName, setReferrerName] = useState<string | null>(null);
 
-  // Capture referral code from URL on mount
+  // Capture referral code from URL on mount — cache to localStorage IMMEDIATELY
+  // so it survives any redirect (e.g. already-logged-in user visiting ref link)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get("ref");
     if (ref) {
-      setReferralCode(ref.toUpperCase());
-      // Validate and get referrer name
-      validateReferralCode(ref.toUpperCase());
+      const code = ref.toUpperCase();
+      cacheReferralCode(code);
+      setReferralCode(code);
+      validateReferralCode(code);
+    } else {
+      // No ref in URL — check localStorage for a previously cached code
+      const cached = getCachedReferralCode();
+      if (cached) {
+        setReferralCode(cached);
+        validateReferralCode(cached);
+      }
     }
   }, []);
 
@@ -225,8 +251,9 @@ export default function AuthLoginPage() {
         console.error("Error creating member:", memberError);
       }
 
-      // If there's a referrer, notify them (optional)
+      // If there's a referrer, notify them and clear cached code
       if (referrerId) {
+        clearCachedReferralCode();
         toast({
           title: t("auth.referralApplied") || "推荐码已应用",
           description: referrerName ? `感谢 ${referrerName} 的推荐！` : undefined,
