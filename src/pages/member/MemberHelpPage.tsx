@@ -151,7 +151,7 @@ export default function MemberHelpPage() {
                   </div>
                   <div>
                     <p className="font-medium">{t("member.help.phoneSupport")}</p>
-                    <p className="text-sm text-muted-foreground">+60 12-345 6789</p>
+                    <p className="text-sm text-muted-foreground">+60 17-822 8658</p>
                   </div>
                 </div>
               </Card>

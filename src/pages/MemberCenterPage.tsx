@@ -42,7 +42,7 @@ const getMenuSections = (t: (key: string) => string): MenuSection[] => [
     title: t("member.center.sections.account.title"),
     icon: User,
     items: [
-      { icon: Home, label: t("member.center.menuItems.personalCenter"), href: "/member", description: t("member.center.menuItems.personalCenterDesc") },
+      { icon: Home, label: t("member.center.menuItems.personalCenter"), href: "/member/settings", description: t("member.center.menuItems.personalCenterDesc") },
       { icon: Settings, label: t("member.center.menuItems.accountSettings"), href: "/member/settings", description: t("member.center.menuItems.accountSettingsDesc") },
       { icon: Bell, label: t("member.center.menuItems.notifications"), href: "/member/notifications", description: t("member.center.menuItems.notificationsDesc") },
       { icon: HelpCircle, label: t("member.center.menuItems.helpCenter"), href: "/member/help", description: t("member.center.menuItems.helpCenterDesc") },

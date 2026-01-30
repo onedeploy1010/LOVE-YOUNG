@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,19 +13,21 @@ import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/lib/i18n";
 import {
-  MapPin, Plus, Edit, Trash2, Home, Building2, CheckCircle, Loader2
+  MapPin, Plus, Edit, Trash2, Home, CheckCircle, Loader2
 } from "lucide-react";
 
 interface Address {
   id: string;
-  name: string;
+  member_id: string;
+  recipient_name: string;
   phone: string;
-  address: string;
+  address_line_1: string;
+  address_line_2: string | null;
   city: string;
   postcode: string;
   state: string;
   is_default: boolean;
-  type: "home" | "office";
+  label: string | null;
 }
 
 export default function MemberAddressesPage() {
@@ -38,68 +40,62 @@ export default function MemberAddressesPage() {
 
   // Form state
   const [formData, setFormData] = useState({
-    name: "",
+    recipient_name: "",
     phone: "",
-    address: "",
+    address_line_1: "",
+    address_line_2: "",
     city: "",
     postcode: "",
     state: "",
-    type: "home" as "home" | "office",
   });
 
-  const storageKey = `addresses_${user?.id || "guest"}`;
-
-  // Try to fetch from Supabase, fallback to localStorage
   const { data: addresses = [], isLoading } = useQuery({
-    queryKey: ["member-addresses", user?.id],
+    queryKey: ["member-addresses", member?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!member?.id) return [];
 
-      // Try Supabase first
       const { data, error } = await supabase
-        .from("addresses")
+        .from("member_addresses")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("member_id", member.id)
         .order("is_default", { ascending: false });
 
-      if (!error && data) {
-        return data as Address[];
+      if (error) {
+        console.error("Error fetching addresses:", error);
+        return [];
       }
 
-      // Fallback to localStorage
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        return JSON.parse(stored) as Address[];
-      }
-
-      return [];
+      return (data || []) as Address[];
     },
-    enabled: !!user?.id,
+    enabled: !!member?.id,
   });
 
-  // Save to localStorage whenever addresses change (as backup)
-  useEffect(() => {
-    if (addresses.length > 0 && user?.id) {
-      localStorage.setItem(storageKey, JSON.stringify(addresses));
-    }
-  }, [addresses, storageKey, user?.id]);
-
   const saveAddressMutation = useMutation({
-    mutationFn: async (address: Omit<Address, "id"> & { id?: string }) => {
-      if (!user?.id) throw new Error("Not authenticated");
+    mutationFn: async (address: { id?: string; recipient_name: string; phone: string; address_line_1: string; address_line_2: string; city: string; postcode: string; state: string; is_default: boolean }) => {
+      if (!member?.id) throw new Error("Not authenticated");
 
-      // Try Supabase first
+      const payload = {
+        recipient_name: address.recipient_name,
+        phone: address.phone,
+        address_line_1: address.address_line_1,
+        address_line_2: address.address_line_2 || null,
+        city: address.city,
+        postcode: address.postcode,
+        state: address.state,
+        is_default: address.is_default,
+      };
+
       if (address.id) {
         const { error } = await supabase
-          .from("addresses")
-          .update(address)
+          .from("member_addresses")
+          .update(payload)
           .eq("id", address.id);
 
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from("addresses")
-          .insert({ ...address, user_id: user.id });
+          .from("member_addresses")
+          .insert({ ...payload, member_id: member.id });
 
         if (error) throw error;
       }
@@ -112,30 +108,15 @@ export default function MemberAddressesPage() {
       toast({ title: editingAddress ? "地址已更新" : "地址已添加" });
     },
     onError: (error) => {
-      // Fallback to localStorage
-      const newAddress: Address = {
-        id: editingAddress?.id || crypto.randomUUID(),
-        ...formData,
-        is_default: addresses.length === 0,
-      };
-
-      const updatedAddresses = editingAddress
-        ? addresses.map(a => a.id === editingAddress.id ? newAddress : a)
-        : [...addresses, newAddress];
-
-      localStorage.setItem(storageKey, JSON.stringify(updatedAddresses));
-      queryClient.setQueryData(["member-addresses", user?.id], updatedAddresses);
-      setIsDialogOpen(false);
-      setEditingAddress(null);
-      resetForm();
-      toast({ title: editingAddress ? "地址已更新" : "地址已添加" });
+      console.error("Error saving address:", error);
+      toast({ title: "保存失败，请重试", variant: "destructive" });
     },
   });
 
   const deleteAddressMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from("addresses")
+        .from("member_addresses")
         .delete()
         .eq("id", id);
 
@@ -145,26 +126,24 @@ export default function MemberAddressesPage() {
       queryClient.invalidateQueries({ queryKey: ["member-addresses"] });
       toast({ title: "地址已删除" });
     },
-    onError: (error, id) => {
-      // Fallback to localStorage
-      const updatedAddresses = addresses.filter(a => a.id !== id);
-      localStorage.setItem(storageKey, JSON.stringify(updatedAddresses));
-      queryClient.setQueryData(["member-addresses", user?.id], updatedAddresses);
-      toast({ title: "地址已删除" });
+    onError: () => {
+      toast({ title: "删除失败，请重试", variant: "destructive" });
     },
   });
 
   const setDefaultMutation = useMutation({
     mutationFn: async (id: string) => {
-      // First, unset all defaults
+      if (!member?.id) throw new Error("Not authenticated");
+
+      // First, unset all defaults for this member
       await supabase
-        .from("addresses")
+        .from("member_addresses")
         .update({ is_default: false })
-        .eq("user_id", user?.id);
+        .eq("member_id", member.id);
 
       // Then set the new default
       const { error } = await supabase
-        .from("addresses")
+        .from("member_addresses")
         .update({ is_default: true })
         .eq("id", id);
 
@@ -174,46 +153,39 @@ export default function MemberAddressesPage() {
       queryClient.invalidateQueries({ queryKey: ["member-addresses"] });
       toast({ title: "默认地址已更新" });
     },
-    onError: (error, id) => {
-      // Fallback to localStorage
-      const updatedAddresses = addresses.map(a => ({
-        ...a,
-        is_default: a.id === id,
-      }));
-      localStorage.setItem(storageKey, JSON.stringify(updatedAddresses));
-      queryClient.setQueryData(["member-addresses", user?.id], updatedAddresses);
-      toast({ title: "默认地址已更新" });
+    onError: () => {
+      toast({ title: "设置失败，请重试", variant: "destructive" });
     },
   });
 
   const resetForm = () => {
     setFormData({
-      name: "",
+      recipient_name: "",
       phone: "",
-      address: "",
+      address_line_1: "",
+      address_line_2: "",
       city: "",
       postcode: "",
       state: "",
-      type: "home",
     });
   };
 
   const handleEdit = (address: Address) => {
     setEditingAddress(address);
     setFormData({
-      name: address.name,
+      recipient_name: address.recipient_name,
       phone: address.phone,
-      address: address.address,
+      address_line_1: address.address_line_1,
+      address_line_2: address.address_line_2 || "",
       city: address.city,
       postcode: address.postcode,
       state: address.state,
-      type: address.type,
     });
     setIsDialogOpen(true);
   };
 
   const handleSubmit = () => {
-    if (!formData.name || !formData.phone || !formData.address) {
+    if (!formData.recipient_name || !formData.phone || !formData.address_line_1) {
       toast({ title: "请填写必填字段", variant: "destructive" });
       return;
     }
@@ -267,8 +239,8 @@ export default function MemberAddressesPage() {
                     <Input
                       id="name"
                       placeholder={t("member.addresses.form.namePlaceholder")}
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      value={formData.recipient_name}
+                      onChange={(e) => setFormData({ ...formData, recipient_name: e.target.value })}
                       data-testid="input-name"
                     />
                   </div>
@@ -288,8 +260,8 @@ export default function MemberAddressesPage() {
                   <Textarea
                     id="address"
                     placeholder={t("member.addresses.form.addressPlaceholder")}
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    value={formData.address_line_1}
+                    onChange={(e) => setFormData({ ...formData, address_line_1: e.target.value })}
                     data-testid="input-address"
                   />
                 </div>
@@ -367,20 +339,17 @@ export default function MemberAddressesPage() {
                 )}
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${addr.type === "home" ? "bg-primary/10" : "bg-secondary/10"}`}>
-                      {addr.type === "home" ? (
-                        <Home className="w-5 h-5 text-primary" />
-                      ) : (
-                        <Building2 className="w-5 h-5 text-secondary" />
-                      )}
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-primary/10">
+                      <Home className="w-5 h-5 text-primary" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="font-bold">{addr.name}</span>
+                        <span className="font-bold">{addr.recipient_name}</span>
                         <span className="text-sm text-muted-foreground">{addr.phone}</span>
                       </div>
                       <p className="text-sm text-muted-foreground leading-relaxed">
-                        {addr.address}<br />
+                        {addr.address_line_1}
+                        {addr.address_line_2 && <><br />{addr.address_line_2}</>}<br />
                         {addr.postcode} {addr.city}, {addr.state}
                       </p>
                     </div>
