@@ -90,12 +90,27 @@ export async function createPartner(
     }
   }
 
+  // Use the member's existing referral code (unified code for member + partner)
+  let partnerReferralCode: string;
+  const { data: memberRecord } = await supabase
+    .from("members")
+    .select("referral_code")
+    .eq("id", memberId)
+    .single();
+
+  if (memberRecord?.referral_code) {
+    partnerReferralCode = memberRecord.referral_code;
+  } else {
+    // Fallback: generate a new code if member somehow has none
+    partnerReferralCode = generateReferralCode();
+  }
+
   // Create partner record
   const { data: partner, error } = await supabase
     .from("partners")
     .insert({
       member_id: memberId,
-      referral_code: generateReferralCode(),
+      referral_code: partnerReferralCode,
       tier: tier,
       status: "active",
       referrer_id: referrerId,

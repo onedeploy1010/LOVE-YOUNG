@@ -10,6 +10,14 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: true,
   },
+  global: {
+    fetch: (url: RequestInfo | URL, options?: RequestInit) => {
+      // Strip abort signals to prevent AbortError during React re-renders
+      // and component unmounts. Cancelled queries still complete on the
+      // network but React Query ignores stale responses.
+      return fetch(url, { ...options, signal: undefined });
+    },
+  },
 });
 
 export type SupabaseUser = {
