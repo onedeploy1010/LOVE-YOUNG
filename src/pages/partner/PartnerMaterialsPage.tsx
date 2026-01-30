@@ -1,12 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MemberLayout } from "@/components/MemberLayout";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/lib/i18n";
 import {
   Share2, Download, Copy, Image, FileText, Video,
-  ExternalLink, Check, QrCode, Smartphone
+  ExternalLink, QrCode, Smartphone, CheckCircle, Loader2
 } from "lucide-react";
 import { useState } from "react";
 
@@ -32,42 +35,102 @@ const materials = {
 
 export default function PartnerMaterialsPage() {
   const { t } = useTranslation();
+  const { member } = useAuth();
+  const { toast } = useToast();
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const copyLink = (id: string) => {
-    navigator.clipboard.writeText(`https://loveyoung.my/share/${id}`);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+  const referralCode = member?.referralCode || "";
+  const referralLink = referralCode
+    ? `${window.location.origin}/auth/login?ref=${referralCode}`
+    : "";
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: `${label}已复制到剪贴板` });
+    } catch {
+      toast({ title: "复制失败", variant: "destructive" });
+    }
   };
+
+  const shareToWhatsApp = () => {
+    const text = `LOVEYOUNG 养乐鲜炖 - 马来西亚优质燕窝花胶品牌！使用我的推荐码 ${referralCode} 注册享优惠！\n${referralLink}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+  };
+
+  const shareToFacebook = () => {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`, "_blank");
+  };
+
+  if (!member) {
+    return (
+      <MemberLayout>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </MemberLayout>
+    );
+  }
 
   return (
     <MemberLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-materials-title">{t("partner.materials.title")}</h1>
-          <p className="text-muted-foreground">{t("partner.materials.subtitle")}</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-materials-title">推广物料</h1>
+          <p className="text-muted-foreground">获取分享素材，助力您的推广</p>
         </div>
 
+      {/* Referral Link Card */}
       <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
-        <CardContent className="p-6">
+        <CardContent className="p-6 space-y-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-xl bg-background flex items-center justify-center border-2 border-dashed border-primary/30">
                 <QrCode className="w-8 h-8 text-primary" />
               </div>
               <div>
-                <h3 className="font-bold text-lg">我的专属推广二维码</h3>
-                <p className="text-muted-foreground text-sm">扫码即可直接加入您的推荐网络</p>
+                <h3 className="font-bold text-lg">我的专属推广链接</h3>
+                <p className="text-muted-foreground text-sm">
+                  推荐码: <span className="font-mono font-bold text-primary">{referralCode}</span>
+                </p>
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" data-testid="button-download-qr">
-                <Download className="w-4 h-4 mr-2" />
-                下载二维码
+              <Button
+                variant="outline"
+                onClick={() => copyToClipboard(referralCode, "推荐码")}
+                data-testid="button-copy-code"
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                复制推荐码
               </Button>
-              <Button data-testid="button-share-qr">
+              <Button
+                onClick={shareToWhatsApp}
+                className="bg-green-500 hover:bg-green-600"
+                data-testid="button-share-whatsapp"
+              >
                 <Share2 className="w-4 h-4 mr-2" />
-                分享链接
+                分享到 WhatsApp
+              </Button>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm text-muted-foreground mb-1">推广链接</p>
+            <div className="flex items-center gap-2">
+              <Input
+                value={referralLink}
+                readOnly
+                className="font-mono text-sm bg-background"
+                data-testid="input-referral-link"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => copyToClipboard(referralLink, "推广链接")}
+                data-testid="button-copy-link"
+              >
+                <Copy className="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -95,8 +158,8 @@ export default function PartnerMaterialsPage() {
             {materials.images.map((item) => (
               <Card key={item.id} className="overflow-hidden" data-testid={`card-image-${item.id}`}>
                 <div className="aspect-[9/16] bg-muted overflow-hidden">
-                  <img 
-                    src={item.thumbnail} 
+                  <img
+                    src={item.thumbnail}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
@@ -109,7 +172,12 @@ export default function PartnerMaterialsPage() {
                       <Download className="w-3 h-3 mr-1" />
                       下载
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button variant="outline" size="sm" className="flex-1"
+                      onClick={() => {
+                        const text = `${item.title} - LOVEYOUNG 养乐鲜炖\n推荐码: ${referralCode}\n${referralLink}`;
+                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+                      }}
+                    >
                       <Share2 className="w-3 h-3 mr-1" />
                       分享
                     </Button>
@@ -125,8 +193,8 @@ export default function PartnerMaterialsPage() {
             <CardContent className="p-0">
               <div className="divide-y">
                 {materials.documents.map((doc) => (
-                  <div 
-                    key={doc.id} 
+                  <div
+                    key={doc.id}
                     className="flex items-center justify-between p-4 hover-elevate"
                     data-testid={`card-document-${doc.id}`}
                   >
@@ -161,8 +229,8 @@ export default function PartnerMaterialsPage() {
             {materials.videos.map((video) => (
               <Card key={video.id} className="overflow-hidden" data-testid={`card-video-${video.id}`}>
                 <div className="aspect-video bg-muted overflow-hidden relative">
-                  <img 
-                    src={video.thumbnail} 
+                  <img
+                    src={video.thumbnail}
                     alt={video.title}
                     className="w-full h-full object-cover"
                   />
@@ -180,7 +248,12 @@ export default function PartnerMaterialsPage() {
                       <ExternalLink className="w-3 h-3 mr-1" />
                       播放
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button variant="outline" size="sm" className="flex-1"
+                      onClick={() => {
+                        const text = `${video.title} - LOVEYOUNG 养乐鲜炖\n推荐码: ${referralCode}\n${referralLink}`;
+                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+                      }}
+                    >
                       <Share2 className="w-3 h-3 mr-1" />
                       分享
                     </Button>
@@ -202,25 +275,41 @@ export default function PartnerMaterialsPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2 bg-green-500/5 border-green-500/20 hover:bg-green-500/10">
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex-col gap-2 bg-green-500/5 border-green-500/20 hover:bg-green-500/10"
+              onClick={shareToWhatsApp}
+            >
               <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
                 <span className="text-white text-lg">W</span>
               </div>
               <span>WhatsApp</span>
             </Button>
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2 bg-blue-500/5 border-blue-500/20 hover:bg-blue-500/10">
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex-col gap-2 bg-blue-500/5 border-blue-500/20 hover:bg-blue-500/10"
+              onClick={shareToFacebook}
+            >
               <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
                 <span className="text-white text-lg">F</span>
               </div>
               <span>Facebook</span>
             </Button>
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2 bg-pink-500/5 border-pink-500/20 hover:bg-pink-500/10">
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex-col gap-2 bg-pink-500/5 border-pink-500/20 hover:bg-pink-500/10"
+              onClick={() => copyToClipboard(referralLink, "推广链接")}
+            >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center">
                 <span className="text-white text-lg">I</span>
               </div>
               <span>Instagram</span>
             </Button>
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2 bg-red-500/5 border-red-500/20 hover:bg-red-500/10">
+            <Button
+              variant="outline"
+              className="h-auto py-4 flex-col gap-2 bg-red-500/5 border-red-500/20 hover:bg-red-500/10"
+              onClick={() => copyToClipboard(referralLink, "推广链接")}
+            >
               <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
                 <span className="text-white text-lg">小</span>
               </div>
