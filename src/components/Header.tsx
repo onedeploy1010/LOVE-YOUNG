@@ -129,43 +129,41 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
               <SiWhatsapp className="w-4 h-4" />
               <span className="hidden lg:inline">{t("header.whatsapp")}</span>
             </Button>
-            {!isLoading && (
-              isAuthenticated ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" data-testid="button-user-menu">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.profileImageUrl || undefined} />
-                        <AvatarFallback className="text-xs">{getUserInitials()}</AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      <Link href="/member" data-testid="link-member-center">
-                        <User className="w-4 h-4 mr-2" />
-                        {t("header.account")}
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleLogout} data-testid="button-logout">
-                      <LogOut className="w-4 h-4 mr-2" />
-                      {t("member.logout")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="default"
-                  className="gap-2"
-                  onClick={handleLogin}
-                  data-testid="button-header-login"
-                >
-                  <User className="w-4 h-4" />
-                  <span className="hidden lg:inline">{t("header.login")}</span>
-                </Button>
-              )
-            )}
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" data-testid="button-user-menu">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.profileImageUrl || undefined} />
+                      <AvatarFallback className="text-xs">{getUserInitials()}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link href="/member" data-testid="link-member-center">
+                      <User className="w-4 h-4 mr-2" />
+                      {t("header.account")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} data-testid="button-logout">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    {t("member.logout")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : !isLoading ? (
+              <Button
+                variant="ghost"
+                size="default"
+                className="gap-2"
+                onClick={handleLogin}
+                data-testid="button-header-login"
+              >
+                <User className="w-4 h-4" />
+                <span className="hidden lg:inline">{t("header.login")}</span>
+              </Button>
+            ) : null}
           </div>
 
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -226,41 +224,39 @@ export function Header({ whatsappLink, metaShopLink }: HeaderProps) {
                     <SiWhatsapp className="w-4 h-4" />
                     {t("header.whatsapp")}
                   </Button>
-                  {!isLoading && (
-                    isAuthenticated ? (
-                      <>
-                        <Link href="/member" onClick={() => setMobileMenuOpen(false)}>
-                          <Button
-                            variant="outline"
-                            className="w-full gap-2 justify-center"
-                            data-testid="button-mobile-member"
-                          >
-                            <User className="w-4 h-4" />
-                            {t("header.account")}
-                          </Button>
-                        </Link>
+                  {isAuthenticated ? (
+                    <>
+                      <Link href="/member" onClick={() => setMobileMenuOpen(false)}>
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           className="w-full gap-2 justify-center"
-                          onClick={handleLogout}
-                          data-testid="button-mobile-logout"
+                          data-testid="button-mobile-member"
                         >
-                          <LogOut className="w-4 h-4" />
-                          {t("member.logout")}
+                          <User className="w-4 h-4" />
+                          {t("header.account")}
                         </Button>
-                      </>
-                    ) : (
+                      </Link>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         className="w-full gap-2 justify-center"
-                        onClick={handleLogin}
-                        data-testid="button-mobile-login"
+                        onClick={handleLogout}
+                        data-testid="button-mobile-logout"
                       >
-                        <User className="w-4 h-4" />
-                        {t("header.login")}
+                        <LogOut className="w-4 h-4" />
+                        {t("member.logout")}
                       </Button>
-                    )
-                  )}
+                    </>
+                  ) : !isLoading ? (
+                    <Button
+                      variant="outline"
+                      className="w-full gap-2 justify-center"
+                      onClick={handleLogin}
+                      data-testid="button-mobile-login"
+                    >
+                      <User className="w-4 h-4" />
+                      {t("header.login")}
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             </SheetContent>
