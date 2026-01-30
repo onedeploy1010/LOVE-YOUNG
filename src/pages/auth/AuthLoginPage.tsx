@@ -35,7 +35,7 @@ export default function AuthLoginPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const { sendOTP, verifyOTP, signInWithGoogle, user, role, loading: authLoading, refreshUserData } = useAuth();
+  const { sendOTP, verifyOTP, signInWithGoogle, user, member, role, loading: authLoading, refreshUserData } = useAuth();
 
   const [step, setStep] = useState<AuthStep>("email");
   const [isLoading, setIsLoading] = useState(false);
@@ -86,17 +86,38 @@ export default function AuthLoginPage() {
   // whether the user needs the profile step (race condition).
   useEffect(() => {
     if (user && !authLoading && step === "email") {
-      if (role === 'admin') {
-        navigate("/admin");
-      } else if (role === 'partner') {
-        navigate("/member/partner");
-      } else if (role === 'member') {
-        navigate("/member");
-      } else {
-        navigate("/");
-      }
+      // Apply cached referral code for already-logged-in users who have no referrer
+      const applyAndRedirect = async () => {
+        const cachedRef = getCachedReferralCode();
+        if (cachedRef && member && !member.referrerId) {
+          try {
+            const { data } = await supabase.rpc("validate_referral_code", { code: cachedRef });
+            if (data?.valid && data.referrer_member_id) {
+              await supabase
+                .from("members")
+                .update({ referrer_id: data.referrer_member_id })
+                .eq("id", member.id);
+              clearCachedReferralCode();
+            }
+          } catch (err) {
+            console.error("Error applying referral code:", err);
+          }
+        }
+
+        if (role === 'admin') {
+          navigate("/admin");
+        } else if (role === 'partner') {
+          navigate("/member/partner");
+        } else if (role === 'member') {
+          navigate("/member");
+        } else {
+          navigate("/");
+        }
+      };
+
+      applyAndRedirect();
     }
-  }, [user, role, authLoading, step, navigate]);
+  }, [user, member, role, authLoading, step, navigate]);
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
