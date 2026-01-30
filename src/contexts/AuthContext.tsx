@@ -137,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Set loading false IMMEDIATELY - user/session is known
         // fetchUserData runs in background to populate member/partner/role
         setLoading(false);
-        fetchUserData(session.user.id);
+        fetchUserData(session.user.id).catch(() => {});
       } else {
         setLoading(false);
       }
@@ -159,7 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setLoading(false);
 
           if (event === 'SIGNED_IN') {
-            fetchUserData(session.user.id);
+            fetchUserData(session.user.id).catch(() => {});
           }
         } else {
           setUser(null);

@@ -121,8 +121,8 @@ export default function AuthLoginPage() {
           variant: "destructive",
         });
       } else {
-        // Refresh user data after login
-        await refreshUserData();
+        // Refresh user data after login (ignore abort if component unmounts)
+        await refreshUserData().catch(() => {});
 
         // Check if user profile exists in users table
         const { data: { user: authUser } } = await supabase.auth.getUser();
