@@ -72,22 +72,44 @@ export default function AuthLoginPage() {
     }
   }, []);
 
-  // Validate referral code and get referrer info
+  // Validate referral code and get referrer info (check both members and partners)
   const validateReferralCode = async (code: string) => {
-    const { data } = await supabase
+    // Check members table first
+    const { data: memberRef } = await supabase
       .from("members")
       .select("name, referral_code")
       .eq("referral_code", code)
       .single();
 
-    if (data) {
-      setReferrerName(data.name || "LOVEYOUNG 会员");
+    if (memberRef) {
+      setReferrerName(memberRef.name || "LOVEYOUNG 会员");
+      return;
+    }
+
+    // Also check partners table (partners have separate referral codes)
+    const { data: partnerRef } = await supabase
+      .from("partners")
+      .select("id, member_id")
+      .eq("referral_code", code)
+      .eq("status", "active")
+      .single();
+
+    if (partnerRef) {
+      const { data: partnerMember } = await supabase
+        .from("members")
+        .select("name")
+        .eq("id", partnerRef.member_id)
+        .single();
+      setReferrerName(partnerMember?.name || "LOVEYOUNG 经营人");
     }
   };
 
-  // Redirect if already logged in based on role
+  // Redirect if already logged in based on role.
+  // Only redirect from the initial "email" step — never during "otp" or "profile"
+  // because verifyOTP sets user in AuthContext before handleVerifyOTP can check
+  // whether the user needs the profile step (race condition).
   useEffect(() => {
-    if (user && !authLoading && step !== "profile") {
+    if (user && !authLoading && step === "email") {
       if (role === 'admin') {
         navigate("/admin");
       } else if (role === 'partner') {
@@ -219,16 +241,28 @@ export default function AuthLoginPage() {
         return code;
       };
 
-      // Find referrer ID if referral code was provided
+      // Find referrer ID if referral code was provided (check members + partners)
       let referrerId: string | null = null;
       if (referralCode) {
-        const { data: referrer } = await supabase
+        // Check members table
+        const { data: memberRef } = await supabase
           .from("members")
           .select("id")
           .eq("referral_code", referralCode)
           .single();
-        if (referrer) {
-          referrerId = referrer.id;
+        if (memberRef) {
+          referrerId = memberRef.id;
+        } else {
+          // Check partners table (partners have separate referral codes)
+          const { data: partnerRef } = await supabase
+            .from("partners")
+            .select("member_id")
+            .eq("referral_code", referralCode)
+            .eq("status", "active")
+            .single();
+          if (partnerRef) {
+            referrerId = partnerRef.member_id;
+          }
         }
       }
 

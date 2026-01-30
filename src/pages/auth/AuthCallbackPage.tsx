@@ -50,15 +50,31 @@ export default function AuthCallbackPage() {
           if (memberData && !memberData.referrer_id) {
             const cachedRef = getCachedReferralCode();
             if (cachedRef) {
-              const { data: referrer } = await supabase
+              // Check members table first
+              let referrerMemberId: string | null = null;
+              const { data: memberRef } = await supabase
                 .from("members")
                 .select("id")
                 .eq("referral_code", cachedRef)
                 .single();
-              if (referrer) {
+              if (memberRef) {
+                referrerMemberId = memberRef.id;
+              } else {
+                // Also check partners table
+                const { data: partnerRef } = await supabase
+                  .from("partners")
+                  .select("member_id")
+                  .eq("referral_code", cachedRef)
+                  .eq("status", "active")
+                  .single();
+                if (partnerRef) {
+                  referrerMemberId = partnerRef.member_id;
+                }
+              }
+              if (referrerMemberId) {
                 await supabase
                   .from("members")
-                  .update({ referrer_id: referrer.id })
+                  .update({ referrer_id: referrerMemberId })
                   .eq("id", memberData.id);
               }
               clearCachedReferralCode();
