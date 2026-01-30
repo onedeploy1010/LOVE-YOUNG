@@ -75,18 +75,28 @@ export async function createPartner(
 ): Promise<{ partner: Partner | null; error: Error | null }> {
   const tierConfig = PARTNER_TIERS[tier];
 
-  // Find referrer if referral code provided
+  // Find referrer partner if referral code provided
+  // Referral codes live on the members table (partner is just an upgraded member)
   let referrerId: string | null = null;
   if (referralCode) {
-    const { data: referrer } = await supabase
-      .from("partners")
+    const { data: referrerMember } = await supabase
+      .from("members")
       .select("id")
       .eq("referral_code", referralCode.toUpperCase())
-      .eq("status", "active")
       .single();
 
-    if (referrer) {
-      referrerId = referrer.id;
+    if (referrerMember) {
+      // Find the partner record for this member
+      const { data: referrerPartner } = await supabase
+        .from("partners")
+        .select("id")
+        .eq("member_id", referrerMember.id)
+        .eq("status", "active")
+        .single();
+
+      if (referrerPartner) {
+        referrerId = referrerPartner.id;
+      }
     }
   }
 

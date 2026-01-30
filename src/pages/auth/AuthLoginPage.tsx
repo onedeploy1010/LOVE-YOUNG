@@ -72,35 +72,11 @@ export default function AuthLoginPage() {
     }
   }, []);
 
-  // Validate referral code and get referrer info (check both members and partners)
+  // Validate referral code via RPC (works for anon + authenticated)
   const validateReferralCode = async (code: string) => {
-    // Check members table first
-    const { data: memberRef } = await supabase
-      .from("members")
-      .select("name, referral_code")
-      .eq("referral_code", code)
-      .single();
-
-    if (memberRef) {
-      setReferrerName(memberRef.name || "LOVEYOUNG 会员");
-      return;
-    }
-
-    // Also check partners table (partners have separate referral codes)
-    const { data: partnerRef } = await supabase
-      .from("partners")
-      .select("id, member_id")
-      .eq("referral_code", code)
-      .eq("status", "active")
-      .single();
-
-    if (partnerRef) {
-      const { data: partnerMember } = await supabase
-        .from("members")
-        .select("name")
-        .eq("id", partnerRef.member_id)
-        .single();
-      setReferrerName(partnerMember?.name || "LOVEYOUNG 经营人");
+    const { data, error } = await supabase.rpc("validate_referral_code", { code });
+    if (!error && data?.valid) {
+      setReferrerName(data.referrer_name || "LOVEYOUNG 会员");
     }
   };
 
@@ -241,28 +217,12 @@ export default function AuthLoginPage() {
         return code;
       };
 
-      // Find referrer ID if referral code was provided (check members + partners)
+      // Find referrer member ID from referral code (codes live on members table)
       let referrerId: string | null = null;
       if (referralCode) {
-        // Check members table
-        const { data: memberRef } = await supabase
-          .from("members")
-          .select("id")
-          .eq("referral_code", referralCode)
-          .single();
-        if (memberRef) {
-          referrerId = memberRef.id;
-        } else {
-          // Check partners table (partners have separate referral codes)
-          const { data: partnerRef } = await supabase
-            .from("partners")
-            .select("member_id")
-            .eq("referral_code", referralCode)
-            .eq("status", "active")
-            .single();
-          if (partnerRef) {
-            referrerId = partnerRef.member_id;
-          }
+        const { data: refResult } = await supabase.rpc("validate_referral_code", { code: referralCode });
+        if (refResult?.valid) {
+          referrerId = refResult.referrer_member_id;
         }
       }
 

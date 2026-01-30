@@ -50,31 +50,12 @@ export default function AuthCallbackPage() {
           if (memberData && !memberData.referrer_id) {
             const cachedRef = getCachedReferralCode();
             if (cachedRef) {
-              // Check members table first
-              let referrerMemberId: string | null = null;
-              const { data: memberRef } = await supabase
-                .from("members")
-                .select("id")
-                .eq("referral_code", cachedRef)
-                .single();
-              if (memberRef) {
-                referrerMemberId = memberRef.id;
-              } else {
-                // Also check partners table
-                const { data: partnerRef } = await supabase
-                  .from("partners")
-                  .select("member_id")
-                  .eq("referral_code", cachedRef)
-                  .eq("status", "active")
-                  .single();
-                if (partnerRef) {
-                  referrerMemberId = partnerRef.member_id;
-                }
-              }
-              if (referrerMemberId) {
+              // Look up referrer via RPC (works regardless of RLS)
+              const { data: refResult } = await supabase.rpc("validate_referral_code", { code: cachedRef });
+              if (refResult?.valid && refResult.referrer_member_id) {
                 await supabase
                   .from("members")
-                  .update({ referrer_id: referrerMemberId })
+                  .update({ referrer_id: refResult.referrer_member_id })
                   .eq("id", memberData.id);
               }
               clearCachedReferralCode();
