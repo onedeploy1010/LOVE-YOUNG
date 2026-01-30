@@ -56,6 +56,8 @@ const getMenuSections = (t: (key: string) => string): MenuSection[] => [
       { icon: MapPin, label: t("member.center.menuItems.addresses"), href: "/member/addresses", description: t("member.center.menuItems.addressesDesc") },
       { icon: Gift, label: t("member.center.menuItems.pointsCenter"), href: "/member/points", description: t("member.center.menuItems.pointsCenterDesc") },
       { icon: CreditCard, label: t("member.center.menuItems.paymentMethods"), href: "/member/payment", description: t("member.center.menuItems.paymentMethodsDesc") },
+      { icon: Share2, label: t("member.center.menuItems.referralNetwork"), href: "/member/referrals", description: t("member.center.menuItems.referralNetworkDesc") },
+      { icon: Users, label: t("member.center.menuItems.promoMaterials"), href: "/member/materials", description: t("member.center.menuItems.promoMaterialsDesc") },
     ]
   },
   {
@@ -64,8 +66,6 @@ const getMenuSections = (t: (key: string) => string): MenuSection[] => [
     icon: Crown,
     items: [
       { icon: TrendingUp, label: t("member.center.menuItems.overview"), href: "/member/partner", description: t("member.center.menuItems.overviewDesc") },
-      { icon: Users, label: t("member.center.menuItems.referralNetwork"), href: "/member/partner/referrals", description: t("member.center.menuItems.referralNetworkDesc") },
-      { icon: Share2, label: t("member.center.menuItems.promoMaterials"), href: "/member/partner/materials", description: t("member.center.menuItems.promoMaterialsDesc") },
       { icon: Wallet, label: t("member.center.menuItems.lyPoints"), href: "/member/partner/ly-points", description: t("member.center.menuItems.lyPointsDesc") },
       { icon: DollarSign, label: t("member.center.menuItems.cashWallet"), href: "/member/partner/wallet", description: t("member.center.menuItems.cashWalletDesc") },
       { icon: Award, label: t("member.center.menuItems.rwaPool"), href: "/member/partner/rwa", description: t("member.center.menuItems.rwaPoolDesc") },

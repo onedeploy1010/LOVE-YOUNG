@@ -109,6 +109,9 @@ function Router() {
         <Route path="/member/referrals">
           <MemberRoute><MemberReferralsPage /></MemberRoute>
         </Route>
+        <Route path="/member/materials">
+          <MemberRoute><PartnerMaterialsPage /></MemberRoute>
+        </Route>
 
         {/* Partner routes - require partner role */}
         <Route path="/member/partner">

@@ -18,7 +18,9 @@ import {
   ChevronRight,
   LogOut,
   User,
-  Star
+  Star,
+  Share2,
+  Image
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n";
@@ -39,6 +41,8 @@ const getMemberItems = (t: (key: string) => string) => [
   { path: "/member/addresses", label: t("member.addresses.title"), icon: MapPin },
   { path: "/member/points", label: t("member.points.title"), icon: Gift },
   { path: "/member/payment", label: t("member.payment.title"), icon: CreditCard },
+  { path: "/member/referrals", label: t("member.referrals.title"), icon: Share2 },
+  { path: "/member/materials", label: t("member.materials.title"), icon: Image },
 ];
 
 export function MemberLayout({ children }: MemberLayoutProps) {

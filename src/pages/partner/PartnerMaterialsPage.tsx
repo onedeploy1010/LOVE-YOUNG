@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PartnerLayout } from "@/components/PartnerLayout";
+import { MemberLayout } from "@/components/MemberLayout";
 import { useTranslation } from "@/lib/i18n";
 import {
   Share2, Download, Copy, Image, FileText, Video,
@@ -41,7 +41,7 @@ export default function PartnerMaterialsPage() {
   };
 
   return (
-    <PartnerLayout>
+    <MemberLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-serif text-primary" data-testid="text-materials-title">{t("partner.materials.title")}</h1>
@@ -230,6 +230,6 @@ export default function PartnerMaterialsPage() {
         </CardContent>
       </Card>
       </div>
-    </PartnerLayout>
+    </MemberLayout>
   );
 }
