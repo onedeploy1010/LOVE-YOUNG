@@ -35,19 +35,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Fetch member and partner data for a user (runs in background, does NOT block loading)
   const fetchUserData = async (userId: string) => {
     try {
-      // First check if user is admin in users table
+      // Check if user is admin in users table
       const { data: userData } = await supabase
         .from('users')
         .select('role')
         .eq('id', userId)
         .single();
 
-      if (userData?.role === 'admin') {
-        setRole('admin');
-        return;
-      }
+      const isAdmin = userData?.role === 'admin';
 
-      // Check if user has a member record
+      // Always load member record (admins can also be members/partners)
       const { data: memberData } = await supabase
         .from('members')
         .select('*')
@@ -72,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setMember(memberObj);
 
         // Check if member is a partner
-        if (memberData.role === 'partner' || memberData.role === 'admin') {
+        if (memberData.role === 'partner' || memberData.role === 'admin' || isAdmin) {
           const { data: partnerData } = await supabase
             .from('partners')
             .select('*')
@@ -99,15 +96,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               updatedAt: partnerData.updated_at,
             };
             setPartner(partnerObj);
-            setRole(memberData.role === 'admin' ? 'admin' : 'partner');
+            setRole(isAdmin ? 'admin' : 'partner');
           } else {
-            setRole(memberData.role === 'admin' ? 'admin' : 'member');
+            setRole(isAdmin ? 'admin' : 'member');
           }
         } else {
-          setRole('member');
+          setRole(isAdmin ? 'admin' : 'member');
         }
       } else {
-        setRole('user');
+        setRole(isAdmin ? 'admin' : 'user');
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
