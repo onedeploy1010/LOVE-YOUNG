@@ -118,29 +118,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!mounted) return;
-      setSession(session);
-      if (session?.user) {
-        const supabaseUser: SupabaseUser = {
-          id: session.user.id,
-          email: session.user.email || '',
-          user_metadata: session.user.user_metadata,
-        };
-        setUser(supabaseUser);
-        // Wait for role to be determined before clearing loading,
-        // so ProtectedRoute won't redirect prematurely.
-        await fetchUserData(session.user.id).catch(() => {});
-        if (mounted) setLoading(false);
-      } else {
-        setLoading(false);
-      }
-    }).catch(() => {
-      if (mounted) setLoading(false);
-    });
-
+    // Use onAuthStateChange as the single source of truth.
+    // Supabase v2 fires INITIAL_SESSION on setup (replaces getSession()),
+    // then SIGNED_IN / TOKEN_REFRESHED / SIGNED_OUT for subsequent events.
+    // We always call fetchUserData when a session exists to ensure
+    // member/role are loaded BEFORE loading is set to false.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent, session: Session | null) => {
+      async (_event: AuthChangeEvent, session: Session | null) => {
         if (!mounted) return;
         setSession(session);
         if (session?.user) {
@@ -150,17 +134,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             user_metadata: session.user.user_metadata,
           };
           setUser(supabaseUser);
-
-          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-            await fetchUserData(session.user.id).catch(() => {});
-          }
+          await fetchUserData(session.user.id).catch(() => {});
           if (mounted) setLoading(false);
         } else {
           setUser(null);
           setMember(null);
           setPartner(null);
           setRole('user');
-          setLoading(false);
+          if (mounted) setLoading(false);
         }
       }
     );
