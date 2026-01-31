@@ -10,20 +10,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: true,
   },
-  global: {
-    fetch: (url: RequestInfo | URL, options?: RequestInit) => {
-      // Keep abort signals so cancelled requests don't waste bandwidth,
-      // but silently swallow AbortError to prevent unhandled errors
-      // during React re-renders and component unmounts.
-      return fetch(url, options).catch((err) => {
-        if (err?.name === 'AbortError') {
-          // Return an empty response that Supabase client can parse safely
-          return new Response(JSON.stringify({}), { status: 499 });
-        }
-        throw err;
-      });
-    },
-  },
 });
 
 export type SupabaseUser = {

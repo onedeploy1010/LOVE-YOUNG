@@ -83,6 +83,12 @@ export const useAuthStore = create<AuthState>()(
             console.warn('[auth] members query error:', memberRes.error.message, memberRes.error.code);
           }
 
+          // If the users query failed entirely (e.g. network/abort), keep cached role
+          if (userRes.error && !userRes.data) {
+            console.warn('[auth] users query failed, keeping cached role');
+            return;
+          }
+
           const isAdmin = userRes.data?.role === 'admin';
           const memberData = memberRes.data;
           console.info('[auth] fetchUserData:', { userId, isAdmin, hasMember: !!memberData, userRole: userRes.data?.role });
@@ -227,14 +233,19 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'loveyoung-auth',
-      version: 3,
+      version: 4,
       migrate: (_persisted: unknown, version: number) => {
-        if (version < 3) {
-          // Keep user (preserves login state across refresh).
-          // Clear role/member/partner so they're re-fetched from DB.
+        if (version < 4) {
+          // Preserve ALL cached state across upgrades.
+          // fetchUserData will correct stale data in background.
           const p = _persisted as Record<string, unknown> | null;
-          console.info('[auth] cache upgrade v' + version + '→3, refreshing role data');
-          return { user: p?.user ?? null, member: null, partner: null, role: 'user' };
+          console.info('[auth] cache upgrade v' + version + '→4');
+          return {
+            user: p?.user ?? null,
+            member: p?.member ?? null,
+            partner: p?.partner ?? null,
+            role: p?.role ?? 'user',
+          };
         }
         return _persisted;
       },
