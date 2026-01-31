@@ -172,6 +172,15 @@ export default function AdminMembersPage() {
     }
   };
 
+  // Show all applicable roles based on hierarchy
+  const getAllRoleBadges = (role: string) => {
+    const badges: Array<{ label: string; icon: React.ElementType; variant: "default" | "secondary" | "outline" | "destructive" }> = [];
+    if (role === "admin") badges.push({ label: t("admin.membersPage.roleAdmin"), icon: Shield, variant: "destructive" });
+    if (role === "admin" || role === "partner") badges.push({ label: t("admin.membersPage.rolePartner"), icon: Crown, variant: "default" });
+    badges.push({ label: t("admin.membersPage.roleMember"), icon: Star, variant: "secondary" });
+    return badges;
+  };
+
   const filteredMembers = members.filter(member => {
     const matchesSearch = searchQuery === "" ||
       member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -310,6 +319,7 @@ export default function AdminMembersPage() {
                     {filteredMembers.map((member) => {
                       const roleConfig = getRoleBadge(member.role);
                       const RoleIcon = roleConfig.icon;
+                      const badges = getAllRoleBadges(member.role);
                       return (
                         <div
                           key={member.id}
@@ -323,7 +333,9 @@ export default function AdminMembersPage() {
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="font-medium">{member.name}</span>
-                                <Badge variant={roleConfig.variant}>{roleConfig.label}</Badge>
+                                {badges.map((b) => (
+                                  <Badge key={b.label} variant={b.variant}>{b.label}</Badge>
+                                ))}
                                 <span className="font-mono text-xs text-muted-foreground">{member.referral_code}</span>
                               </div>
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">

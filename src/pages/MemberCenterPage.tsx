@@ -115,6 +115,24 @@ function getStateLabel(state: UserState, t: (key: string) => string): { label: s
   }
 }
 
+// Return all role badges based on hierarchy: admin=admin+partner+member, partner=partner+member, etc.
+function getAllRoleBadges(role: UserState, hasMember: boolean, hasPartner: boolean, t: (key: string) => string) {
+  const badges: Array<{ label: string; variant: "default" | "secondary" | "outline" | "destructive"; icon: React.ElementType }> = [];
+  if (role === "admin") {
+    badges.push({ label: t("member.center.userStates.admin"), variant: "destructive", icon: Shield });
+  }
+  if (role === "admin" || role === "partner" || hasPartner) {
+    badges.push({ label: t("member.center.userStates.partner"), variant: "default", icon: Crown });
+  }
+  if (role === "admin" || role === "partner" || role === "member" || hasMember) {
+    badges.push({ label: t("member.center.userStates.member"), variant: "secondary", icon: Star });
+  }
+  if (badges.length === 0) {
+    badges.push({ label: t("member.center.userStates.user"), variant: "outline", icon: User });
+  }
+  return badges;
+}
+
 function SidebarNav({ 
   sections, 
   activeSection, 
@@ -360,6 +378,7 @@ export default function MemberCenter() {
   const state: UserState = role as UserState;
   const stateInfo = getStateLabel(state, t);
   const StateIcon = stateInfo.icon;
+  const roleBadges = getAllRoleBadges(state, !!member, !!partner, t);
   const currentSection = ALL_MENU_SECTIONS.find(s => s.id === activeSection) || ALL_MENU_SECTIONS[0];
   const CurrentSectionIcon = currentSection.icon;
 
@@ -385,10 +404,17 @@ export default function MemberCenter() {
                     </Avatar>
                     <div>
                       <p className="font-medium">{member?.name || user?.user_metadata?.first_name || t("member.center.defaultUser")}</p>
-                      <Badge variant={stateInfo.variant} className="gap-1 text-xs">
-                        <StateIcon className="w-3 h-3" />
-                        {stateInfo.label}
-                      </Badge>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {roleBadges.map((b) => {
+                          const Icon = b.icon;
+                          return (
+                            <Badge key={b.label} variant={b.variant} className="gap-1 text-xs">
+                              <Icon className="w-3 h-3" />
+                              {b.label}
+                            </Badge>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -427,10 +453,15 @@ export default function MemberCenter() {
               <span className="text-sm font-medium" data-testid="text-user-name">
                 {member?.name || user?.user_metadata?.first_name || t("member.center.defaultUser")}
               </span>
-              <Badge variant={stateInfo.variant} className="gap-1 text-xs" data-testid="badge-user-state">
-                <StateIcon className="w-3 h-3" />
-                {stateInfo.label}
-              </Badge>
+              {roleBadges.map((b) => {
+                const Icon = b.icon;
+                return (
+                  <Badge key={b.label} variant={b.variant} className="gap-1 text-xs" data-testid="badge-user-state">
+                    <Icon className="w-3 h-3" />
+                    {b.label}
+                  </Badge>
+                );
+              })}
             </div>
             <LanguageSwitcher testId="button-language-switcher-member" />
             <Button
