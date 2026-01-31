@@ -85,18 +85,26 @@ serve(async (req) => {
           if (memberId && tier) {
             console.log(`Creating partner for member ${memberId}, tier: ${tier}`);
 
-            // Find referrer if referral code provided
+            // Find referrer partner via members.referral_code → partners.member_id
             let referrerId: string | null = null;
             if (referralCode) {
-              const { data: referrer } = await supabase
-                .from("partners")
+              const { data: referrerMember } = await supabase
+                .from("members")
                 .select("id")
                 .eq("referral_code", referralCode.toUpperCase())
-                .eq("status", "active")
                 .single();
 
-              if (referrer) {
-                referrerId = referrer.id;
+              if (referrerMember) {
+                const { data: referrerPartner } = await supabase
+                  .from("partners")
+                  .select("id")
+                  .eq("member_id", referrerMember.id)
+                  .eq("status", "active")
+                  .single();
+
+                if (referrerPartner) {
+                  referrerId = referrerPartner.id;
+                }
               }
             }
 

@@ -312,6 +312,8 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
     // Get current user
     const { data: { user: currentUser } } = await supabase.auth.getUser();
 
+    let resolvedMemberId: string | null = member?.id || null;
+
     if (currentUser) {
       // Create or get member record
       const { member: newMember, created } = await createOrGetMember(
@@ -322,6 +324,10 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
           email: currentUser.email,
         }
       );
+
+      if (newMember) {
+        resolvedMemberId = newMember.id;
+      }
 
       // If member was created and has a referrer, update the referrer relationship
       if (newMember && created && referrerId) {
@@ -362,8 +368,8 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
       await createOrderBill(
         orderId,
         orderNumber,
-        currentPrice * 100, // Amount in cents
-        member?.id || null
+        currentPrice * 100,
+        resolvedMemberId,
       );
     }
 
@@ -382,8 +388,8 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
     }
 
     // Process network RWA rewards (if buyer is in a partner's network)
-    if (orderId && member?.id) {
-      await processNetworkOrderRwa(orderId, member.id);
+    if (orderId && resolvedMemberId) {
+      await processNetworkOrderRwa(orderId, resolvedMemberId);
     }
   };
 

@@ -16,6 +16,7 @@ import { supabase } from "@/lib/supabase";
 import { createOrder, updateOrderStatus } from "@/lib/orders";
 import { createOrGetMember, saveMemberAddress } from "@/lib/members";
 import { createOrderBill } from "@/lib/bills";
+import { addSalesToBonusPool, processNetworkOrderRwa } from "@/lib/partner";
 import { getStripe } from "@/lib/stripe";
 import { saveCheckoutContext } from "@/lib/checkoutContext";
 import type { Member, MemberAddress } from "@shared/types";
@@ -249,6 +250,8 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
   const handlePaymentSuccess = async () => {
     const { data: { user: currentUser } } = await supabase.auth.getUser();
 
+    let resolvedMemberId: string | null = member?.id || null;
+
     if (currentUser) {
       const { member: newMember, created } = await createOrGetMember(
         currentUser.id,
@@ -258,6 +261,10 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
           email: currentUser.email,
         }
       );
+
+      if (newMember) {
+        resolvedMemberId = newMember.id;
+      }
 
       if (newMember && created && referrerId) {
         await supabase
@@ -294,8 +301,18 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
         orderId,
         orderNumber,
         currentPrice * 100,
-        member?.id || null
+        resolvedMemberId,
       );
+    }
+
+    // Add sales to bonus pool
+    if (orderId) {
+      await addSalesToBonusPool(orderId, currentPrice * 100);
+    }
+
+    // Process network RWA rewards
+    if (orderId && resolvedMemberId) {
+      await processNetworkOrderRwa(orderId, resolvedMemberId);
     }
   };
 
