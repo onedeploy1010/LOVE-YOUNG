@@ -1200,7 +1200,20 @@
       "statusShipped": "Shipped",
       "statusDelivered": "Completed",
       "statusCancelled": "Cancelled",
-      "statusUnknown": "Unknown"
+      "statusUnknown": "Unknown",
+      "orderInfo": "Order Info",
+      "orderNumber": "Order Number",
+      "orderDate": "Order Date",
+      "shippingAddress": "Shipping Address",
+      "trackingInfo": "Tracking Info",
+      "contactAboutOrder": "Contact About Order",
+      "paymentStatus": "Payment Status",
+      "statusConfirmed": "Confirmed",
+      "statusPendingPayment": "Pending Payment",
+      "timelineOrdered": "Ordered",
+      "timelinePreparing": "Preparing",
+      "timelineShipping": "Shipping",
+      "timelineCompleted": "Completed"
     },
     "points": {
       "title": "Points Center",
@@ -2119,5 +2132,13 @@
       "goToShop": "Go to Shop",
       "consultWellness": "Consult Wellness Advisor"
     }
+  },
+  "checkout": {
+    "successTitle": "Payment Successful!",
+    "successDesc": "Your order has been confirmed",
+    "processing": "Processing your order...",
+    "viewOrder": "View Order",
+    "continueShopping": "Continue Shopping",
+    "backToHome": "Back to Home"
   }
 }

@@ -19,6 +19,7 @@ import { createOrderBill } from "@/lib/bills";
 import { enrichOrderItems, deductInventoryForOrder } from "@/lib/inventory";
 import { addSalesToBonusPool, processNetworkOrderRwa } from "@/lib/partner";
 import { getStripe } from "@/lib/stripe";
+import { saveCheckoutContext } from "@/lib/checkoutContext";
 import type { Member, MemberAddress } from "@shared/types";
 
 interface OrderModalProps {
@@ -256,7 +257,7 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
             customerEmail: user?.email || null,
             customerName: deliveryInfo.customerName,
             productName: `${giftBoxProduct.nameCn} ${giftBoxProduct.nameEn}`,
-            successUrl: `${window.location.origin}/order-tracking?order=${orderNumber}&status=success`,
+            successUrl: `${window.location.origin}/checkout/success?order=${orderNumber}`,
             cancelUrl: `${window.location.origin}/?payment=cancelled`,
           }),
         }
@@ -265,6 +266,16 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
       const data = await response.json();
 
       if (response.ok && data.url) {
+        saveCheckoutContext({
+          orderId,
+          orderNumber,
+          deliveryInfo,
+          selections: selections.map(s => ({ key: s.key, quantity: s.quantity })),
+          currentPrice,
+          saveNewAddress,
+          selectedAddressId,
+          referrerId,
+        });
         window.location.href = data.url;
         return;
       }

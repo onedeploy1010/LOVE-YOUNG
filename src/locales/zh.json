@@ -1200,7 +1200,20 @@
       "statusShipped": "配送中",
       "statusDelivered": "已完成",
       "statusCancelled": "已取消",
-      "statusUnknown": "未知"
+      "statusUnknown": "未知",
+      "orderInfo": "订单信息",
+      "orderNumber": "订单号",
+      "orderDate": "下单时间",
+      "shippingAddress": "收货地址",
+      "trackingInfo": "物流信息",
+      "contactAboutOrder": "咨询此订单",
+      "paymentStatus": "支付状态",
+      "statusConfirmed": "已确认",
+      "statusPendingPayment": "待支付",
+      "timelineOrdered": "已下单",
+      "timelinePreparing": "备货中",
+      "timelineShipping": "配送中",
+      "timelineCompleted": "已完成"
     },
     "points": {
       "title": "积分中心",
@@ -2119,5 +2132,13 @@
       "goToShop": "前往商城选购",
       "consultWellness": "咨询康养管家"
     }
+  },
+  "checkout": {
+    "successTitle": "支付成功！",
+    "successDesc": "您的订单已确认",
+    "processing": "正在处理您的订单...",
+    "viewOrder": "查看订单",
+    "continueShopping": "继续购物",
+    "backToHome": "返回首页"
   }
 }

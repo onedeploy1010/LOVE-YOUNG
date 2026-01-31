@@ -17,6 +17,7 @@ import { createOrder, updateOrderStatus } from "@/lib/orders";
 import { createOrGetMember, saveMemberAddress } from "@/lib/members";
 import { createOrderBill } from "@/lib/bills";
 import { getStripe } from "@/lib/stripe";
+import { saveCheckoutContext } from "@/lib/checkoutContext";
 import type { Member, MemberAddress } from "@shared/types";
 
 interface ProductCheckoutModalProps {
@@ -199,7 +200,7 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
             productImage: product.image.startsWith("http")
               ? product.image
               : `${window.location.origin}${product.image}`,
-            successUrl: `${window.location.origin}/order-tracking?order=${orderNumber}&status=success`,
+            successUrl: `${window.location.origin}/checkout/success?order=${orderNumber}`,
             cancelUrl: `${window.location.origin}/products?payment=cancelled`,
           }),
         }
@@ -208,6 +209,15 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
       const data = await response.json();
 
       if (response.ok && data.url) {
+        saveCheckoutContext({
+          orderId,
+          orderNumber,
+          deliveryInfo,
+          currentPrice,
+          saveNewAddress,
+          selectedAddressId,
+          referrerId,
+        });
         window.location.href = data.url;
         return;
       }

@@ -31,6 +31,7 @@ import OrderTrackingPage from "@/pages/OrderTrackingPage";
 import ChristmasPromoPage from "@/pages/ChristmasPromoPage";
 import PartnerPage from "@/pages/PartnerPage";
 import PartnerJoinPage from "@/pages/PartnerJoinPage";
+import CheckoutSuccessPage from "@/pages/CheckoutSuccessPage";
 
 // Member pages
 import MemberCenterPage from "@/pages/MemberCenterPage";
@@ -79,6 +80,7 @@ function Router() {
         <Route path="/christmas" component={ChristmasPromoPage} />
         <Route path="/partner/join" component={PartnerJoinPage} />
         <Route path="/partner" component={PartnerPage} />
+        <Route path="/checkout/success" component={CheckoutSuccessPage} />
         <Route path="/auth/login" component={AuthLoginPage} />
         <Route path="/auth/callback" component={AuthCallbackPage} />
 

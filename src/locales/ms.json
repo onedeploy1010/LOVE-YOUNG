@@ -1200,7 +1200,20 @@
       "statusShipped": "Dihantar",
       "statusDelivered": "Selesai",
       "statusCancelled": "Dibatalkan",
-      "statusUnknown": "Tidak Diketahui"
+      "statusUnknown": "Tidak Diketahui",
+      "orderInfo": "Maklumat Pesanan",
+      "orderNumber": "Nombor Pesanan",
+      "orderDate": "Tarikh Pesanan",
+      "shippingAddress": "Alamat Penghantaran",
+      "trackingInfo": "Maklumat Pengesanan",
+      "contactAboutOrder": "Hubungi Mengenai Pesanan",
+      "paymentStatus": "Status Pembayaran",
+      "statusConfirmed": "Disahkan",
+      "statusPendingPayment": "Menunggu Pembayaran",
+      "timelineOrdered": "Dipesan",
+      "timelinePreparing": "Menyediakan",
+      "timelineShipping": "Menghantar",
+      "timelineCompleted": "Selesai"
     },
     "points": {
       "title": "Pusat Mata",
@@ -2119,5 +2132,13 @@
       "goToShop": "Pergi ke Kedai",
       "consultWellness": "Rujuk Penasihat Kesejahteraan"
     }
+  },
+  "checkout": {
+    "successTitle": "Pembayaran Berjaya!",
+    "successDesc": "Pesanan anda telah disahkan",
+    "processing": "Memproses pesanan anda...",
+    "viewOrder": "Lihat Pesanan",
+    "continueShopping": "Teruskan Membeli-belah",
+    "backToHome": "Kembali ke Laman Utama"
   }
 }
