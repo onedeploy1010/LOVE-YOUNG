@@ -85,6 +85,16 @@ serve(async (req) => {
           if (memberId && tier) {
             console.log(`Creating partner for member ${memberId}, tier: ${tier}`);
 
+            // Fetch the member record to get user_id and referral_code
+            const { data: memberInfo } = await supabase
+              .from("members")
+              .select("user_id, referral_code")
+              .eq("id", memberId)
+              .single();
+
+            const memberUserId = memberInfo?.user_id || null;
+            const memberReferralCode = memberInfo?.referral_code || generateReferralCode();
+
             // Find referrer partner via members.referral_code → partners.member_id
             let referrerId: string | null = null;
             if (referralCode) {
@@ -108,12 +118,13 @@ serve(async (req) => {
               }
             }
 
-            // Create partner record
+            // Create partner record (reuse member's referral_code, set user_id)
             const { data: partner, error: partnerError } = await supabase
               .from("partners")
               .insert({
                 member_id: memberId,
-                referral_code: generateReferralCode(),
+                user_id: memberUserId,
+                referral_code: memberReferralCode,
                 tier: tier,
                 status: "active",
                 referrer_id: referrerId,
@@ -144,16 +155,11 @@ serve(async (req) => {
                 .eq("id", memberId);
 
               // Also update users table role
-              const { data: memberRecord } = await supabase
-                .from("members")
-                .select("user_id")
-                .eq("id", memberId)
-                .single();
-              if (memberRecord?.user_id) {
+              if (memberUserId) {
                 await supabase
                   .from("users")
                   .update({ role: "partner" })
-                  .eq("id", memberRecord.user_id);
+                  .eq("id", memberUserId);
               }
 
               // Record LY points in ledger
