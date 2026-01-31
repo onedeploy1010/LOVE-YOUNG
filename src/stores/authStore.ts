@@ -137,7 +137,12 @@ export const useAuthStore = create<AuthState>()(
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
-          set({ role: 'user' });
+          // Preserve current role on error — don't downgrade admin to user
+          const currentRole = get().role;
+          if (currentRole === 'user') {
+            // Only reset if already lowest role; otherwise keep cached role
+            set({ member: null, partner: null });
+          }
         }
       },
 

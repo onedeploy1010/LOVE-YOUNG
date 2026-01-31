@@ -37,7 +37,7 @@ interface ReferralStats {
 
 export default function MemberReferralsPage() {
   const { t } = useTranslation();
-  const { user, member } = useAuth();
+  const { user, member, loading } = useAuth();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
@@ -174,10 +174,28 @@ export default function MemberReferralsPage() {
   }
 
   if (!member) {
+    // Still loading auth data — show spinner
+    if (loading) {
+      return (
+        <MemberLayout>
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </MemberLayout>
+      );
+    }
+    // Auth loaded but no member record — prompt to purchase
     return (
       <MemberLayout>
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+          <Users className="w-16 h-16 text-muted-foreground/40 mb-4" />
+          <h2 className="text-xl font-semibold mb-2">尚未成为会员</h2>
+          <p className="text-muted-foreground mb-6 max-w-sm">
+            完成首次购物后即可自动升级为会员，解锁推荐网络功能
+          </p>
+          <a href="/#products">
+            <Button>去购物</Button>
+          </a>
         </div>
       </MemberLayout>
     );

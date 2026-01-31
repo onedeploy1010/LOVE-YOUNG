@@ -35,7 +35,7 @@ const materials = {
 
 export default function PartnerMaterialsPage() {
   const { t } = useTranslation();
-  const { member } = useAuth();
+  const { member, loading } = useAuth();
   const { toast } = useToast();
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -63,10 +63,28 @@ export default function PartnerMaterialsPage() {
   };
 
   if (!member) {
+    // Still loading auth data — show spinner
+    if (loading) {
+      return (
+        <MemberLayout>
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </MemberLayout>
+      );
+    }
+    // Auth loaded but no member record — prompt to purchase
     return (
       <MemberLayout>
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+          <Share2 className="w-16 h-16 text-muted-foreground/40 mb-4" />
+          <h2 className="text-xl font-semibold mb-2">尚未成为会员</h2>
+          <p className="text-muted-foreground mb-6 max-w-sm">
+            完成首次购物后即可自动升级为会员，解锁推广物料功能
+          </p>
+          <a href="/#products">
+            <Button>去购物</Button>
+          </a>
         </div>
       </MemberLayout>
     );
