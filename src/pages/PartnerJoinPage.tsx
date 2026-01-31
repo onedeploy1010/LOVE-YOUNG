@@ -79,7 +79,7 @@ export default function PartnerJoinPage() {
   const { t } = useTranslation();
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const { refreshUserData } = useAuth();
+  const { user: authUser, refreshUserData, loading: authLoading } = useAuth();
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [referralCode, setReferralCode] = useState("");
   const [step, setStep] = useState<"profile" | "package" | "payment" | "success">("profile");
@@ -92,16 +92,15 @@ export default function PartnerJoinPage() {
 
   const packages = getPackages(t);
 
-  // Fetch current user state from Supabase
-  const { data: userState, isLoading, refetch: refetchUserState } = useQuery<UserStateData>({
-    queryKey: ["partner-join-state"],
+  // Fetch member/partner state — uses AuthContext user to avoid extra getUser() call
+  const { data: userState, isLoading: isQueryLoading, refetch: refetchUserState } = useQuery<UserStateData>({
+    queryKey: ["partner-join-state", authUser?.id],
     queryFn: async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return { user: null, member: null, partner: null };
+      if (!authUser) return { user: null, member: null, partner: null };
 
+      try {
         // Get member
-        const { member } = await getMemberByUserId(user.id);
+        const { member } = await getMemberByUserId(authUser.id);
 
         // Get partner if member exists
         let partner: Partner | null = null;
@@ -111,7 +110,7 @@ export default function PartnerJoinPage() {
         }
 
         return {
-          user: { id: user.id, email: user.email } as UserType,
+          user: { id: authUser.id, email: authUser.email } as UserType,
           member,
           partner,
         };
@@ -120,9 +119,12 @@ export default function PartnerJoinPage() {
         return { user: null, member: null, partner: null };
       }
     },
+    enabled: !authLoading,
     retry: 1,
-    staleTime: 0,
+    staleTime: 30_000,
   });
+
+  const isLoading = authLoading || isQueryLoading;
 
   // Handle payment=success redirect from Stripe
   useEffect(() => {

@@ -103,11 +103,9 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
 
   // Fetch member profile and addresses if authenticated
   const { data: member } = useQuery<Member | null>({
-    queryKey: ["member-profile"],
+    queryKey: ["member-profile", user?.id],
     queryFn: async () => {
-      if (!isAuthenticated) return null;
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      if (!user?.id) return null;
 
       const { data, error } = await supabase
         .from("members")
@@ -118,7 +116,7 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
       if (error) return null;
       return data as Member;
     },
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && !!user?.id,
   });
 
   const { data: savedAddresses = [] } = useQuery<MemberAddress[]>({

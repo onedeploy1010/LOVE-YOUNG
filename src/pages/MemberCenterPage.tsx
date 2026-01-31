@@ -256,23 +256,28 @@ function AdminQuickStats({ t }: { t: (key: string) => string }) {
     const monthStartISO = monthStart.toISOString();
 
     async function fetchStats() {
-      const [partnersRes, ordersRes, salesRes, poolRes] = await Promise.all([
-        supabase.from("partners").select("id", { count: "exact", head: true }).eq("status", "active"),
-        supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", monthStartISO),
-        supabase.from("orders").select("total_amount").gte("created_at", monthStartISO),
-        supabase.from("bonus_pool_cycles").select("pool_amount").order("created_at", { ascending: false }).limit(1),
-      ]);
+      try {
+        const [partnersRes, ordersRes, salesRes, poolRes] = await Promise.all([
+          supabase.from("partners").select("id", { count: "exact", head: true }).eq("status", "active"),
+          supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", monthStartISO),
+          supabase.from("orders").select("total_amount").gte("created_at", monthStartISO),
+          supabase.from("bonus_pool_cycles").select("pool_amount").order("created_at", { ascending: false }).limit(1),
+        ]);
 
-      const totalSales = (salesRes.data || []).reduce((sum, o) => sum + (o.total_amount || 0), 0);
-      const poolAmount = poolRes.data?.[0]?.pool_amount || 0;
+        const totalSales = (salesRes.data || []).reduce((sum, o) => sum + (o.total_amount || 0), 0);
+        const poolAmount = poolRes.data?.[0]?.pool_amount || 0;
 
-      setStats({
-        activePartners: partnersRes.count || 0,
-        monthlyOrders: ordersRes.count || 0,
-        monthlySales: totalSales,
-        bonusPool: poolAmount,
-      });
-      setLoaded(true);
+        setStats({
+          activePartners: partnersRes.count || 0,
+          monthlyOrders: ordersRes.count || 0,
+          monthlySales: totalSales,
+          bonusPool: poolAmount,
+        });
+      } catch (err) {
+        console.error("Error fetching admin stats:", err);
+      } finally {
+        setLoaded(true);
+      }
     }
 
     fetchStats();
