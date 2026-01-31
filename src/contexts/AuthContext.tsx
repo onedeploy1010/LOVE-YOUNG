@@ -1,9 +1,10 @@
-import { createContext, useContext, useEffect, useState, useCallback, useMemo, type ReactNode } from 'react';
-import { supabase, type SupabaseUser } from '@/lib/supabase';
-import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
+import type { Session } from '@supabase/supabase-js';
+import type { SupabaseUser } from '@/lib/supabase';
 import type { Member, Partner } from '@shared/types';
+import { useAuthStore, initAuthListener, type UserRole } from '@/stores/authStore';
 
-export type UserRole = 'user' | 'member' | 'partner' | 'admin';
+export type { UserRole };
 
 interface AuthContextType {
   user: SupabaseUser | null;
@@ -25,197 +26,28 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [member, setMember] = useState<Member | null>(null);
-  const [partner, setPartner] = useState<Partner | null>(null);
-  const [role, setRole] = useState<UserRole>('user');
-  const [loading, setLoading] = useState(true);
-
-  // Fetch member and partner data for a user — queries run in parallel
-  const fetchUserData = useCallback(async (userId: string) => {
-    try {
-      // Run admin check and member lookup in parallel
-      const [userRes, memberRes] = await Promise.all([
-        supabase.from('users').select('role').eq('id', userId).single(),
-        supabase.from('members').select('*').eq('user_id', userId).single(),
-      ]);
-
-      const isAdmin = userRes.data?.role === 'admin';
-      const memberData = memberRes.data;
-
-      if (memberData) {
-        const memberObj: Member = {
-          id: memberData.id,
-          userId: memberData.user_id,
-          name: memberData.name,
-          phone: memberData.phone,
-          email: memberData.email,
-          role: memberData.role,
-          pointsBalance: memberData.points_balance,
-          preferredFlavor: memberData.preferred_flavor,
-          preferredPackage: memberData.preferred_package,
-          referralCode: memberData.referral_code,
-          referrerId: memberData.referrer_id,
-          createdAt: memberData.created_at,
-        };
-        setMember(memberObj);
-
-        // Check if member is a partner (only query if role suggests it)
-        if (memberData.role === 'partner' || memberData.role === 'admin' || isAdmin) {
-          const { data: partnerData } = await supabase
-            .from('partners')
-            .select('*')
-            .eq('member_id', memberData.id)
-            .single();
-
-          if (partnerData) {
-            const partnerObj: Partner = {
-              id: partnerData.id,
-              memberId: partnerData.member_id,
-              referralCode: partnerData.referral_code,
-              tier: partnerData.tier,
-              status: partnerData.status,
-              referrerId: partnerData.referrer_id,
-              lyBalance: partnerData.ly_balance,
-              cashWalletBalance: partnerData.cash_wallet_balance,
-              rwaTokens: partnerData.rwa_tokens,
-              totalSales: partnerData.total_sales,
-              totalCashback: partnerData.total_cashback,
-              paymentAmount: partnerData.payment_amount,
-              paymentDate: partnerData.payment_date,
-              paymentReference: partnerData.payment_reference,
-              createdAt: partnerData.created_at,
-              updatedAt: partnerData.updated_at,
-            };
-            setPartner(partnerObj);
-            setRole(isAdmin ? 'admin' : 'partner');
-          } else {
-            setPartner(null);
-            setRole(isAdmin ? 'admin' : 'member');
-          }
-        } else {
-          setPartner(null);
-          setRole(isAdmin ? 'admin' : 'member');
-        }
-      } else {
-        setMember(null);
-        setPartner(null);
-        setRole(isAdmin ? 'admin' : 'user');
-      }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      setRole('user');
-    }
-  }, []);
-
-  const refreshUserData = useCallback(async () => {
-    if (user?.id) {
-      await fetchUserData(user.id);
-    }
-  }, [user?.id, fetchUserData]);
-
+  // Start auth listener once on mount
   useEffect(() => {
-    let mounted = true;
-
-    // Use onAuthStateChange as the single source of truth.
-    // Supabase v2 fires INITIAL_SESSION on setup (replaces getSession()),
-    // then SIGNED_IN / TOKEN_REFRESHED / SIGNED_OUT for subsequent events.
-    // We always call fetchUserData when a session exists to ensure
-    // member/role are loaded BEFORE loading is set to false.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event: AuthChangeEvent, session: Session | null) => {
-        if (!mounted) return;
-        setSession(session);
-        if (session?.user) {
-          const supabaseUser: SupabaseUser = {
-            id: session.user.id,
-            email: session.user.email || '',
-            user_metadata: session.user.user_metadata,
-          };
-          setUser(supabaseUser);
-          await fetchUserData(session.user.id).catch(() => {});
-          if (mounted) setLoading(false);
-        } else {
-          setUser(null);
-          setMember(null);
-          setPartner(null);
-          setRole('user');
-          if (mounted) setLoading(false);
-        }
-      }
-    );
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [fetchUserData]);
-
-  const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error ? new Error(error.message) : null };
+    initAuthListener();
   }, []);
 
-  const signUp = useCallback(async (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: metadata },
-    });
-    return { error: error ? new Error(error.message) : null };
-  }, []);
+  // Read all values from the Zustand store (auto-subscribes to changes)
+  const user = useAuthStore((s) => s.user);
+  const session = useAuthStore((s) => s.session);
+  const member = useAuthStore((s) => s.member);
+  const partner = useAuthStore((s) => s.partner);
+  const role = useAuthStore((s) => s.role);
+  const loading = useAuthStore((s) => s.loading);
+  const signIn = useAuthStore((s) => s.signIn);
+  const signUp = useAuthStore((s) => s.signUp);
+  const signInWithGoogle = useAuthStore((s) => s.signInWithGoogle);
+  const sendOTP = useAuthStore((s) => s.sendOTP);
+  const verifyOTP = useAuthStore((s) => s.verifyOTP);
+  const signOut = useAuthStore((s) => s.signOut);
+  const getAccessToken = useAuthStore((s) => s.getAccessToken);
+  const refreshUserData = useAuthStore((s) => s.refreshUserData);
 
-  const signInWithGoogle = useCallback(async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    return { error: error ? new Error(error.message) : null };
-  }, []);
-
-  const sendOTP = useCallback(async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: true,
-      },
-    });
-    return { error: error ? new Error(error.message) : null };
-  }, []);
-
-  const verifyOTP = useCallback(async (email: string, token: string) => {
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token,
-      type: 'email',
-    });
-    return { error: error ? new Error(error.message) : null };
-  }, []);
-
-  const signOut = useCallback(async () => {
-    // Clear local state immediately for instant UI feedback
-    setUser(null);
-    setSession(null);
-    setMember(null);
-    setPartner(null);
-    setRole('user');
-    try {
-      await supabase.auth.signOut();
-    } catch (err) {
-      console.error('Sign out error:', err);
-    }
-  }, []);
-
-  const getAccessToken = useCallback(async (): Promise<string | null> => {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token || null;
-  }, []);
-
-  // Memoize context value to prevent unnecessary re-renders of all consumers
-  const value = useMemo<AuthContextType>(() => ({
+  const value: AuthContextType = {
     user,
     session,
     member,
@@ -230,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut,
     getAccessToken,
     refreshUserData,
-  }), [user, session, member, partner, role, loading, signIn, signUp, signInWithGoogle, sendOTP, verifyOTP, signOut, getAccessToken, refreshUserData]);
+  };
 
   return (
     <AuthContext.Provider value={value}>
