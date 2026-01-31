@@ -153,6 +153,7 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
       const itemsJson = JSON.stringify(orderItems);
 
       const { order, error } = await createOrder({
+        userId: user?.id || null,
         memberId: member?.id || null,
         customerName: deliveryInfo.customerName,
         customerPhone: deliveryInfo.phone,

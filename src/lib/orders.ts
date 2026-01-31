@@ -17,37 +17,84 @@ export async function createOrder(
 ): Promise<{ order: Order | null; error: Error | null }> {
   const orderNumber = generateOrderNumber();
 
+  const now = new Date().toISOString();
+  const insertPayload = {
+    order_number: orderNumber,
+    user_id: orderData.userId || null,
+    member_id: orderData.memberId,
+    customer_name: orderData.customerName,
+    customer_phone: orderData.customerPhone,
+    customer_email: orderData.customerEmail,
+    status: "pending_payment",
+    total_amount: orderData.totalAmount,
+    items: orderData.items,
+    package_type: orderData.packageType,
+    shipping_address: orderData.shippingAddress,
+    shipping_city: orderData.shippingCity,
+    shipping_state: orderData.shippingState,
+    shipping_postcode: orderData.shippingPostcode,
+    preferred_delivery_date: orderData.preferredDeliveryDate,
+    tracking_number: orderData.trackingNumber,
+    notes: orderData.notes,
+    source: orderData.source,
+    erpnext_id: orderData.erpnextId,
+    meta_order_id: orderData.metaOrderId,
+    points_earned: orderData.pointsEarned,
+    points_redeemed: orderData.pointsRedeemed,
+    created_at: now,
+    updated_at: now,
+  };
+
   const { data, error } = await supabase
     .from("orders")
-    .insert({
-      order_number: orderNumber,
-      member_id: orderData.memberId,
-      customer_name: orderData.customerName,
-      customer_phone: orderData.customerPhone,
-      customer_email: orderData.customerEmail,
-      status: "pending_payment",
-      total_amount: orderData.totalAmount,
-      items: orderData.items,
-      package_type: orderData.packageType,
-      shipping_address: orderData.shippingAddress,
-      shipping_city: orderData.shippingCity,
-      shipping_state: orderData.shippingState,
-      shipping_postcode: orderData.shippingPostcode,
-      preferred_delivery_date: orderData.preferredDeliveryDate,
-      tracking_number: orderData.trackingNumber,
-      notes: orderData.notes,
-      source: orderData.source,
-      erpnext_id: orderData.erpnextId,
-      meta_order_id: orderData.metaOrderId,
-      points_earned: orderData.pointsEarned,
-      points_redeemed: orderData.pointsRedeemed,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
+    .insert(insertPayload)
     .select()
     .single();
 
   if (error) {
+    // RLS may block reading back guest orders (user_id IS NULL).
+    // If the insert itself succeeded but SELECT failed, look up by order_number.
+    if (error.code === 'PGRST116') {
+      const { data: fallback } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("order_number", orderNumber)
+        .maybeSingle();
+      if (fallback) {
+        return { order: mapOrderFromDb(fallback), error: null };
+      }
+      // Insert succeeded but can't read back — construct from known data
+      return {
+        order: {
+          id: '',
+          orderNumber,
+          userId: orderData.userId || null,
+          memberId: orderData.memberId,
+          customerName: orderData.customerName,
+          customerPhone: orderData.customerPhone,
+          customerEmail: orderData.customerEmail || null,
+          status: "pending_payment",
+          totalAmount: orderData.totalAmount,
+          items: orderData.items,
+          packageType: orderData.packageType || null,
+          shippingAddress: orderData.shippingAddress || null,
+          shippingCity: orderData.shippingCity || null,
+          shippingState: orderData.shippingState || null,
+          shippingPostcode: orderData.shippingPostcode || null,
+          preferredDeliveryDate: orderData.preferredDeliveryDate || null,
+          trackingNumber: null,
+          notes: orderData.notes || null,
+          source: orderData.source || null,
+          erpnextId: null,
+          metaOrderId: null,
+          pointsEarned: null,
+          pointsRedeemed: null,
+          createdAt: now,
+          updatedAt: now,
+        },
+        error: null,
+      };
+    }
     console.error("Error creating order:", error);
     return { order: null, error: new Error(error.message) };
   }
@@ -166,6 +213,7 @@ function mapOrderFromDb(row: Record<string, unknown>): Order {
   return {
     id: row.id as string,
     orderNumber: row.order_number as string,
+    userId: row.user_id as string | null,
     memberId: row.member_id as string | null,
     customerName: row.customer_name as string,
     customerPhone: row.customer_phone as string,

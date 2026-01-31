@@ -55,6 +55,7 @@ export type InsertTestimonial = Omit<Testimonial, "id">;
 export interface Order {
   id: string;
   orderNumber: string;
+  userId: string | null;
   memberId: string | null;
   customerName: string;
   customerPhone: string;

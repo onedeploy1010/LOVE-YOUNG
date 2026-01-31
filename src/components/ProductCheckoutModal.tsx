@@ -115,6 +115,7 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
       }]);
 
       const { order, error } = await createOrder({
+        userId: user?.id || null,
         memberId: member?.id || null,
         customerName: deliveryInfo.customerName,
         customerPhone: deliveryInfo.phone,
