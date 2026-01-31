@@ -166,10 +166,8 @@ export default function AuthLoginPage() {
           variant: "destructive",
         });
       } else {
-        // Refresh user data after login (ignore abort if component unmounts)
-        await refreshUserData().catch(() => {});
-
-        // Check if user profile exists in users table
+        // verifyOTP triggers onAuthStateChange → fetchUserData runs automatically.
+        // We only need to check if the user has completed their profile.
         const { data: { user: authUser } } = await supabase.auth.getUser();
         if (authUser) {
           const { data: userData } = await supabase
@@ -179,12 +177,11 @@ export default function AuthLoginPage() {
             .single();
 
           if (!userData?.first_name || !userData?.phone) {
-            // New user - need to fill profile
             setIsNewUser(true);
             setStep("profile");
           } else {
             toast({ title: t("auth.loginSuccess") });
-            // Navigation will be handled by useEffect
+            // Navigation handled by useEffect once AuthContext finishes loading
           }
         }
       }

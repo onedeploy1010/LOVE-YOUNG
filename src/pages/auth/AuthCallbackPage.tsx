@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -7,83 +7,55 @@ import { getCachedReferralCode, clearCachedReferralCode } from "@/pages/auth/Aut
 
 export default function AuthCallbackPage() {
   const [, navigate] = useLocation();
-  const { refreshUserData, user, loading } = useAuth();
-  const [isProcessing, setIsProcessing] = useState(true);
+  const { refreshUserData, role, member, loading } = useAuth();
+  const processedRef = useRef(false);
 
+  // Step 1: On mount, trigger refreshUserData so AuthContext picks up the new session
   useEffect(() => {
-    const handleAuthCallback = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+    if (processedRef.current) return;
+    processedRef.current = true;
+    refreshUserData().catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-        if (error) {
-          console.error("Auth callback error:", error);
-          navigate("/auth/login");
-          return;
-        }
+  // Step 2: Once AuthContext finishes loading (role resolved), redirect
+  useEffect(() => {
+    if (loading) return;
 
-        if (session) {
-          // Wait for user data to be fetched and role to be determined
-          await refreshUserData().catch(() => {});
-
-          const userId = session.user.id;
-
-          // Check user role from users table
-          const { data: userData } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', userId)
-            .single();
-
-          if (userData?.role === 'admin') {
-            navigate("/admin");
-            return;
-          }
-
-          // Check member role
-          const { data: memberData } = await supabase
-            .from('members')
-            .select('id, role, referrer_id')
-            .eq('user_id', userId)
-            .single();
-
-          // If member exists but has no referrer, apply cached referral code
-          if (memberData && !memberData.referrer_id) {
-            const cachedRef = getCachedReferralCode();
-            if (cachedRef) {
-              // Look up referrer via RPC (works regardless of RLS)
-              const { data: refResult } = await supabase.rpc("validate_referral_code", { code: cachedRef });
-              if (refResult?.valid && refResult.referrer_member_id) {
-                await supabase
-                  .from("members")
-                  .update({ referrer_id: refResult.referrer_member_id })
-                  .eq("id", memberData.id);
-              }
-              clearCachedReferralCode();
+    // Apply cached referral code if member has no referrer
+    const applyReferralAndRedirect = async () => {
+      if (member && !member.referrerId) {
+        const cachedRef = getCachedReferralCode();
+        if (cachedRef) {
+          try {
+            const { data: refResult } = await supabase.rpc("validate_referral_code", { code: cachedRef });
+            if (refResult?.valid && refResult.referrer_member_id) {
+              await supabase
+                .from("members")
+                .update({ referrer_id: refResult.referrer_member_id })
+                .eq("id", member.id);
             }
-          }
-
-          if (memberData?.role === 'partner' || memberData?.role === 'admin') {
-            navigate("/member/partner");
-          } else if (memberData) {
-            navigate("/member");
-          } else {
-            // No member record — redirect to login for profile completion
-            // Keep cached referral code for the profile step
-            navigate("/auth/login");
-          }
-        } else {
-          navigate("/auth/login");
+          } catch {}
+          clearCachedReferralCode();
         }
-      } catch (err) {
-        console.error("Auth callback error:", err);
+      }
+
+      if (role === 'admin') {
+        navigate("/admin");
+      } else if (role === 'partner') {
+        navigate("/member/partner");
+      } else if (role === 'member') {
+        navigate("/member");
+      } else if (member) {
+        // member record exists but role hasn't updated yet
+        navigate("/member");
+      } else {
+        // No member record — redirect to login for profile completion
         navigate("/auth/login");
-      } finally {
-        setIsProcessing(false);
       }
     };
 
-    handleAuthCallback();
-  }, []);
+    applyReferralAndRedirect();
+  }, [loading, role, member, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

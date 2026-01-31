@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, type ReactNode } from 'react';
 import { supabase, type SupabaseUser } from '@/lib/supabase';
 import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
 import type { Member, Partner } from '@shared/types';
@@ -32,24 +32,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<UserRole>('user');
   const [loading, setLoading] = useState(true);
 
-  // Fetch member and partner data for a user (runs in background, does NOT block loading)
-  const fetchUserData = async (userId: string) => {
+  // Fetch member and partner data for a user — queries run in parallel
+  const fetchUserData = useCallback(async (userId: string) => {
     try {
-      // Check if user is admin in users table
-      const { data: userData } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', userId)
-        .single();
+      // Run admin check and member lookup in parallel
+      const [userRes, memberRes] = await Promise.all([
+        supabase.from('users').select('role').eq('id', userId).single(),
+        supabase.from('members').select('*').eq('user_id', userId).single(),
+      ]);
 
-      const isAdmin = userData?.role === 'admin';
-
-      // Always load member record (admins can also be members/partners)
-      const { data: memberData } = await supabase
-        .from('members')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+      const isAdmin = userRes.data?.role === 'admin';
+      const memberData = memberRes.data;
 
       if (memberData) {
         const memberObj: Member = {
@@ -68,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
         setMember(memberObj);
 
-        // Check if member is a partner
+        // Check if member is a partner (only query if role suggests it)
         if (memberData.role === 'partner' || memberData.role === 'admin' || isAdmin) {
           const { data: partnerData } = await supabase
             .from('partners')
@@ -98,25 +91,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setPartner(partnerObj);
             setRole(isAdmin ? 'admin' : 'partner');
           } else {
+            setPartner(null);
             setRole(isAdmin ? 'admin' : 'member');
           }
         } else {
+          setPartner(null);
           setRole(isAdmin ? 'admin' : 'member');
         }
       } else {
+        setMember(null);
+        setPartner(null);
         setRole(isAdmin ? 'admin' : 'user');
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
       setRole('user');
     }
-  };
+  }, []);
 
-  const refreshUserData = async () => {
+  const refreshUserData = useCallback(async () => {
     if (user?.id) {
       await fetchUserData(user.id);
     }
-  };
+  }, [user?.id, fetchUserData]);
 
   useEffect(() => {
     let mounted = true;
@@ -172,23 +169,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchUserData]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error ? new Error(error.message) : null };
-  };
+  }, []);
 
-  const signUp = async (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => {
+  const signUp = useCallback(async (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: metadata },
     });
     return { error: error ? new Error(error.message) : null };
-  };
+  }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = useCallback(async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -196,9 +193,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     });
     return { error: error ? new Error(error.message) : null };
-  };
+  }, []);
 
-  const sendOTP = async (email: string) => {
+  const sendOTP = useCallback(async (email: string) => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
@@ -206,53 +203,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     });
     return { error: error ? new Error(error.message) : null };
-  };
+  }, []);
 
-  const verifyOTP = async (email: string, token: string) => {
+  const verifyOTP = useCallback(async (email: string, token: string) => {
     const { error } = await supabase.auth.verifyOtp({
       email,
       token,
       type: 'email',
     });
     return { error: error ? new Error(error.message) : null };
-  };
+  }, []);
 
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (err) {
-      console.error('Sign out error:', err);
-    }
-    // Always clear local state even if Supabase call fails
+  const signOut = useCallback(async () => {
+    // Clear local state immediately for instant UI feedback
     setUser(null);
     setSession(null);
     setMember(null);
     setPartner(null);
     setRole('user');
-  };
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Sign out error:', err);
+    }
+  }, []);
 
-  const getAccessToken = async (): Promise<string | null> => {
+  const getAccessToken = useCallback(async (): Promise<string | null> => {
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token || null;
-  };
+  }, []);
+
+  // Memoize context value to prevent unnecessary re-renders of all consumers
+  const value = useMemo<AuthContextType>(() => ({
+    user,
+    session,
+    member,
+    partner,
+    role,
+    loading,
+    signIn,
+    signUp,
+    signInWithGoogle,
+    sendOTP,
+    verifyOTP,
+    signOut,
+    getAccessToken,
+    refreshUserData,
+  }), [user, session, member, partner, role, loading, signIn, signUp, signInWithGoogle, sendOTP, verifyOTP, signOut, getAccessToken, refreshUserData]);
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      session,
-      member,
-      partner,
-      role,
-      loading,
-      signIn,
-      signUp,
-      signInWithGoogle,
-      sendOTP,
-      verifyOTP,
-      signOut,
-      getAccessToken,
-      refreshUserData,
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
