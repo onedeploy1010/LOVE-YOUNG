@@ -227,13 +227,14 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'loveyoung-auth',
-      // Bump version to invalidate stale cached roles
-      version: 2,
+      version: 3,
       migrate: (_persisted: unknown, version: number) => {
-        if (version < 2) {
-          // Clear everything — force fresh fetch from DB
-          console.info('[auth] cache version upgrade, clearing stale data');
-          return { user: null, member: null, partner: null, role: 'user' };
+        if (version < 3) {
+          // Keep user (preserves login state across refresh).
+          // Clear role/member/partner so they're re-fetched from DB.
+          const p = _persisted as Record<string, unknown> | null;
+          console.info('[auth] cache upgrade v' + version + '→3, refreshing role data');
+          return { user: p?.user ?? null, member: null, partner: null, role: 'user' };
         }
         return _persisted;
       },
@@ -264,8 +265,9 @@ export function initAuthListener() {
   }
 
   supabase.auth.onAuthStateChange(
-    async (_event: AuthChangeEvent, session: Session | null) => {
+    async (event: AuthChangeEvent, session: Session | null) => {
       const s = useAuthStore.getState();
+      console.info('[auth] onAuthStateChange:', event, { hasSession: !!session, cachedUser: !!s.user });
       s._setSession(session);
 
       if (session?.user) {
@@ -282,9 +284,28 @@ export function initAuthListener() {
           console.error('[auth] fetchUserData failed:', err);
         });
         useAuthStore.getState()._setLoading(false);
-      } else {
-        // No session — clear everything
+      } else if (event === 'SIGNED_OUT') {
+        // Only clear auth on explicit sign-out
         s.clearAuth();
+        useAuthStore.getState()._setLoading(false);
+      } else if (s.user) {
+        // Null session but we have a cached user (e.g. INITIAL_SESSION during refresh).
+        // Verify via getSession() before clearing — the token may still be valid.
+        console.info('[auth] null session with cached user, verifying...');
+        const { data: { session: verified } } = await supabase.auth.getSession();
+        if (verified?.user) {
+          console.info('[auth] session verified, keeping cached user');
+          s._setSession(verified);
+          await s.fetchUserData(verified.user.id).catch((err) => {
+            console.error('[auth] fetchUserData failed:', err);
+          });
+        } else {
+          console.info('[auth] session expired, clearing auth');
+          s.clearAuth();
+        }
+        useAuthStore.getState()._setLoading(false);
+      } else {
+        // No session and no cached user — just mark as not loading
         useAuthStore.getState()._setLoading(false);
       }
 
