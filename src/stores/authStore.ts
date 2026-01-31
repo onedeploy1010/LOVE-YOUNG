@@ -76,8 +76,16 @@ export const useAuthStore = create<AuthState>()(
             supabase.from('members').select('*').eq('user_id', userId).single(),
           ]);
 
+          if (userRes.error) {
+            console.warn('[auth] users query error:', userRes.error.message, userRes.error.code);
+          }
+          if (memberRes.error && memberRes.error.code !== 'PGRST116') {
+            console.warn('[auth] members query error:', memberRes.error.message, memberRes.error.code);
+          }
+
           const isAdmin = userRes.data?.role === 'admin';
           const memberData = memberRes.data;
+          console.info('[auth] fetchUserData:', { userId, isAdmin, hasMember: !!memberData, userRole: userRes.data?.role });
 
           if (memberData) {
             const memberObj: Member = {
@@ -127,6 +135,7 @@ export const useAuthStore = create<AuthState>()(
             }
 
             const newRole: UserRole = isAdmin ? 'admin' : partnerObj ? 'partner' : 'member';
+            console.info('[auth] resolved role:', newRole, { isAdmin, hasPartner: !!partnerObj });
             set({ member: memberObj, partner: partnerObj, role: newRole });
           } else {
             set({
@@ -218,6 +227,16 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'loveyoung-auth',
+      // Bump version to invalidate stale cached roles
+      version: 2,
+      migrate: (_persisted: unknown, version: number) => {
+        if (version < 2) {
+          // Clear everything — force fresh fetch from DB
+          console.info('[auth] cache version upgrade, clearing stale data');
+          return { user: null, member: null, partner: null, role: 'user' };
+        }
+        return _persisted;
+      },
       // Only persist these fields to localStorage
       partialize: (state) => ({
         user: state.user,
@@ -259,7 +278,9 @@ export function initAuthListener() {
 
         // If we already showed cached state, fetch in background (no loading spinner)
         // If no cache, we need to fetch before clearing loading
-        await s.fetchUserData(session.user.id).catch(() => {});
+        await s.fetchUserData(session.user.id).catch((err) => {
+          console.error('[auth] fetchUserData failed:', err);
+        });
         useAuthStore.getState()._setLoading(false);
       } else {
         // No session — clear everything
