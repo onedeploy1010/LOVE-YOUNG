@@ -135,9 +135,9 @@ export default function AdminMembersPage() {
     enabled: !!selectedMember?.id && networkOpen,
   });
 
-  // Update member role mutation
+  // Update member role mutation — also ensures partner record exists for partner/admin roles
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ memberId, userId, role }: { memberId: string; userId: string; role: string }) => {
+    mutationFn: async ({ memberId, userId, role, referralCode }: { memberId: string; userId: string; role: string; referralCode: string | null }) => {
       // Update users table
       const { error: userError } = await supabase
         .from("users")
@@ -153,6 +153,34 @@ export default function AdminMembersPage() {
         .eq("id", memberId);
 
       if (memberError) throw memberError;
+
+      // If upgrading to partner or admin, ensure partner record exists
+      if (role === "partner" || role === "admin") {
+        const { data: existingPartner } = await supabase
+          .from("partners")
+          .select("id")
+          .eq("member_id", memberId)
+          .maybeSingle();
+
+        if (!existingPartner) {
+          const { error: partnerError } = await supabase
+            .from("partners")
+            .insert({
+              member_id: memberId,
+              user_id: userId,
+              referral_code: referralCode || null,
+              tier: "phase1",
+              status: "active",
+              ly_balance: 0,
+              cash_wallet_balance: 0,
+              rwa_tokens: 0,
+              total_sales: 0,
+              total_cashback: 0,
+            });
+
+          if (partnerError) throw partnerError;
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-members"] });
@@ -415,7 +443,8 @@ export default function AdminMembersPage() {
                     onValueChange={(role) => updateRoleMutation.mutate({
                       memberId: selectedMember.id,
                       userId: selectedMember.user_id,
-                      role
+                      role,
+                      referralCode: selectedMember.referral_code,
                     })}
                   >
                     <SelectTrigger className="w-full">

@@ -259,10 +259,44 @@ export default function AdminProductsPage() {
     setShowDeleteConfirm(true);
   };
 
+  const productSaveMutation = useMutation({
+    mutationFn: async (data: ProductFormValues) => {
+      const payload = {
+        name: data.name,
+        name_en: data.nameEn || null,
+        description: data.description,
+        price: data.price,
+        price_unit: data.priceUnit,
+        image: data.image,
+        category: data.category,
+        featured: data.featured,
+      };
+      if (editingProduct) {
+        const { error } = await supabase
+          .from("products")
+          .update(payload)
+          .eq("id", editingProduct.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("products")
+          .insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      setShowProductModal(false);
+      setEditingProduct(null);
+      productForm.reset();
+    },
+    onError: (err) => {
+      console.error("Error saving product:", err);
+    },
+  });
+
   const onSubmitProduct = (data: ProductFormValues) => {
-    console.log("Product form submitted:", data);
-    setShowProductModal(false);
-    productForm.reset();
+    productSaveMutation.mutate(data);
   };
 
   const categorySaveMutation = useMutation({
@@ -290,10 +324,28 @@ export default function AdminProductsPage() {
     categorySaveMutation.mutate(data);
   };
 
+  const deleteMutation = useMutation({
+    mutationFn: async (productId: string) => {
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", productId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      setShowDeleteConfirm(false);
+      setEditingProduct(null);
+    },
+    onError: (err) => {
+      console.error("Error deleting product:", err);
+    },
+  });
+
   const handleConfirmDelete = () => {
-    console.log("Deleting product:", editingProduct?.id);
-    setShowDeleteConfirm(false);
-    setEditingProduct(null);
+    if (editingProduct?.id) {
+      deleteMutation.mutate(editingProduct.id);
+    }
   };
 
   const stats = {

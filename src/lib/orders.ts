@@ -16,9 +16,11 @@ export async function createOrder(
   orderData: Omit<InsertOrder, "orderNumber">
 ): Promise<{ order: Order | null; error: Error | null }> {
   const orderNumber = generateOrderNumber();
+  const orderId = crypto.randomUUID();
 
   const now = new Date().toISOString();
   const insertPayload = {
+    id: orderId,
     order_number: orderNumber,
     user_id: orderData.userId || null,
     member_id: orderData.memberId,
@@ -63,10 +65,10 @@ export async function createOrder(
       if (fallback) {
         return { order: mapOrderFromDb(fallback), error: null };
       }
-      // Insert succeeded but can't read back — construct from known data
+      // Insert succeeded but can't read back — use client-generated ID
       return {
         order: {
-          id: '',
+          id: orderId,
           orderNumber,
           userId: orderData.userId || null,
           memberId: orderData.memberId,
