@@ -25,8 +25,8 @@ RETURNS VOID AS $$
 DECLARE
   v_auth_id     UUID;
   v_user_role   TEXT;
-  v_member_id   UUID;
-  v_partner_id  UUID;
+  v_member_id   TEXT;   -- members.id is VARCHAR, not UUID
+  v_partner_id  TEXT;   -- partners.id is VARCHAR, not UUID
   v_final_role  TEXT;
   v_name        TEXT;
 BEGIN
@@ -41,9 +41,9 @@ BEGIN
     RETURN;
   END IF;
 
-  -- Ensure users record exists
+  -- Ensure users record exists (users.id is VARCHAR, cast UUID to text)
   INSERT INTO users (id, email, role, created_at)
-  VALUES (v_auth_id, p_email, COALESCE(p_target_role, 'user'), NOW())
+  VALUES (v_auth_id::text, p_email, COALESCE(p_target_role, 'user'), NOW())
   ON CONFLICT (id) DO UPDATE SET
     email = EXCLUDED.email,
     role = CASE
@@ -53,12 +53,12 @@ BEGIN
     updated_at = NOW();
 
   -- Get current user role (use target if given, else existing)
-  SELECT role INTO v_user_role FROM users WHERE id = v_auth_id;
+  SELECT role INTO v_user_role FROM users WHERE id = v_auth_id::text;
   v_final_role := COALESCE(p_target_role, v_user_role, 'user');
 
   -- Update to target role if provided
   IF p_target_role IS NOT NULL THEN
-    UPDATE users SET role = p_target_role, updated_at = NOW() WHERE id = v_auth_id;
+    UPDATE users SET role = p_target_role, updated_at = NOW() WHERE id = v_auth_id::text;
     v_final_role := p_target_role;
   END IF;
 
@@ -67,9 +67,9 @@ BEGIN
     SELECT id INTO v_member_id FROM members WHERE user_id = v_auth_id::text LIMIT 1;
 
     IF v_member_id IS NULL THEN
-      v_member_id := gen_random_uuid();
+      v_member_id := gen_random_uuid()::text;
       v_name := (SELECT COALESCE(NULLIF(first_name, '') || ' ' || NULLIF(last_name, ''), email)
-                 FROM users WHERE id = v_auth_id);
+                 FROM users WHERE id = v_auth_id::text);
 
       INSERT INTO members (id, user_id, name, email, role, points_balance, referral_code, created_at)
       VALUES (
@@ -148,7 +148,7 @@ BEGIN
     SELECT id INTO v_member_id FROM members WHERE user_id = v_partner.user_id LIMIT 1;
 
     IF v_member_id IS NULL THEN
-      v_member_id := gen_random_uuid();
+      v_member_id := gen_random_uuid()::text;
       INSERT INTO members (id, user_id, email, role, points_balance, referral_code, created_at)
       SELECT
         v_member_id,
@@ -158,7 +158,7 @@ BEGIN
         0,
         'LY' || UPPER(SUBSTRING(MD5(v_member_id::text) FROM 1 FOR 6)),
         NOW()
-      FROM users u WHERE u.id = v_partner.user_id::uuid;
+      FROM users u WHERE u.id::text = v_partner.user_id;
     END IF;
 
     -- Link partner to member
@@ -179,10 +179,10 @@ BEGIN
     SELECT m.id, m.user_id, m.email, m.role
     FROM members m
     WHERE m.user_id IS NOT NULL
-      AND NOT EXISTS (SELECT 1 FROM users u WHERE u.id = m.user_id::uuid)
+      AND NOT EXISTS (SELECT 1 FROM users u WHERE u.id::text = m.user_id)
   LOOP
     INSERT INTO users (id, email, role, created_at)
-    VALUES (v_member.user_id::uuid, v_member.email, COALESCE(v_member.role, 'member'), NOW())
+    VALUES (v_member.user_id, v_member.email, COALESCE(v_member.role, 'member'), NOW())
     ON CONFLICT (id) DO NOTHING;
   END LOOP;
 END $$;
