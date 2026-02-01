@@ -17,7 +17,6 @@ import { createOrder, updateOrderStatus } from "@/lib/orders";
 import { createOrGetMember, saveMemberAddress } from "@/lib/members";
 import { createOrderBill } from "@/lib/bills";
 import { addSalesToBonusPool, processNetworkOrderRwa } from "@/lib/partner";
-import { getStripe } from "@/lib/stripe";
 import { saveCheckoutContext } from "@/lib/checkoutContext";
 import type { Member, MemberAddress } from "@shared/types";
 
@@ -176,11 +175,6 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
     setPaymentError(null);
 
     try {
-      const stripe = await getStripe();
-      if (!stripe) {
-        throw new Error("Stripe is not configured");
-      }
-
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
         {
