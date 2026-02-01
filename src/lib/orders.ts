@@ -50,18 +50,51 @@ export async function createOrder(
   console.info("[orders] Inserting order...", { orderId, orderNumber, userId: insertPayload.user_id });
   const t0 = Date.now();
 
-  // Use INSERT without .select() to avoid RLS SELECT issues causing hangs.
-  // We already have the ID and order number generated client-side.
-  const { error } = await supabase
-    .from("orders")
-    .insert(insertPayload);
+  // Use raw fetch() instead of supabase client to avoid AbortError
+  // caused by Supabase JS aborting requests during token refresh.
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vpzmhglfwomgrashheol.supabase.co';
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwem1oZ2xmd29tZ3Jhc2hoZW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NjE1NjQsImV4cCI6MjA4NTAzNzU2NH0.anMz844nf2-sscp4yX5ctLGMMaRjKy24YKjPWAEDUN4';
 
-  const elapsed = Date.now() - t0;
-  console.info("[orders] Insert completed in", elapsed, "ms", { errorCode: error?.code, errorMsg: error?.message });
+  // Get the current access token from the session
+  let accessToken = supabaseAnonKey;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      accessToken = session.access_token;
+    }
+  } catch {
+    console.warn("[orders] Could not get session, using anon key");
+  }
 
-  if (error) {
-    console.error("[orders] Error creating order:", error);
-    return { order: null, error: new Error(error.message) };
+  let insertError: string | null = null;
+  try {
+    const response = await fetch(`${supabaseUrl}/rest/v1/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": supabaseAnonKey,
+        "Authorization": `Bearer ${accessToken}`,
+        "Prefer": "return=minimal",
+      },
+      body: JSON.stringify(insertPayload),
+    });
+
+    const elapsed = Date.now() - t0;
+    console.info("[orders] Insert completed in", elapsed, "ms", { status: response.status });
+
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      insertError = errBody.message || `HTTP ${response.status}`;
+      console.error("[orders] Insert failed:", errBody);
+    }
+  } catch (fetchErr) {
+    const elapsed = Date.now() - t0;
+    console.error("[orders] Insert fetch error after", elapsed, "ms:", fetchErr);
+    insertError = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
+  }
+
+  if (insertError) {
+    return { order: null, error: new Error(insertError) };
   }
 
   // Return the order using client-generated values (no need to read back)
