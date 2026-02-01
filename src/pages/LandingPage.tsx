@@ -22,10 +22,8 @@ import {
   ShoppingBag
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
-import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import type { Product, Testimonial } from "@shared/types";
 import { useLanguage } from "@/lib/i18n";
 import { Link } from "wouter";
 
@@ -57,14 +55,6 @@ export default function LandingPage() {
   const [orderModalOpen, setOrderModalOpen] = useState(false);
 
   const whatsappLink = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(t("landing.whatsappMessage"))}`;
-
-  const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
-    queryKey: ["/api/products/featured"],
-  });
-
-  const { data: testimonials } = useQuery<Testimonial[]>({
-    queryKey: ["/api/testimonials"],
-  });
 
   return (
     <div className="min-h-screen bg-background">

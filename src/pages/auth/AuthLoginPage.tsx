@@ -81,14 +81,13 @@ export default function AuthLoginPage() {
     }
   };
 
-  // Redirect if already logged in based on role.
-  // Only redirect from the initial "email" step — never during "otp" or "profile"
-  // because verifyOTP sets user in AuthContext before handleVerifyOTP can check
-  // whether the user needs the profile step (race condition).
+  // Unified navigation: redirect when auth is ready.
+  // Triggers on initial load (step="email") AND after OTP verify (step="otp").
+  // Never redirect during "profile" step — new users need to fill in their info.
   useEffect(() => {
-    if (user && !authLoading && step === "email") {
-      // Apply cached referral code for already-logged-in users who have no referrer
+    if (user && !authLoading && step !== "profile") {
       const applyAndRedirect = async () => {
+        // Apply cached referral code for already-logged-in users who have no referrer
         const cachedRef = getCachedReferralCode();
         if (cachedRef && member && !member.referrerId) {
           try {
@@ -167,13 +166,11 @@ export default function AuthLoginPage() {
           variant: "destructive",
         });
       } else {
-        // verifyOTP succeeded. Fetch role from DB and navigate.
+        // verifyOTP succeeded. Update store — do NOT navigate here.
+        // The useEffect above will handle navigation once state is stable.
         const { data: { user: authUser } } = await supabase.auth.getUser();
         if (!authUser) return;
 
-        // Set user in store BEFORE navigating — onAuthStateChange is async
-        // and may not have fired yet. Without this, ProtectedRoute sees
-        // user=null and redirects back to /auth/login, creating a loop.
         const store = useAuthStore.getState();
         store._setUser({
           id: authUser.id,
@@ -181,7 +178,8 @@ export default function AuthLoginPage() {
           user_metadata: authUser.user_metadata,
         });
         await store.fetchUserData(authUser.id);
-        const { role: resolvedRole, member: resolvedMember } = useAuthStore.getState();
+
+        const { member: resolvedMember } = useAuthStore.getState();
 
         if (!resolvedMember) {
           // No member record — new user needs to complete profile
@@ -189,13 +187,8 @@ export default function AuthLoginPage() {
           setStep("profile");
         } else {
           toast({ title: t("auth.loginSuccess") });
-          if (resolvedRole === 'admin') {
-            navigate("/admin");
-          } else if (resolvedRole === 'partner') {
-            navigate("/member/partner");
-          } else {
-            navigate("/member");
-          }
+          // Navigation is handled by the useEffect — step is still "otp",
+          // and user is now set, so useEffect will fire and redirect.
         }
       }
     } catch (err: any) {
@@ -357,13 +350,7 @@ export default function AuthLoginPage() {
     }
   };
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  // AuthGate guarantees loading is done — no loading spinner needed here.
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary/5 to-background p-4">

@@ -29,42 +29,17 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useTranslation } from "@/lib/i18n";
-import { useAuth } from "@/contexts/AuthContext";
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [activeSection, setActiveSection] = useState("dashboard");
-  const { user, loading } = useAuth();
+  // AdminRoute + AuthGate guarantee user is authenticated and has admin role.
 
   const sidebarStyle = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="p-8 max-w-md text-center">
-          <h1 className="text-2xl font-bold mb-4">{t("admin.loginRequired")}</h1>
-          <p className="text-muted-foreground mb-6">{t("admin.loginRequiredDesc")}</p>
-          <Button onClick={() => window.location.href = "/auth/login"} data-testid="button-login">
-            {t("admin.login")}
-          </Button>
-        </Card>
-      </div>
-    );
-  }
-
-  // AdminRoute already verifies admin role, so no need to check again here
 
   const menuItems = [
     { id: "dashboard", label: t("admin.dashboard"), icon: LayoutDashboard },

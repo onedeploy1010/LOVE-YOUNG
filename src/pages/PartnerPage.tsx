@@ -37,9 +37,10 @@ import {
   ArrowUpRight
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Member, Partner } from "@shared/types";
 
 const WHATSAPP_PHONE = "60178228658";
@@ -410,19 +411,7 @@ export default function PartnerPage() {
     }
   ], [t]);
 
-  const { data: user } = useQuery<any>({
-    queryKey: ["/api/auth/user"],
-  });
-
-  const { data: member } = useQuery<Member>({
-    queryKey: ["/api/member/profile"],
-    enabled: !!user,
-  });
-
-  const { data: partner } = useQuery<Partner>({
-    queryKey: ["/api/partner/profile"],
-    enabled: !!member,
-  });
+  const { user, member, partner } = useAuth();
 
   const joinPartnerMutation = useMutation({
     mutationFn: async (data: { tier: string; referralCode?: string }) => {

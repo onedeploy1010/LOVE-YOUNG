@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,7 +11,7 @@ import {
   Home, ShoppingBag, MapPin, Gift, Settings,
   Users, Wallet, TrendingUp, Award, BarChart3,
   Package, ClipboardList, Truck, DollarSign, FileText,
-  ChevronRight, LogOut, Loader2, Menu, X,
+  ChevronRight, LogOut, Menu, X,
   CreditCard, Bell, History, HelpCircle, Share2,
   Building2, Boxes, Receipt, PiggyBank, UserPlus
 } from "lucide-react";
@@ -329,7 +329,7 @@ export default function MemberCenter() {
   const [activeSection, setActiveSection] = useState("account");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const { user, member, partner, role, loading: isLoading, signOut } = useAuth();
+  const { user, member, partner, role, signOut } = useAuth();
 
   const handleLogout = async () => {
     try { await signOut(); } catch (e) { console.error('Logout error:', e); }
@@ -342,38 +342,7 @@ export default function MemberCenter() {
     return true;
   });
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto text-secondary" />
-          <p className="mt-4 text-muted-foreground">{t("member.center.loading")}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle>{t("member.center.loginTitle")}</CardTitle>
-            <CardDescription>{t("member.center.loginDesc")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button
-              className="w-full bg-secondary text-secondary-foreground"
-              onClick={() => window.location.href = "/auth/login"}
-              data-testid="button-login"
-            >
-              {t("member.center.loginButton")}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // MemberRoute + AuthGate guarantee user is authenticated. No loading/user check needed.
 
   const state: UserState = role as UserState;
   const stateInfo = getStateLabel(state, t);

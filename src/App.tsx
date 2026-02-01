@@ -1,14 +1,15 @@
 import { Switch, Route, useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/lib/i18n";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { useAuthStore, initAuthListener } from "@/stores/authStore";
 import { AdminRoute, PartnerRoute, MemberRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { FloatingReferralButton } from "@/components/FloatingReferralButton";
+import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import AuthLoginPage from "@/pages/auth/AuthLoginPage";
 import AuthCallbackPage from "@/pages/auth/AuthCallbackPage";
@@ -187,18 +188,44 @@ function Router() {
   );
 }
 
+/**
+ * AuthGate: the single loading gate for auth state.
+ * Blocks all routes until auth is ready (loading=false or cached user exists).
+ * All children can trust that auth state is stable.
+ */
+function AuthGate({ children }: { children: ReactNode }) {
+  const loading = useAuthStore((s) => s.loading);
+  const user = useAuthStore((s) => s.user);
+
+  useEffect(() => {
+    initAuthListener();
+  }, []);
+
+  // Cached user → render immediately (initAuthListener already set loading=false)
+  // No cached user → wait for loading=false (safety timeout in initAuthListener caps at 3s)
+  if (loading && !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
 function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <LanguageProvider>
-          <AuthProvider>
-            <TooltipProvider>
-              <Toaster />
+          <TooltipProvider>
+            <Toaster />
+            <AuthGate>
               <Router />
               <FloatingReferralButton />
-            </TooltipProvider>
-          </AuthProvider>
+            </AuthGate>
+          </TooltipProvider>
         </LanguageProvider>
       </QueryClientProvider>
     </ErrorBoundary>

@@ -1,6 +1,5 @@
 import { useAuth, type UserRole } from '@/contexts/AuthContext';
-import { useLocation } from 'wouter';
-import { Loader2 } from 'lucide-react';
+import { Redirect } from 'wouter';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -21,50 +20,28 @@ export function ProtectedRoute({
   requiredRole = 'user',
   redirectTo = '/auth/login'
 }: ProtectedRouteProps) {
-  const { user, role, loading } = useAuth();
-  const [, setLocation] = useLocation();
+  const { user, role } = useAuth();
 
-  // Show loading state while checking auth
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // AuthGate guarantees loading is done — no loading check needed here.
 
-  // Check if user is authenticated
   if (!user) {
-    setLocation(redirectTo);
-    return null;
+    return <Redirect to={redirectTo} />;
   }
 
   // Check role requirements
   const requiredRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
   const userRoleLevel = roleHierarchy[role];
 
-  // Check if user has any of the required roles or higher
   const hasAccess = requiredRoles.some(reqRole => {
     const requiredLevel = roleHierarchy[reqRole];
-    // Admin can access everything
     if (role === 'admin') return true;
-    // Check if user's role level is >= required level
     return userRoleLevel >= requiredLevel;
   });
 
   if (!hasAccess) {
-    // Redirect based on user's actual role
-    if (role === 'partner') {
-      setLocation('/member/partner');
-    } else if (role === 'member') {
-      setLocation('/member');
-    } else {
-      setLocation('/');
-    }
-    return null;
+    if (role === 'partner') return <Redirect to="/member/partner" />;
+    if (role === 'member') return <Redirect to="/member" />;
+    return <Redirect to="/" />;
   }
 
   return <>{children}</>;
@@ -88,8 +65,6 @@ export function PartnerRoute({ children }: { children: React.ReactNode }) {
 }
 
 export function MemberRoute({ children }: { children: React.ReactNode }) {
-  // Allow any authenticated user to access member pages
-  // The page itself will prompt them to complete profile if needed
   return (
     <ProtectedRoute requiredRole="user" redirectTo="/auth/login">
       {children}
