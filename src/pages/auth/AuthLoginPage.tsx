@@ -171,8 +171,15 @@ export default function AuthLoginPage() {
         const { data: { user: authUser } } = await supabase.auth.getUser();
         if (!authUser) return;
 
-        // Fetch member/partner/admin role from DB
+        // Set user in store BEFORE navigating — onAuthStateChange is async
+        // and may not have fired yet. Without this, ProtectedRoute sees
+        // user=null and redirects back to /auth/login, creating a loop.
         const store = useAuthStore.getState();
+        store._setUser({
+          id: authUser.id,
+          email: authUser.email || '',
+          user_metadata: authUser.user_metadata,
+        });
         await store.fetchUserData(authUser.id);
         const { role: resolvedRole, member: resolvedMember } = useAuthStore.getState();
 
