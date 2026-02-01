@@ -167,33 +167,27 @@ export default function AuthLoginPage() {
           variant: "destructive",
         });
       } else {
-        // verifyOTP triggers onAuthStateChange → fetchUserData runs automatically.
-        // We need to check if the user has completed their profile, then navigate.
+        // verifyOTP succeeded. Fetch role from DB and navigate.
         const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (authUser) {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('first_name, phone')
-            .eq('id', authUser.id)
-            .single();
+        if (!authUser) return;
 
-          if (!userData?.first_name || !userData?.phone) {
-            setIsNewUser(true);
-            setStep("profile");
+        // Fetch member/partner/admin role from DB
+        const store = useAuthStore.getState();
+        await store.fetchUserData(authUser.id);
+        const { role: resolvedRole, member: resolvedMember } = useAuthStore.getState();
+
+        if (!resolvedMember) {
+          // No member record — new user needs to complete profile
+          setIsNewUser(true);
+          setStep("profile");
+        } else {
+          toast({ title: t("auth.loginSuccess") });
+          if (resolvedRole === 'admin') {
+            navigate("/admin");
+          } else if (resolvedRole === 'partner') {
+            navigate("/member/partner");
           } else {
-            toast({ title: t("auth.loginSuccess") });
-            // Fetch role from DB before navigating — don't rely on useEffect
-            // because step is "otp" and the redirect effect only fires on "email"
-            const store = useAuthStore.getState();
-            await store.fetchUserData(authUser.id);
-            const { role: resolvedRole } = useAuthStore.getState();
-            if (resolvedRole === 'admin') {
-              navigate("/admin");
-            } else if (resolvedRole === 'partner') {
-              navigate("/member/partner");
-            } else {
-              navigate("/member");
-            }
+            navigate("/member");
           }
         }
       }
