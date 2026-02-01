@@ -275,6 +275,17 @@ export function initAuthListener() {
     store._setLoading(false);
   }
 
+  // Safety timeout: if onAuthStateChange doesn't fire within 3s, clear loading
+  // This prevents infinite spinner if Supabase is slow or network fails
+  const safetyTimeout = setTimeout(() => {
+    const currentState = useAuthStore.getState();
+    if (currentState.loading && !currentState._initialized) {
+      console.warn('[auth] Safety timeout: clearing loading after 3s');
+      currentState._setLoading(false);
+      currentState._setInitialized(true);
+    }
+  }, 3000);
+
   supabase.auth.onAuthStateChange(
     async (event: AuthChangeEvent, session: Session | null) => {
       const s = useAuthStore.getState();
@@ -312,6 +323,7 @@ export function initAuthListener() {
       }
 
       useAuthStore.getState()._setInitialized(true);
+      clearTimeout(safetyTimeout);
     }
   );
 }
