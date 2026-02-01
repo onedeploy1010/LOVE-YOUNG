@@ -47,6 +47,32 @@ const getMemberItems = (t: (key: string) => string) => [
   { path: "/member/materials", label: t("member.materials.title"), icon: Image },
 ];
 
+function RoleBadges({ role, t }: { role: string; t: (key: string) => string }) {
+  const badges: Array<{ label: string; icon: React.ElementType; className: string }> = [];
+
+  if (role === "admin") {
+    badges.push({ label: t("member.center.userStates.admin"), icon: Shield, className: "bg-destructive text-destructive-foreground" });
+  }
+  if (role === "admin" || role === "partner") {
+    badges.push({ label: t("member.center.userStates.partner"), icon: Crown, className: "bg-amber-600 text-white" });
+  }
+  badges.push({ label: t("member.center.userStates.member"), icon: Star, className: "" });
+
+  return (
+    <div className="flex flex-wrap gap-1 mt-1">
+      {badges.map((b) => {
+        const Icon = b.icon;
+        return (
+          <Badge key={b.label} variant={b.className ? "default" : "secondary"} className={`gap-1 text-xs ${b.className}`}>
+            <Icon className="w-3 h-3" />
+            {b.label}
+          </Badge>
+        );
+      })}
+    </div>
+  );
+}
+
 export function MemberLayout({ children }: MemberLayoutProps) {
   const { t } = useTranslation();
   const accountItems = getAccountItems(t);
@@ -80,10 +106,7 @@ export function MemberLayout({ children }: MemberLayoutProps) {
           </Avatar>
           <div>
             <p className="font-medium">{member?.name || user?.user_metadata?.first_name || t("member.center.defaultUser")}</p>
-            <Badge variant="default" className="gap-1 text-xs">
-              <Star className="w-3 h-3" />
-              {t("member.center.memberBadge")}
-            </Badge>
+            <RoleBadges role={role} t={t} />
           </div>
         </div>
       </div>
@@ -138,7 +161,6 @@ export function MemberLayout({ children }: MemberLayoutProps) {
         {/* Role-based navigation entries */}
         {(showPartnerEntry || showAdminEntry) && (
           <div className="border-t pt-4">
-            <p className="text-xs text-muted-foreground mb-2 px-2">{t("member.center.sections.member.title")}</p>
             <div className="space-y-1">
               {showPartnerEntry && (
                 <Button
