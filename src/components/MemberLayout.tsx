@@ -195,10 +195,12 @@ export function MemberLayout({ children }: MemberLayoutProps) {
         <div className="mb-3">
           <LanguageSwitcher testId="button-language-switcher-sidebar" />
         </div>
-        <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigate("/member")} data-testid="button-back-center">
-          <ArrowLeft className="w-4 h-4" />
-          {t("member.center.backToCenter")}
-        </Button>
+        {location !== "/member" && (
+          <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigate("/member")} data-testid="button-back-center">
+            <ArrowLeft className="w-4 h-4" />
+            {t("member.center.backToCenter")}
+          </Button>
+        )}
         <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => navigate("/")} data-testid="button-back-home">
           <Home className="w-4 h-4" />
           {t("nav.home")}
@@ -239,10 +241,12 @@ export function MemberLayout({ children }: MemberLayoutProps) {
 
           <div className="flex items-center gap-3">
             <LanguageSwitcher testId="button-language-switcher-header" />
-            <Button variant="ghost" size="sm" className="hidden sm:flex text-primary-foreground gap-2" onClick={() => navigate("/member")} data-testid="button-header-center">
-              <ArrowLeft className="w-4 h-4" />
-              {t("member.center.backToCenter")}
-            </Button>
+            {location !== "/member" && (
+              <Button variant="ghost" size="sm" className="hidden sm:flex text-primary-foreground gap-2" onClick={() => navigate("/member")} data-testid="button-header-center">
+                <ArrowLeft className="w-4 h-4" />
+                {t("member.center.backToCenter")}
+              </Button>
+            )}
 
             <div className="flex items-center gap-2">
               <Avatar className="w-8 h-8 border border-secondary/50">

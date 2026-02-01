@@ -83,15 +83,11 @@ export const useAuthStore = create<AuthState>()(
             console.warn('[auth] members query error:', memberRes.error.message, memberRes.error.code);
           }
 
-          // If the users query failed entirely (e.g. network/abort), keep cached role
-          if (userRes.error && !userRes.data) {
-            console.warn('[auth] users query failed, keeping cached role');
-            return;
-          }
-
-          const isAdmin = userRes.data?.role === 'admin';
           const memberData = memberRes.data;
-          console.info('[auth] fetchUserData:', { userId, isAdmin, hasMember: !!memberData, userRole: userRes.data?.role });
+
+          // Determine admin from public.users OR members.role (fallback if users query fails due to RLS)
+          const isAdmin = userRes.data?.role === 'admin' || memberData?.role === 'admin';
+          console.info('[auth] fetchUserData:', { userId, isAdmin, hasMember: !!memberData, userRole: userRes.data?.role, memberRole: memberData?.role });
 
           if (memberData) {
             const memberObj: Member = {
@@ -288,6 +284,9 @@ export function initAuthListener() {
 
   supabase.auth.onAuthStateChange(
     async (event: AuthChangeEvent, session: Session | null) => {
+      // Cancel safety timeout immediately when ANY auth event fires
+      clearTimeout(safetyTimeout);
+
       const s = useAuthStore.getState();
       console.info('[auth] onAuthStateChange:', event, { hasSession: !!session, cachedUser: !!s.user });
       s._setSession(session);
@@ -300,30 +299,22 @@ export function initAuthListener() {
         };
         s._setUser(supabaseUser);
 
-        // If we already showed cached state, fetch in background (no loading spinner)
-        // If no cache, we need to fetch before clearing loading
+        // Fetch user data — this determines role (member/partner/admin)
         await s.fetchUserData(session.user.id).catch((err) => {
           console.error('[auth] fetchUserData failed:', err);
         });
         useAuthStore.getState()._setLoading(false);
       } else if (event === 'SIGNED_OUT') {
-        // Only clear auth on explicit sign-out
         s.clearAuth();
         useAuthStore.getState()._setLoading(false);
       } else if (s.user) {
-        // Null session but we have a cached user (e.g. during token refresh).
-        // Don't clear — wait for TOKEN_REFRESHED or SIGNED_OUT event.
-        // Calling getSession() here is unreliable because the refresh may still
-        // be in progress, returning null even though a valid session is coming.
         console.info('[auth] null session with cached user, keeping cached state');
         useAuthStore.getState()._setLoading(false);
       } else {
-        // No session and no cached user — just mark as not loading
         useAuthStore.getState()._setLoading(false);
       }
 
       useAuthStore.getState()._setInitialized(true);
-      clearTimeout(safetyTimeout);
     }
   );
 }
