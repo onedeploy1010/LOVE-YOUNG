@@ -1,5 +1,7 @@
 import { useAuth, type UserRole } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/stores/authStore';
 import { Redirect } from 'wouter';
+import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -15,30 +17,43 @@ const roleHierarchy: Record<UserRole, number> = {
   admin: 3,
 };
 
+function checkRoleAccess(role: UserRole, requiredRole: UserRole | UserRole[]): boolean {
+  const requiredRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+  const userRoleLevel = roleHierarchy[role];
+  return requiredRoles.some(reqRole => {
+    const requiredLevel = roleHierarchy[reqRole];
+    if (role === 'admin') return true;
+    return userRoleLevel >= requiredLevel;
+  });
+}
+
 export function ProtectedRoute({
   children,
   requiredRole = 'user',
   redirectTo = '/auth/login'
 }: ProtectedRouteProps) {
   const { user, role } = useAuth();
-
-  // AuthGate guarantees loading is done — no loading check needed here.
+  const initialized = useAuthStore((s) => s._initialized);
 
   if (!user) {
+    // No cached user at all — redirect to login
     return <Redirect to={redirectTo} />;
   }
 
-  // Check role requirements
-  const requiredRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
-  const userRoleLevel = roleHierarchy[role];
-
-  const hasAccess = requiredRoles.some(reqRole => {
-    const requiredLevel = roleHierarchy[reqRole];
-    if (role === 'admin') return true;
-    return userRoleLevel >= requiredLevel;
-  });
+  const hasAccess = checkRoleAccess(role, requiredRole);
 
   if (!hasAccess) {
+    // Cached role doesn't grant access, but auth may still be loading.
+    // Wait for fetchUserData to complete before redirecting — the cached
+    // role may be stale (e.g. 'user' from a previous broken session).
+    if (!initialized) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      );
+    }
+    // Auth is fully initialized, role is confirmed — redirect
     if (role === 'partner') return <Redirect to="/member/partner" />;
     if (role === 'member') return <Redirect to="/member" />;
     return <Redirect to="/" />;
