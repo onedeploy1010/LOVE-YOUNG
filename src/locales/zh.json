@@ -1179,7 +1179,9 @@
       },
       "badges": {
         "pendingActivation": "待激活"
-      }
+      },
+      "upgradePrompt": "请先完成首次购物，成为会员后即可使用此功能",
+      "goShopping": "去购物"
     },
     "orders": {
       "title": "订单记录",

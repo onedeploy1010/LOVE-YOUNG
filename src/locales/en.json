@@ -1179,7 +1179,9 @@
       },
       "badges": {
         "pendingActivation": "Pending"
-      }
+      },
+      "upgradePrompt": "Please make your first purchase to become a member and unlock this feature",
+      "goShopping": "Go Shopping"
     },
     "orders": {
       "title": "Order History",

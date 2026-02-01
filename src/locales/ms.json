@@ -1179,7 +1179,9 @@
       },
       "badges": {
         "pendingActivation": "Menunggu"
-      }
+      },
+      "upgradePrompt": "Sila buat pembelian pertama untuk menjadi ahli dan membuka ciri ini",
+      "goShopping": "Pergi Membeli"
     },
     "orders": {
       "title": "Sejarah Pesanan",
