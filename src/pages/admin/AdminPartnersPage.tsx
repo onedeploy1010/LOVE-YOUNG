@@ -190,50 +190,50 @@ export default function AdminPartnersPage() {
                     {filteredPartners.map((partner) => (
                       <div
                         key={partner.id}
-                        className="flex items-center justify-between p-4 border rounded-lg"
+                        className="p-3 md:p-4 border rounded-lg"
                         data-testid={`partner-${partner.id}`}
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <div className="flex items-start gap-3 md:gap-4">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex-shrink-0 flex items-center justify-center">
                             <Users className="w-5 h-5 text-primary" />
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                               <span className="font-medium">{partner.member_name || "Partner"}</span>
-                              <span className="font-mono text-sm text-muted-foreground">{partner.referral_code}</span>
+                              <span className="font-mono text-xs sm:text-sm text-muted-foreground">{partner.referral_code}</span>
                               <Badge variant={partner.status === "active" ? "default" : "outline"}>
                                 {partner.status === "active" ? t("admin.partnersPage.activated") : t("admin.partnersPage.pendingReview")}
                               </Badge>
                             </div>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs sm:text-sm text-muted-foreground mt-1">
                               <span>LY: {partner.ly_balance}</span>
                               <span>RWA: {partner.rwa_tokens}</span>
-                              <span>{t("admin.partnersPage.package")}: Phase {partner.tier === "phase1" ? 1 : partner.tier === "phase2" ? 2 : 3}</span>
+                              <span className="hidden sm:inline">{t("admin.partnersPage.package")}: Phase {partner.tier === "phase1" ? 1 : partner.tier === "phase2" ? 2 : 3}</span>
                               <span>销售额: RM {(partner.total_sales / 100).toFixed(2)}</span>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {partner.status === "pending" && (
-                            <Button
-                              size="sm"
-                              className="gap-1"
-                              onClick={() => activateMutation.mutate(partner.id)}
-                              disabled={activateMutation.isPending}
-                              data-testid={`button-activate-${partner.id}`}
-                            >
-                              {activateMutation.isPending ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <CheckCircle className="w-4 h-4" />
-                              )}
-                              {t("admin.partnersPage.activate")}
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {partner.status === "pending" && (
+                              <Button
+                                size="sm"
+                                className="gap-1"
+                                onClick={() => activateMutation.mutate(partner.id)}
+                                disabled={activateMutation.isPending}
+                                data-testid={`button-activate-${partner.id}`}
+                              >
+                                {activateMutation.isPending ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="w-4 h-4" />
+                                )}
+                                <span className="hidden sm:inline">{t("admin.partnersPage.activate")}</span>
+                              </Button>
+                            )}
+                            <Button variant="outline" size="sm" className="gap-1" data-testid={`button-view-${partner.id}`}>
+                              <Eye className="w-4 h-4" />
+                              <span className="hidden sm:inline">{t("admin.partnersPage.viewDetails")}</span>
                             </Button>
-                          )}
-                          <Button variant="outline" size="sm" className="gap-1" data-testid={`button-view-${partner.id}`}>
-                            <Eye className="w-4 h-4" />
-                            {t("admin.partnersPage.viewDetails")}
-                          </Button>
+                          </div>
                         </div>
                       </div>
                     ))}

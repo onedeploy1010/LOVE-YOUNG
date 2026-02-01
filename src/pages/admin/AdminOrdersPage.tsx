@@ -174,14 +174,14 @@ export default function AdminOrdersPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-serif text-primary" data-testid="text-orders-title">{t("admin.ordersPage.title")}</h1>
-            <p className="text-muted-foreground">{t("admin.ordersPage.subtitle")}</p>
+            <h1 className="text-xl sm:text-2xl font-serif text-primary" data-testid="text-orders-title">{t("admin.ordersPage.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("admin.ordersPage.subtitle")}</p>
           </div>
-          <Button variant="outline" onClick={() => refetch()} disabled={isLoading}>
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading} className="flex-shrink-0">
             <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
         </div>
 
@@ -239,13 +239,15 @@ export default function AdminOrdersPage() {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="all" data-testid="tab-all">{t("admin.ordersPage.tabAll")}</TabsTrigger>
-                <TabsTrigger value="pending" data-testid="tab-pending">{t("admin.ordersPage.pendingPayment")}</TabsTrigger>
-                <TabsTrigger value="processing" data-testid="tab-processing">{t("admin.ordersPage.preparing")}</TabsTrigger>
-                <TabsTrigger value="shipped" data-testid="tab-shipped">{t("admin.ordersPage.shipping")}</TabsTrigger>
-                <TabsTrigger value="delivered" data-testid="tab-delivered">{t("admin.ordersPage.completed")}</TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto -mx-1 px-1">
+                <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-5">
+                  <TabsTrigger value="all" className="flex-1 md:flex-none" data-testid="tab-all">{t("admin.ordersPage.tabAll")}</TabsTrigger>
+                  <TabsTrigger value="pending" className="flex-1 md:flex-none" data-testid="tab-pending">{t("admin.ordersPage.pendingPayment")}</TabsTrigger>
+                  <TabsTrigger value="processing" className="flex-1 md:flex-none" data-testid="tab-processing">{t("admin.ordersPage.preparing")}</TabsTrigger>
+                  <TabsTrigger value="shipped" className="flex-1 md:flex-none" data-testid="tab-shipped">{t("admin.ordersPage.shipping")}</TabsTrigger>
+                  <TabsTrigger value="delivered" className="flex-1 md:flex-none" data-testid="tab-delivered">{t("admin.ordersPage.completed")}</TabsTrigger>
+                </TabsList>
+              </div>
 
               <TabsContent value={activeTab} className="mt-4">
                 {isLoading ? (
@@ -266,37 +268,37 @@ export default function AdminOrdersPage() {
                       return (
                         <div
                           key={order.id}
-                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                          className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                           data-testid={`order-${order.orderNumber}`}
                         >
-                          <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${statusConfig.bg}`}>
+                          <div className="flex items-center gap-3 md:gap-4">
+                            <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${statusConfig.bg}`}>
                               <StatusIcon className={`w-5 h-5 ${statusConfig.color}`} />
                             </div>
-                            <div>
-                              <div className="flex items-center gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                                 <span className="font-mono text-sm font-medium">#{order.orderNumber}</span>
                                 <Badge variant="outline">{statusConfig.label}</Badge>
                               </div>
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                <span>{order.customerName}</span>
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-muted-foreground mt-0.5">
+                                <span className="truncate max-w-[120px] md:max-w-none">{order.customerName}</span>
                                 <span>{items.length} {t("admin.ordersPage.items")}</span>
-                                <span>{formatDate(order.createdAt)}</span>
+                                <span className="hidden sm:inline">{formatDate(order.createdAt)}</span>
                               </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <span className="font-bold text-primary">{formatPrice(order.totalAmount)}</span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="gap-1"
-                              onClick={() => handleViewDetails(order)}
-                              data-testid={`button-view-${order.orderNumber}`}
-                            >
-                              <Eye className="w-4 h-4" />
-                              {t("admin.ordersPage.viewDetails")}
-                            </Button>
+                            <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+                              <span className="font-bold text-primary text-sm md:text-base">{formatPrice(order.totalAmount)}</span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-1"
+                                onClick={() => handleViewDetails(order)}
+                                data-testid={`button-view-${order.orderNumber}`}
+                              >
+                                <Eye className="w-4 h-4" />
+                                <span className="hidden sm:inline">{t("admin.ordersPage.viewDetails")}</span>
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       );
@@ -345,7 +347,7 @@ export default function AdminOrdersPage() {
               {/* Customer Info */}
               <Card className="p-4">
                 <h4 className="font-semibold mb-3">Customer Information</h4>
-                <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                   <div>
                     <span className="text-muted-foreground">Name:</span>
                     <span className="ml-2 font-medium">{selectedOrder.customerName}</span>

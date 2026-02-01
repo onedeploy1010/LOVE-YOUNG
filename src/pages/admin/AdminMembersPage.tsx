@@ -257,7 +257,7 @@ export default function AdminMembersPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <Card>
             <CardContent className="p-4 flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -325,12 +325,14 @@ export default function AdminMembersPage() {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="all" data-testid="tab-all">{t("admin.membersPage.tabAll")} ({stats.total})</TabsTrigger>
-                <TabsTrigger value="member" data-testid="tab-member">{t("admin.membersPage.tabMember")} ({stats.members})</TabsTrigger>
-                <TabsTrigger value="partner" data-testid="tab-partner">{t("admin.membersPage.tabPartner")} ({stats.partners})</TabsTrigger>
-                <TabsTrigger value="admin" data-testid="tab-admin">{t("admin.membersPage.tabAdmin")} ({stats.admins})</TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto -mx-1 px-1">
+                <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-4">
+                  <TabsTrigger value="all" className="flex-1 md:flex-none" data-testid="tab-all">{t("admin.membersPage.tabAll")} ({stats.total})</TabsTrigger>
+                  <TabsTrigger value="member" className="flex-1 md:flex-none" data-testid="tab-member">{t("admin.membersPage.tabMember")} ({stats.members})</TabsTrigger>
+                  <TabsTrigger value="partner" className="flex-1 md:flex-none" data-testid="tab-partner">{t("admin.membersPage.tabPartner")} ({stats.partners})</TabsTrigger>
+                  <TabsTrigger value="admin" className="flex-1 md:flex-none" data-testid="tab-admin">{t("admin.membersPage.tabAdmin")} ({stats.admins})</TabsTrigger>
+                </TabsList>
+              </div>
 
               <TabsContent value={activeTab} className="mt-4">
                 {isLoading ? (
@@ -351,28 +353,28 @@ export default function AdminMembersPage() {
                       return (
                         <div
                           key={member.id}
-                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                          className="p-3 md:p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                           data-testid={`member-${member.id}`}
                         >
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <div className="flex items-start gap-3 md:gap-4">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex-shrink-0 flex items-center justify-center">
                               <RoleIcon className="w-5 h-5 text-primary" />
                             </div>
-                            <div>
-                              <div className="flex items-center gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-1.5">
                                 <span className="font-medium">{member.name}</span>
                                 {badges.map((b) => (
-                                  <Badge key={b.label} variant={b.variant}>{b.label}</Badge>
+                                  <Badge key={b.label} variant={b.variant} className="text-xs">{b.label}</Badge>
                                 ))}
-                                <span className="font-mono text-xs text-muted-foreground">{member.referral_code}</span>
                               </div>
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                  <Mail className="w-3 h-3" />
-                                  {member.email}
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-muted-foreground mt-0.5">
+                                <span className="font-mono text-xs">{member.referral_code}</span>
+                                <span className="hidden sm:flex items-center gap-1 truncate">
+                                  <Mail className="w-3 h-3 flex-shrink-0" />
+                                  <span className="truncate">{member.email}</span>
                                 </span>
                                 {member.phone && (
-                                  <span className="flex items-center gap-1">
+                                  <span className="hidden md:flex items-center gap-1">
                                     <Phone className="w-3 h-3" />
                                     {member.phone}
                                   </span>
@@ -383,34 +385,40 @@ export default function AdminMembersPage() {
                                   推荐人: {member.referrer_name}
                                 </p>
                               )}
+                              {/* Stats shown inline on mobile */}
+                              <div className="flex items-center gap-3 mt-1.5 md:hidden text-xs text-muted-foreground">
+                                <span>{member.points_balance} {t("admin.membersPage.points")}</span>
+                                <span>{member.orders_count} 订单</span>
+                                <span>{member.downline_count} 下级</span>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <div className="text-right hidden md:block">
-                              <p className="text-sm">{member.points_balance} {t("admin.membersPage.points")}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {member.orders_count} 订单 · {member.downline_count} 下级
-                              </p>
+                            <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+                              <div className="text-right hidden md:block">
+                                <p className="text-sm">{member.points_balance} {t("admin.membersPage.points")}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {member.orders_count} 订单 · {member.downline_count} 下级
+                                </p>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-1"
+                                onClick={() => handleViewNetwork(member)}
+                                data-testid={`button-network-${member.id}`}
+                              >
+                                <Network className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-1"
+                                onClick={() => handleViewDetails(member)}
+                                data-testid={`button-view-${member.id}`}
+                              >
+                                <Eye className="w-4 h-4" />
+                                <span className="hidden sm:inline">{t("admin.membersPage.viewDetails")}</span>
+                              </Button>
                             </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="gap-1"
-                              onClick={() => handleViewNetwork(member)}
-                              data-testid={`button-network-${member.id}`}
-                            >
-                              <Network className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="gap-1"
-                              onClick={() => handleViewDetails(member)}
-                              data-testid={`button-view-${member.id}`}
-                            >
-                              <Eye className="w-4 h-4" />
-                              {t("admin.membersPage.viewDetails")}
-                            </Button>
                           </div>
                         </div>
                       );

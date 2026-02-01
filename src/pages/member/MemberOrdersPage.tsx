@@ -201,13 +201,15 @@ export default function MemberOrdersPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="all" data-testid="tab-all">{t("member.orders.tabAll")}</TabsTrigger>
-            <TabsTrigger value="pending" data-testid="tab-pending">{t("member.orders.tabPending")}</TabsTrigger>
-            <TabsTrigger value="shipped" data-testid="tab-shipped">{t("member.orders.tabShipped")}</TabsTrigger>
-            <TabsTrigger value="delivered" data-testid="tab-delivered">{t("member.orders.tabDelivered")}</TabsTrigger>
-            <TabsTrigger value="cancelled" data-testid="tab-cancelled">{t("member.orders.tabCancelled")}</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-1 px-1">
+            <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-5">
+              <TabsTrigger value="all" className="flex-1 md:flex-none" data-testid="tab-all">{t("member.orders.tabAll")}</TabsTrigger>
+              <TabsTrigger value="pending" className="flex-1 md:flex-none" data-testid="tab-pending">{t("member.orders.tabPending")}</TabsTrigger>
+              <TabsTrigger value="shipped" className="flex-1 md:flex-none" data-testid="tab-shipped">{t("member.orders.tabShipped")}</TabsTrigger>
+              <TabsTrigger value="delivered" className="flex-1 md:flex-none" data-testid="tab-delivered">{t("member.orders.tabDelivered")}</TabsTrigger>
+              <TabsTrigger value="cancelled" className="flex-1 md:flex-none" data-testid="tab-cancelled">{t("member.orders.tabCancelled")}</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value={activeTab} className="mt-4">
             {filteredOrders.length === 0 ? (
@@ -231,10 +233,10 @@ export default function MemberOrdersPage() {
                   const totalItems = items.reduce((sum, i) => sum + (i.quantity || 1), 0);
                   return (
                     <Card key={order.id} className="overflow-hidden" data-testid={`order-${order.id}`}>
-                      <div className="flex items-center justify-between p-4 bg-muted/30 border-b">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-mono text-muted-foreground">#{order.order_number}</span>
-                          <span className="text-sm text-muted-foreground">{formatDate(order.created_at)}</span>
+                      <div className="flex items-center justify-between p-3 sm:p-4 bg-muted/30 border-b gap-2">
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                          <span className="text-xs sm:text-sm font-mono text-muted-foreground truncate">#{order.order_number}</span>
+                          <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0">{formatDate(order.created_at)}</span>
                         </div>
                         <Badge variant={statusConfig.badgeVariant} className="gap-1">
                           <StatusIcon className="w-3 h-3" />
@@ -271,18 +273,18 @@ export default function MemberOrdersPage() {
                             </div>
                           )}
                         </div>
-                        <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                          <span className="text-muted-foreground">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 pt-4 border-t">
+                          <span className="text-muted-foreground text-sm">
                             {t("member.orders.totalItems").replace("{count}", String(totalItems || 1))}
                           </span>
-                          <div className="flex items-center gap-4">
-                            <span className="font-bold text-lg">
+                          <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                            <span className="font-bold text-base sm:text-lg">
                               {t("member.orders.total")}: <span className="text-primary">RM {(order.total_amount / 100).toFixed(2)}</span>
                             </span>
                             <Button
                               variant="outline"
                               size="sm"
-                              className="gap-1"
+                              className="gap-1 flex-shrink-0"
                               onClick={() => { setSelectedOrder(order); setDetailsOpen(true); }}
                               data-testid={`button-detail-${order.id}`}
                             >

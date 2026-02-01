@@ -157,20 +157,20 @@ export default function AdminProductionPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-serif" data-testid="text-production-title">
               {t("admin.productionPage.title")}
             </h1>
             <p className="text-muted-foreground">{t("admin.productionPage.subtitle")}</p>
           </div>
-          <Button className="gap-2 bg-secondary text-secondary-foreground" data-testid="button-new-batch">
+          <Button className="gap-2 bg-secondary text-secondary-foreground self-start sm:self-auto" data-testid="button-new-batch">
             <Plus className="w-4 h-4" />
             {t("admin.productionPage.newBatch")}
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <Card>
             <CardContent className="p-4 flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -226,9 +226,9 @@ export default function AdminProductionPage() {
           <TabsContent value="batches" className="space-y-4">
             <Card>
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                   <CardTitle className="text-lg">{t("admin.productionPage.batchList")}</CardTitle>
-                  <div className="relative w-64">
+                  <div className="relative w-full sm:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
                       placeholder={t("admin.productionPage.searchPlaceholder")}
@@ -255,17 +255,17 @@ export default function AdminProductionPage() {
                         onClick={() => setSelectedBatch(batch.id === selectedBatch ? null : batch.id)}
                         data-testid={`batch-${batch.id}`}
                       >
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <Factory className="w-5 h-5 text-primary" />
-                            <div>
-                              <p className="font-medium">{batch.batch_number}</p>
-                              <p className="text-sm text-muted-foreground">{batch.product_name}</p>
+                        <div className="flex items-start sm:items-center justify-between mb-3 gap-2">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <Factory className="w-5 h-5 text-primary flex-shrink-0" />
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{batch.batch_number}</p>
+                              <p className="text-sm text-muted-foreground truncate">{batch.product_name}</p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
+                          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 sm:gap-3 flex-shrink-0">
                             {getStatusBadge(batch.status)}
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-xs sm:text-sm text-muted-foreground">
                               {t("admin.productionPage.qty")}: {batch.actual_qty ?? batch.planned_qty}
                             </span>
                           </div>
@@ -277,11 +277,11 @@ export default function AdminProductionPage() {
                             <span>{batch.current_step}/{batch.total_steps} {t("admin.productionPage.steps")}</span>
                           </div>
                           <Progress value={(batch.current_step / batch.total_steps) * 100} className="h-2" />
-                          <div className="flex justify-between text-xs text-muted-foreground">
+                          <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground gap-1">
                             {stepLabels.map((label, idx) => (
                               <span
                                 key={idx}
-                                className={idx < batch.current_step ? "text-primary font-medium" : ""}
+                                className={`text-center truncate ${idx < batch.current_step ? "text-primary font-medium" : ""}`}
                               >
                                 {label}
                               </span>

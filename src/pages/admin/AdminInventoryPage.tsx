@@ -278,10 +278,10 @@ export default function AdminInventoryPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-serif" data-testid="text-inventory-title">{t("admin.inventoryPage.title")}</h1>
-            <p className="text-muted-foreground">{t("admin.inventoryPage.subtitle")}</p>
+            <h1 className="text-xl sm:text-2xl font-serif" data-testid="text-inventory-title">{t("admin.inventoryPage.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("admin.inventoryPage.subtitle")}</p>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -388,7 +388,8 @@ export default function AdminInventoryPage() {
                 <p className="text-muted-foreground">暂无库存数据</p>
               </div>
             ) : (
-              <Table>
+              <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+              <Table className="min-w-[640px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("admin.inventoryPage.itemName")}</TableHead>
@@ -441,6 +442,7 @@ export default function AdminInventoryPage() {
                   })}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -458,7 +460,8 @@ export default function AdminInventoryPage() {
                 <p className="text-muted-foreground">暂无库存变动记录</p>
               </div>
             ) : (
-              <Table>
+              <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+              <Table className="min-w-[600px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("admin.inventoryPage.date")}</TableHead>
@@ -488,6 +491,7 @@ export default function AdminInventoryPage() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>
