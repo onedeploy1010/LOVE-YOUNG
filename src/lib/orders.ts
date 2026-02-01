@@ -47,16 +47,49 @@ export async function createOrder(
     updated_at: now,
   };
 
-  const { data, error } = await supabase
+  console.info("[orders] Inserting order...", { orderId, orderNumber, userId: insertPayload.user_id });
+  const t0 = Date.now();
+
+  // Race the insert against a 20s timeout to avoid infinite hang
+  const insertPromise = supabase
     .from("orders")
     .insert(insertPayload)
     .select()
     .single();
 
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error("Order insert timed out after 20s")), 20000)
+  );
+
+  let data: Record<string, unknown> | null = null;
+  let error: { code?: string; message: string } | null = null;
+  try {
+    const result = await Promise.race([insertPromise, timeoutPromise]);
+    data = result.data;
+    error = result.error;
+  } catch (e) {
+    console.error("[orders] Insert threw/timed out:", e);
+    // On timeout, the order may still have been inserted.
+    // Try to read it back by order_number.
+    const { data: fallback } = await supabase
+      .from("orders")
+      .select("*")
+      .eq("order_number", orderNumber)
+      .maybeSingle();
+    if (fallback) {
+      console.info("[orders] Found order after timeout:", fallback.id);
+      return { order: mapOrderFromDb(fallback), error: null };
+    }
+    return { order: null, error: e instanceof Error ? e : new Error(String(e)) };
+  }
+
+  console.info("[orders] Insert completed in", Date.now() - t0, "ms", { hasData: !!data, errorCode: error?.code });
+
   if (error) {
     // RLS may block reading back guest orders (user_id IS NULL).
     // If the insert itself succeeded but SELECT failed, look up by order_number.
     if (error.code === 'PGRST116') {
+      console.info("[orders] PGRST116 — insert OK but SELECT blocked by RLS, using fallback");
       const { data: fallback } = await supabase
         .from("orders")
         .select("*")
@@ -97,11 +130,11 @@ export async function createOrder(
         error: null,
       };
     }
-    console.error("Error creating order:", error);
+    console.error("[orders] Error creating order:", error);
     return { order: null, error: new Error(error.message) };
   }
 
-  return { order: mapOrderFromDb(data), error: null };
+  return { order: mapOrderFromDb(data!), error: null };
 }
 
 // Update order status
