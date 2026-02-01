@@ -141,6 +141,7 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
 
   const createOrderMutation = useMutation({
     mutationFn: async () => {
+      console.info("[checkout] Creating order...", { userId: user?.id, price: currentPrice });
       // Enrich items with SKU for inventory tracking
       const orderItems = enrichOrderItems(selections.map(s => ({
         flavor: s.key,
@@ -176,10 +177,16 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
       });
 
       if (error || !order) {
+        console.error("[checkout] createOrder failed:", error);
         throw error || new Error("Failed to create order");
       }
 
+      console.info("[checkout] Order created:", { id: order.id, orderNumber: order.orderNumber });
       return order;
+    },
+    onError: (error) => {
+      console.error("[checkout] Order mutation error:", error);
+      setPaymentError(error instanceof Error ? error.message : "Failed to create order");
     },
     onSuccess: async (order) => {
       setOrderNumber(order.orderNumber);
@@ -261,12 +268,18 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
 
   // Handle Stripe Payment — uses supabase.functions.invoke for proper auth/URL handling
   const handleStripePayment = async () => {
-    if (!orderId || !orderNumber) return;
+    console.info("[checkout] handleStripePayment called", { orderId, orderNumber });
+    if (!orderId || !orderNumber) {
+      console.error("[checkout] Missing orderId or orderNumber, aborting payment");
+      setPaymentError("Order not found. Please try again.");
+      return;
+    }
 
     setIsProcessingPayment(true);
     setPaymentError(null);
 
     try {
+      console.info("[checkout] Invoking create-checkout edge function...");
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: {
           orderId,
@@ -943,6 +956,12 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
                   )}
                 </div>
               </Card>
+
+              {paymentError && (
+                <Card className="p-4 bg-destructive/10 border-destructive">
+                  <p className="text-sm text-destructive">{paymentError}</p>
+                </Card>
+              )}
 
               <Button
                 className="w-full gap-3"

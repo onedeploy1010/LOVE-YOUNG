@@ -187,8 +187,16 @@ export default function AuthLoginPage() {
           setStep("profile");
         } else {
           toast({ title: t("auth.loginSuccess") });
-          // Navigation is handled by the useEffect — step is still "otp",
-          // and user is now set, so useEffect will fire and redirect.
+          // Navigate directly — don't rely on useEffect which can fire
+          // mid-await with stale role data due to React re-render timing
+          const { role: resolvedRole } = useAuthStore.getState();
+          if (resolvedRole === 'admin') {
+            navigate("/admin");
+          } else if (resolvedRole === 'partner') {
+            navigate("/member/partner");
+          } else {
+            navigate("/member");
+          }
         }
       }
     } catch (err: any) {
