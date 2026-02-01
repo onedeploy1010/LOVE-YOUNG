@@ -9,6 +9,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
+    // Bypass Web Locks API — browser extensions (MetaMask, etc.) can interfere
+    // with navigator.locks causing AbortError on all Supabase requests.
+    // A no-op lock just runs the function directly without locking.
+    lock: async (_name: string, _acquireTimeout: number, fn: () => Promise<unknown>) => {
+      return fn();
+    },
   },
 });
 

@@ -70,14 +70,31 @@ export const useAuthStore = create<AuthState>()(
       }),
 
       fetchUserData: async (userId: string) => {
-        try {
-          // Run all three queries in parallel for speed.
-          // is_admin() is SECURITY DEFINER — always works regardless of RLS.
+        // Helper: check if all results have AbortError (browser extension interference)
+        const isAbortError = (res: { error: { message?: string } | null }) =>
+          res.error?.message?.includes('AbortError') || res.error?.message?.includes('signal is aborted');
+
+        const doFetch = async () => {
           const [userRes, memberRes, adminRpc] = await Promise.all([
             supabase.from('users').select('role').eq('id', userId).single(),
             supabase.from('members').select('*').eq('user_id', userId).single(),
             supabase.rpc('is_admin'),
           ]);
+          return { userRes, memberRes, adminRpc };
+        };
+
+        try {
+          // Run all three queries in parallel for speed.
+          // is_admin() is SECURITY DEFINER — always works regardless of RLS.
+          let { userRes, memberRes, adminRpc } = await doFetch();
+
+          // If ALL queries failed with AbortError, retry once after 1s.
+          // This happens when browser extensions interfere with Supabase's Web Locks.
+          if (isAbortError(userRes) && isAbortError(memberRes)) {
+            console.warn('[auth] All queries aborted, retrying in 1s...');
+            await new Promise(r => setTimeout(r, 1000));
+            ({ userRes, memberRes, adminRpc } = await doFetch());
+          }
 
           if (userRes.error) {
             console.warn('[auth] users query error:', userRes.error.message, userRes.error.code);
