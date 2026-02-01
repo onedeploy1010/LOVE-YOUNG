@@ -17,7 +17,8 @@ import {
   Home,
   Crown,
   ChevronRight,
-  LogOut
+  LogOut,
+  Shield
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n";
@@ -42,7 +43,7 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
   const menuItems = getMenuItems(t);
   const [location, navigate] = useLocation();
   const [open, setOpen] = useState(false);
-  const { user, member, partner, signOut } = useAuth();
+  const { user, member, partner, role, signOut } = useAuth();
 
   const isActive = (path: string) => {
     if (path === "/member/partner") {
@@ -93,6 +94,18 @@ export function PartnerLayout({ children }: PartnerLayoutProps) {
       </nav>
 
       <div className="p-4 border-t space-y-2">
+        {role === "admin" && (
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 text-primary hover:bg-primary/10"
+            onClick={() => { navigate("/admin"); setOpen(false); }}
+            data-testid="nav-admin-panel"
+          >
+            <Shield className="w-4 h-4" />
+            {t("admin.adminPanel")}
+            <ChevronRight className="w-4 h-4 ml-auto" />
+          </Button>
+        )}
         <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigate("/member")} data-testid="button-back-member">
           <ArrowLeft className="w-4 h-4" />
           {t("member.center.backToCenter")}

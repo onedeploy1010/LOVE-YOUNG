@@ -20,7 +20,9 @@ import {
   User,
   Star,
   Share2,
-  Image
+  Image,
+  Crown,
+  Shield
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n";
@@ -52,7 +54,7 @@ export function MemberLayout({ children }: MemberLayoutProps) {
   const allItems = [...accountItems, ...memberItems];
   const [location, navigate] = useLocation();
   const [open, setOpen] = useState(false);
-  const { user, member, signOut } = useAuth();
+  const { user, member, role, signOut } = useAuth();
 
   const isActive = (path: string) => location === path;
 
@@ -62,6 +64,9 @@ export function MemberLayout({ children }: MemberLayoutProps) {
     try { await signOut(); } catch (e) { console.error('Logout error:', e); }
     window.location.href = "/";
   };
+
+  const showPartnerEntry = role === "partner" || role === "admin";
+  const showAdminEntry = role === "admin";
 
   const NavContent = () => (
     <div className="flex flex-col h-full">
@@ -82,7 +87,7 @@ export function MemberLayout({ children }: MemberLayoutProps) {
           </div>
         </div>
       </div>
-      
+
       <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
         <div>
           <p className="text-xs text-muted-foreground mb-2 px-2">{t("member.center.sections.account.title")}</p>
@@ -129,6 +134,39 @@ export function MemberLayout({ children }: MemberLayoutProps) {
             })}
           </div>
         </div>
+
+        {/* Role-based navigation entries */}
+        {(showPartnerEntry || showAdminEntry) && (
+          <div className="border-t pt-4">
+            <p className="text-xs text-muted-foreground mb-2 px-2">{t("member.center.sections.member.title")}</p>
+            <div className="space-y-1">
+              {showPartnerEntry && (
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/30"
+                  onClick={() => { navigate("/member/partner"); setOpen(false); }}
+                  data-testid="nav-partner-center"
+                >
+                  <Crown className="w-4 h-4" />
+                  {t("member.center.sections.partner.title")}
+                  <ChevronRight className="w-4 h-4 ml-auto" />
+                </Button>
+              )}
+              {showAdminEntry && (
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 text-primary hover:bg-primary/10"
+                  onClick={() => { navigate("/admin"); setOpen(false); }}
+                  data-testid="nav-admin-panel"
+                >
+                  <Shield className="w-4 h-4" />
+                  {t("admin.adminPanel")}
+                  <ChevronRight className="w-4 h-4 ml-auto" />
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       <div className="p-4 border-t space-y-2">

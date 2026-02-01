@@ -1,25 +1,21 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   User, Crown, Shield, Star,
   Home, ShoppingBag, MapPin, Gift, Settings,
   Users, Wallet, TrendingUp, Award, BarChart3,
   Package, ClipboardList, Truck, DollarSign, FileText,
-  ChevronRight, LogOut, Menu, X,
-  CreditCard, Bell, History, HelpCircle, Share2,
+  ChevronRight,
+  CreditCard, Bell, HelpCircle, Share2,
   Building2, Boxes, Receipt, PiggyBank, UserPlus
 } from "lucide-react";
 import type { UserState, Partner } from "@shared/types";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n";
-import { useAuth, type UserRole } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { MemberLayout } from "@/components/MemberLayout";
 
 type MenuItem = {
   icon: React.ElementType;
@@ -70,7 +66,7 @@ const getMenuSections = (t: (key: string) => string): MenuSection[] => [
       { icon: Wallet, label: t("member.center.menuItems.lyPoints"), href: "/member/partner/ly-points", description: t("member.center.menuItems.lyPointsDesc") },
       { icon: DollarSign, label: t("member.center.menuItems.cashWallet"), href: "/member/partner/wallet", description: t("member.center.menuItems.cashWalletDesc") },
       { icon: Award, label: t("member.center.menuItems.rwaPool"), href: "/member/partner/rwa", description: t("member.center.menuItems.rwaPoolDesc") },
-      { icon: History, label: t("member.center.menuItems.earningsHistory"), href: "/member/partner/earnings", description: t("member.center.menuItems.earningsHistoryDesc") },
+      { icon: TrendingUp, label: t("member.center.menuItems.earningsHistory"), href: "/member/partner/earnings", description: t("member.center.menuItems.earningsHistoryDesc") },
     ]
   },
   {
@@ -100,78 +96,6 @@ const getMenuSections = (t: (key: string) => string): MenuSection[] => [
   }
 ];
 
-function getStateLabel(state: UserState, t: (key: string) => string): { label: string; variant: "default" | "secondary" | "outline"; icon: React.ElementType } {
-  switch (state) {
-    case "user":
-      return { label: t("member.center.userStates.user"), variant: "secondary", icon: User };
-    case "member":
-      return { label: t("member.center.userStates.member"), variant: "default", icon: Star };
-    case "partner":
-      return { label: t("member.center.userStates.partner"), variant: "default", icon: Crown };
-    case "admin":
-      return { label: t("member.center.userStates.admin"), variant: "default", icon: Shield };
-    default:
-      return { label: t("member.center.userStates.user"), variant: "secondary", icon: User };
-  }
-}
-
-// Return all role badges based on hierarchy: admin=admin+partner+member, partner=partner+member, etc.
-function getAllRoleBadges(role: UserState, hasMember: boolean, hasPartner: boolean, t: (key: string) => string) {
-  const badges: Array<{ label: string; variant: "default" | "secondary" | "outline" | "destructive"; icon: React.ElementType }> = [];
-  if (role === "admin") {
-    badges.push({ label: t("member.center.userStates.admin"), variant: "destructive", icon: Shield });
-  }
-  if (role === "admin" || role === "partner" || hasPartner) {
-    badges.push({ label: t("member.center.userStates.partner"), variant: "default", icon: Crown });
-  }
-  if (role === "admin" || role === "partner" || role === "member" || hasMember) {
-    badges.push({ label: t("member.center.userStates.member"), variant: "secondary", icon: Star });
-  }
-  if (badges.length === 0) {
-    badges.push({ label: t("member.center.userStates.user"), variant: "outline", icon: User });
-  }
-  return badges;
-}
-
-function SidebarNav({ 
-  sections, 
-  activeSection, 
-  onSectionChange,
-  onClose 
-}: { 
-  sections: MenuSection[]; 
-  activeSection: string;
-  onSectionChange: (id: string) => void;
-  onClose?: () => void;
-}) {
-  return (
-    <nav className="space-y-1">
-      {sections.map((section) => {
-        const SectionIcon = section.icon;
-        const isActive = activeSection === section.id;
-        return (
-          <button
-            key={section.id}
-            onClick={() => {
-              onSectionChange(section.id);
-              onClose?.();
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-              isActive 
-                ? "bg-secondary/20 text-secondary font-medium" 
-                : "text-muted-foreground hover-elevate"
-            }`}
-            data-testid={`nav-section-${section.id}`}
-          >
-            <SectionIcon className="w-5 h-5 flex-shrink-0" />
-            <span className="truncate">{section.title}</span>
-          </button>
-        );
-      })}
-    </nav>
-  );
-}
-
 function MenuGrid({ items, t }: { items: MenuItem[]; t: (key: string) => string }) {
   const [, navigate] = useLocation();
   const pendingBadge = t("member.center.badges.pendingActivation");
@@ -181,7 +105,7 @@ function MenuGrid({ items, t }: { items: MenuItem[]; t: (key: string) => string 
         const ItemIcon = item.icon;
         return (
           <Card
-            key={item.href}
+            key={item.href + item.label}
             className="h-full hover-elevate cursor-pointer group"
             onClick={() => navigate(item.href)}
             data-testid={`menu-card-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
@@ -325,16 +249,9 @@ function AdminQuickStats({ t }: { t: (key: string) => string }) {
 
 export default function MemberCenter() {
   const { t } = useTranslation();
-  const [, navigate] = useLocation();
   const [activeSection, setActiveSection] = useState("account");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const { user, member, partner, role, signOut } = useAuth();
-
-  const handleLogout = async () => {
-    try { await signOut(); } catch (e) { console.error('Logout error:', e); }
-    window.location.href = "/";
-  };
+  const { partner, role } = useAuth();
 
   const ALL_MENU_SECTIONS = getMenuSections(t).filter(section => {
     if (section.id === "admin-core" || section.id === "erp") return role === "admin";
@@ -342,169 +259,59 @@ export default function MemberCenter() {
     return true;
   });
 
-  // MemberRoute + AuthGate guarantee user is authenticated. No loading/user check needed.
-
-  const state: UserState = role as UserState;
-  const stateInfo = getStateLabel(state, t);
-  const StateIcon = stateInfo.icon;
-  const roleBadges = getAllRoleBadges(state, !!member, !!partner, t);
   const currentSection = ALL_MENU_SECTIONS.find(s => s.id === activeSection) || ALL_MENU_SECTIONS[0];
   const CurrentSectionIcon = currentSection.icon;
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 bg-primary text-primary-foreground">
-        <div className="flex items-center justify-between px-4 py-3 lg:px-6">
-          <div className="flex items-center gap-3">
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden text-primary-foreground">
-                  <Menu className="w-6 h-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-72 p-0">
-                <div className="p-4 border-b">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="w-12 h-12 border-2 border-secondary">
-                      <AvatarImage src={user?.user_metadata?.avatar_url || undefined} />
-                      <AvatarFallback className="bg-secondary text-secondary-foreground">
-                        {user?.user_metadata?.first_name?.charAt(0) || member?.name?.charAt(0) || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{member?.name || user?.user_metadata?.first_name || t("member.center.defaultUser")}</p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {roleBadges.map((b) => {
-                          const Icon = b.icon;
-                          return (
-                            <Badge key={b.label} variant={b.variant} className="gap-1 text-xs">
-                              <Icon className="w-3 h-3" />
-                              {b.label}
-                            </Badge>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <SidebarNav 
-                    sections={ALL_MENU_SECTIONS} 
-                    activeSection={activeSection}
-                    onSectionChange={setActiveSection}
-                    onClose={() => setMobileMenuOpen(false)}
-                  />
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
-                  <Button
-                    variant="outline"
-                    className="w-full gap-2"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="w-4 h-4" />
-                    {t("member.center.logout")}
-                  </Button>
-                </div>
-              </SheetContent>
-            </Sheet>
-
-            <span className="font-serif text-xl font-bold text-secondary cursor-pointer" onClick={() => navigate("/")}>LOVE YOUNG</span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2">
-              <Avatar className="w-8 h-8 border border-secondary/50">
-                <AvatarImage src={user?.user_metadata?.avatar_url || undefined} />
-                <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
-                  {user?.user_metadata?.first_name?.charAt(0) || member?.name?.charAt(0) || "U"}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-medium" data-testid="text-user-name">
-                {member?.name || user?.user_metadata?.first_name || t("member.center.defaultUser")}
-              </span>
-              {roleBadges.map((b) => {
-                const Icon = b.icon;
-                return (
-                  <Badge key={b.label} variant={b.variant} className="gap-1 text-xs" data-testid="badge-user-state">
-                    <Icon className="w-3 h-3" />
-                    {b.label}
-                  </Badge>
-                );
-              })}
-            </div>
-            <LanguageSwitcher testId="button-language-switcher-member" />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-primary-foreground hidden lg:flex"
-              onClick={handleLogout}
-              data-testid="button-logout-desktop"
-            >
-              <LogOut className="w-5 h-5" />
-            </Button>
-          </div>
+    <MemberLayout>
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2">
+          <CurrentSectionIcon className="w-6 h-6 text-secondary" />
+          <h1 className="text-2xl font-serif font-bold text-foreground" data-testid="text-section-title">
+            {currentSection.title}
+          </h1>
         </div>
-      </header>
-
-      <div className="flex">
-        <aside className="hidden lg:block w-64 border-r bg-card min-h-[calc(100vh-56px)] sticky top-14 overflow-y-auto">
-          <div className="p-4">
-            <SidebarNav 
-              sections={ALL_MENU_SECTIONS} 
-              activeSection={activeSection}
-              onSectionChange={setActiveSection}
-            />
-          </div>
-          <div className="p-4 border-t mt-auto">
-            <p className="text-xs text-muted-foreground text-center">
-              {t("member.center.version")}
-            </p>
-          </div>
-        </aside>
-
-        <main className="flex-1 min-w-0">
-          <div className="p-4 lg:p-8 max-w-6xl">
-            <div className="mb-6">
-              <div className="flex items-center gap-3 mb-2">
-                <CurrentSectionIcon className="w-6 h-6 text-secondary" />
-                <h1 className="text-2xl font-serif font-bold text-foreground" data-testid="text-section-title">
-                  {currentSection.title}
-                </h1>
-              </div>
-              <p className="text-muted-foreground text-sm">
-                {activeSection === "account" && t("member.center.sectionDesc.account")}
-                {activeSection === "member" && t("member.center.sectionDesc.member")}
-                {activeSection === "partner" && t("member.center.sectionDesc.partner")}
-                {activeSection === "admin-core" && t("member.center.sectionDesc.adminCore")}
-                {activeSection === "erp" && t("member.center.sectionDesc.erp")}
-              </p>
-            </div>
-
-            {activeSection === "partner" && (
-              <QuickStatsCards partner={partner} t={t} />
-            )}
-
-            {activeSection === "admin-core" && (
-              <AdminQuickStats t={t} />
-            )}
-
-            <MenuGrid items={currentSection.items} t={t} />
-
-            <div className="mt-8 lg:hidden">
-              <Separator className="mb-4" />
-              <Button
-                variant="outline"
-                className="w-full gap-2"
-                onClick={handleLogout}
-                data-testid="button-logout"
-              >
-                <LogOut className="w-4 h-4" />
-                {t("member.center.logout")}
-              </Button>
-            </div>
-          </div>
-        </main>
+        <p className="text-muted-foreground text-sm">
+          {activeSection === "account" && t("member.center.sectionDesc.account")}
+          {activeSection === "member" && t("member.center.sectionDesc.member")}
+          {activeSection === "partner" && t("member.center.sectionDesc.partner")}
+          {activeSection === "admin-core" && t("member.center.sectionDesc.adminCore")}
+          {activeSection === "erp" && t("member.center.sectionDesc.erp")}
+        </p>
       </div>
-    </div>
+
+      {/* Section tabs for switching content areas */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {ALL_MENU_SECTIONS.map((section) => {
+          const SectionIcon = section.icon;
+          const isActive = activeSection === section.id;
+          return (
+            <button
+              key={section.id}
+              onClick={() => setActiveSection(section.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors ${
+                isActive
+                  ? "bg-secondary/20 text-secondary font-medium"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+              data-testid={`tab-section-${section.id}`}
+            >
+              <SectionIcon className="w-4 h-4" />
+              {section.title}
+            </button>
+          );
+        })}
+      </div>
+
+      {activeSection === "partner" && (
+        <QuickStatsCards partner={partner} t={t} />
+      )}
+
+      {activeSection === "admin-core" && (
+        <AdminQuickStats t={t} />
+      )}
+
+      <MenuGrid items={currentSection.items} t={t} />
+    </MemberLayout>
   );
 }
