@@ -181,10 +181,42 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
 
       return order;
     },
-    onSuccess: (order) => {
+    onSuccess: async (order) => {
       setOrderNumber(order.orderNumber);
       setOrderId(order.id);
       setStep("payment");
+
+      // Save address immediately for authenticated users who entered a new address.
+      // Don't wait for payment — address should be recorded at order time.
+      if (isAuthenticated && user?.id && !selectedAddressId) {
+        try {
+          const { member: resolvedMember } = await createOrGetMember(user.id, {
+            name: deliveryInfo.customerName,
+            phone: deliveryInfo.phone,
+            email: user.email,
+          });
+          if (resolvedMember) {
+            const { address: savedAddr } = await saveMemberAddress(resolvedMember.id, {
+              recipientName: deliveryInfo.customerName,
+              phone: deliveryInfo.phone,
+              addressLine1: deliveryInfo.address,
+              city: deliveryInfo.city,
+              state: deliveryInfo.state,
+              postcode: deliveryInfo.postcode,
+              isDefault: savedAddresses.length === 0,
+            });
+            if (savedAddr) setSelectedAddressId(savedAddr.id);
+
+            // Update order with member ID
+            await supabase.from("orders").update({ member_id: resolvedMember.id }).eq("id", order.id);
+
+            queryClient.invalidateQueries({ queryKey: ["member-addresses"] });
+            queryClient.invalidateQueries({ queryKey: ["member-profile"] });
+          }
+        } catch (err) {
+          console.error("Error saving address at order creation:", err);
+        }
+      }
     },
   });
 
@@ -227,7 +259,7 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
     createOrderMutation.mutate();
   };
 
-  // Handle Stripe Payment
+  // Handle Stripe Payment — uses supabase.functions.invoke for proper auth/URL handling
   const handleStripePayment = async () => {
     if (!orderId || !orderNumber) return;
 
@@ -235,45 +267,41 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
     setPaymentError(null);
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            orderId,
-            orderNumber,
-            amount: currentPrice * 100,
-            customerEmail: user?.email || null,
-            customerName: deliveryInfo.customerName,
-            productName: `${giftBoxProduct.nameCn} ${giftBoxProduct.nameEn}`,
-            successUrl: `${window.location.origin}/checkout/success?order=${orderNumber}`,
-            cancelUrl: `${window.location.origin}/?payment=cancelled`,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok && data.url) {
-        saveCheckoutContext({
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: {
           orderId,
           orderNumber,
-          deliveryInfo,
-          selections: selections.map(s => ({ key: s.key, quantity: s.quantity })),
-          currentPrice,
-          saveNewAddress,
-          selectedAddressId,
-          referrerId,
-        });
-        window.location.href = data.url;
-        return;
+          amount: currentPrice * 100,
+          customerEmail: user?.email || null,
+          customerName: deliveryInfo.customerName,
+          productName: `${giftBoxProduct.nameCn} ${giftBoxProduct.nameEn}`,
+          successUrl: `${window.location.origin}/checkout/success?order=${orderNumber}`,
+          cancelUrl: `${window.location.origin}/?payment=cancelled`,
+        },
+      });
+
+      if (error) {
+        console.error("Stripe edge function error:", error);
+        throw new Error(error.message || "Failed to create checkout session");
       }
 
-      throw new Error(data.error || "Failed to create checkout session");
+      if (!data?.url) {
+        console.error("Stripe edge function returned no URL:", data);
+        throw new Error(data?.error || "No checkout URL returned from payment service");
+      }
+
+      saveCheckoutContext({
+        orderId,
+        orderNumber,
+        deliveryInfo,
+        selections: selections.map(s => ({ key: s.key, quantity: s.quantity })),
+        currentPrice,
+        saveNewAddress,
+        selectedAddressId,
+        referrerId,
+      });
+
+      window.location.href = data.url;
     } catch (err) {
       console.error("Payment error:", err);
       setPaymentError(err instanceof Error ? err.message : "Payment failed. Please try again.");

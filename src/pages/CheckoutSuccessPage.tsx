@@ -74,8 +74,8 @@ export default function CheckoutSuccessPage() {
               .eq("id", member.id);
           }
 
-          // Save address
-          if (ctx.saveNewAddress || !ctx.selectedAddressId) {
+          // Save address (skip if already saved at order creation — selectedAddressId is set)
+          if (!ctx.selectedAddressId) {
             await saveMemberAddress(member.id, {
               recipientName: ctx.deliveryInfo.customerName,
               phone: ctx.deliveryInfo.phone,
