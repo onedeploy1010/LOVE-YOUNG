@@ -50,91 +50,51 @@ export async function createOrder(
   console.info("[orders] Inserting order...", { orderId, orderNumber, userId: insertPayload.user_id });
   const t0 = Date.now();
 
-  // Race the insert against a 20s timeout to avoid infinite hang
-  const insertPromise = supabase
+  // Use INSERT without .select() to avoid RLS SELECT issues causing hangs.
+  // We already have the ID and order number generated client-side.
+  const { error } = await supabase
     .from("orders")
-    .insert(insertPayload)
-    .select()
-    .single();
+    .insert(insertPayload);
 
-  const timeoutPromise = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error("Order insert timed out after 20s")), 20000)
-  );
-
-  let data: Record<string, unknown> | null = null;
-  let error: { code?: string; message: string } | null = null;
-  try {
-    const result = await Promise.race([insertPromise, timeoutPromise]);
-    data = result.data;
-    error = result.error;
-  } catch (e) {
-    console.error("[orders] Insert threw/timed out:", e);
-    // On timeout, the order may still have been inserted.
-    // Try to read it back by order_number.
-    const { data: fallback } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("order_number", orderNumber)
-      .maybeSingle();
-    if (fallback) {
-      console.info("[orders] Found order after timeout:", fallback.id);
-      return { order: mapOrderFromDb(fallback), error: null };
-    }
-    return { order: null, error: e instanceof Error ? e : new Error(String(e)) };
-  }
-
-  console.info("[orders] Insert completed in", Date.now() - t0, "ms", { hasData: !!data, errorCode: error?.code });
+  const elapsed = Date.now() - t0;
+  console.info("[orders] Insert completed in", elapsed, "ms", { errorCode: error?.code, errorMsg: error?.message });
 
   if (error) {
-    // RLS may block reading back guest orders (user_id IS NULL).
-    // If the insert itself succeeded but SELECT failed, look up by order_number.
-    if (error.code === 'PGRST116') {
-      console.info("[orders] PGRST116 — insert OK but SELECT blocked by RLS, using fallback");
-      const { data: fallback } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("order_number", orderNumber)
-        .maybeSingle();
-      if (fallback) {
-        return { order: mapOrderFromDb(fallback), error: null };
-      }
-      // Insert succeeded but can't read back — use client-generated ID
-      return {
-        order: {
-          id: orderId,
-          orderNumber,
-          userId: orderData.userId || null,
-          memberId: orderData.memberId,
-          customerName: orderData.customerName,
-          customerPhone: orderData.customerPhone,
-          customerEmail: orderData.customerEmail || null,
-          status: "pending_payment",
-          totalAmount: orderData.totalAmount,
-          items: orderData.items,
-          packageType: orderData.packageType || null,
-          shippingAddress: orderData.shippingAddress || null,
-          shippingCity: orderData.shippingCity || null,
-          shippingState: orderData.shippingState || null,
-          shippingPostcode: orderData.shippingPostcode || null,
-          preferredDeliveryDate: orderData.preferredDeliveryDate || null,
-          trackingNumber: null,
-          notes: orderData.notes || null,
-          source: orderData.source || null,
-          erpnextId: null,
-          metaOrderId: null,
-          pointsEarned: null,
-          pointsRedeemed: null,
-          createdAt: now,
-          updatedAt: now,
-        },
-        error: null,
-      };
-    }
     console.error("[orders] Error creating order:", error);
     return { order: null, error: new Error(error.message) };
   }
 
-  return { order: mapOrderFromDb(data!), error: null };
+  // Return the order using client-generated values (no need to read back)
+  return {
+    order: {
+      id: orderId,
+      orderNumber,
+      userId: orderData.userId || null,
+      memberId: orderData.memberId,
+      customerName: orderData.customerName,
+      customerPhone: orderData.customerPhone,
+      customerEmail: orderData.customerEmail || null,
+      status: "pending_payment",
+      totalAmount: orderData.totalAmount,
+      items: orderData.items,
+      packageType: orderData.packageType || null,
+      shippingAddress: orderData.shippingAddress || null,
+      shippingCity: orderData.shippingCity || null,
+      shippingState: orderData.shippingState || null,
+      shippingPostcode: orderData.shippingPostcode || null,
+      preferredDeliveryDate: orderData.preferredDeliveryDate || null,
+      trackingNumber: null,
+      notes: orderData.notes || null,
+      source: orderData.source || null,
+      erpnextId: null,
+      metaOrderId: null,
+      pointsEarned: null,
+      pointsRedeemed: null,
+      createdAt: now,
+      updatedAt: now,
+    },
+    error: null,
+  };
 }
 
 // Update order status
