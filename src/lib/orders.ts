@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { useAuthStore } from "@/stores/authStore";
 import type { Order, InsertOrder } from "@shared/types";
 
 // Generate order number
@@ -55,16 +56,9 @@ export async function createOrder(
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vpzmhglfwomgrashheol.supabase.co';
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwem1oZ2xmd29tZ3Jhc2hoZW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NjE1NjQsImV4cCI6MjA4NTAzNzU2NH0.anMz844nf2-sscp4yX5ctLGMMaRjKy24YKjPWAEDUN4';
 
-  // Get the current access token from the session
-  let accessToken = supabaseAnonKey;
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.access_token) {
-      accessToken = session.access_token;
-    }
-  } catch {
-    console.warn("[orders] Could not get session, using anon key");
-  }
+  // Get token from zustand store synchronously — do NOT call supabase.auth.getSession()
+  // because it can trigger token refresh which aborts all in-flight requests.
+  const accessToken = useAuthStore.getState().session?.access_token || supabaseAnonKey;
 
   let insertError: string | null = null;
   try {
