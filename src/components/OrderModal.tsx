@@ -537,47 +537,6 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
         </SheetHeader>
 
         <div className="overflow-y-auto max-h-[calc(90vh-180px)] pb-8">
-          {step === "package" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {packages.map((pkg) => (
-                <Card
-                  key={pkg.key}
-                  className={`p-5 cursor-pointer transition-all hover-elevate ${
-                    selectedPackage === pkg.key ? "ring-2 ring-primary" : ""
-                  }`}
-                  onClick={() => setSelectedPackage(pkg.key)}
-                  data-testid={`card-package-${pkg.key}`}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-semibold text-lg text-foreground">
-                          {t(`packages.${pkg.key}`)}
-                        </h4>
-                        {pkg.key === "twoBox" && (
-                          <Badge variant="default" className="text-xs">
-                            {t("packages.bestValue")}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {t(pkg.descKey)}
-                      </p>
-                      <p className="text-2xl font-bold text-primary">
-                        {t(pkg.priceKey)}
-                      </p>
-                    </div>
-                    {selectedPackage === pkg.key && (
-                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                        <Check className="w-5 h-5 text-primary-foreground" />
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-
           {step === "flavors" && (
             <div className="space-y-4">
               {/* Price display */}

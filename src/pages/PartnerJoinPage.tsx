@@ -144,14 +144,15 @@ export default function PartnerJoinPage() {
   useEffect(() => {
     if (userState && step !== "success") {
       if (userState.member) {
-        // Has member profile, go to package selection
         setStep("package");
       } else if (userState.user) {
-        // Has user but no member profile, show profile form
         setStep("profile");
       }
     }
   }, [userState]);
+
+  // Compute effective step to avoid blank frame between data load and useEffect
+  const effectiveStep = step === "profile" && userState?.member ? "package" : step;
 
   // Handle profile creation
   const handleCreateProfile = async () => {
@@ -425,9 +426,9 @@ export default function PartnerJoinPage() {
             </div>
           </div>
           <Badge variant="outline" className="text-primary-foreground border-primary-foreground/30">
-            {step === "profile"
+            {effectiveStep === "profile"
               ? (t("member.partnerJoin.stepProfile") || "步骤 1/3")
-              : step === "package"
+              : effectiveStep === "package"
                 ? (t("member.partnerJoin.step1") || "步骤 2/3")
                 : (t("member.partnerJoin.step2") || "步骤 3/3")}
           </Badge>
@@ -436,7 +437,7 @@ export default function PartnerJoinPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         {/* Profile Step - Show when user is logged in but has no member profile */}
-        {step === "profile" && userState?.user && !userState?.member && (
+        {effectiveStep === "profile" && userState?.user && !userState?.member && (
           <div className="max-w-md mx-auto space-y-6">
             <div className="text-center mb-8">
               <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-4">
@@ -509,7 +510,7 @@ export default function PartnerJoinPage() {
           </div>
         )}
 
-        {step === "package" && (
+        {effectiveStep === "package" && (
           <div className="space-y-6">
             <div className="text-center mb-8">
               <h1 className="text-2xl font-serif text-primary mb-2">{t("member.partnerJoin.selectPackage")}</h1>
@@ -592,7 +593,7 @@ export default function PartnerJoinPage() {
           </div>
         )}
 
-        {step === "payment" && (
+        {effectiveStep === "payment" && (
           <div className="space-y-6">
             <Button 
               variant="ghost" 
