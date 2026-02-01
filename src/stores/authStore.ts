@@ -300,20 +300,11 @@ export function initAuthListener() {
         s.clearAuth();
         useAuthStore.getState()._setLoading(false);
       } else if (s.user) {
-        // Null session but we have a cached user (e.g. INITIAL_SESSION during refresh).
-        // Verify via getSession() before clearing — the token may still be valid.
-        console.info('[auth] null session with cached user, verifying...');
-        const { data: { session: verified } } = await supabase.auth.getSession();
-        if (verified?.user) {
-          console.info('[auth] session verified, keeping cached user');
-          s._setSession(verified);
-          await s.fetchUserData(verified.user.id).catch((err) => {
-            console.error('[auth] fetchUserData failed:', err);
-          });
-        } else {
-          console.info('[auth] session expired, clearing auth');
-          s.clearAuth();
-        }
+        // Null session but we have a cached user (e.g. during token refresh).
+        // Don't clear — wait for TOKEN_REFRESHED or SIGNED_OUT event.
+        // Calling getSession() here is unreliable because the refresh may still
+        // be in progress, returning null even though a valid session is coming.
+        console.info('[auth] null session with cached user, keeping cached state');
         useAuthStore.getState()._setLoading(false);
       } else {
         // No session and no cached user — just mark as not loading
