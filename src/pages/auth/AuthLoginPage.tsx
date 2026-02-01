@@ -226,14 +226,20 @@ export default function AuthLoginPage() {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!authUser) throw new Error("Not authenticated");
 
-      // Update user profile in users table
+      // Update user profile in users table (don't overwrite admin/partner roles)
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', authUser.id)
+        .single();
+      const keepRole = existingUser?.role === 'admin' || existingUser?.role === 'partner';
       const { error: userError } = await supabase
         .from('users')
         .update({
           first_name: firstName,
           last_name: lastName,
           phone: phone,
-          role: 'member',
+          ...(keepRole ? {} : { role: 'member' }),
         })
         .eq('id', authUser.id);
 

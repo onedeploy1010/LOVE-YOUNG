@@ -176,13 +176,19 @@ export default function PartnerJoinPage() {
 
       if (error) throw error;
 
-      // Also update users table
+      // Also update users table (don't overwrite admin/partner roles)
+      const { data: existingUser } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", userState.user.id)
+        .single();
+      const keepRole = existingUser?.role === 'admin' || existingUser?.role === 'partner';
       await supabase
         .from("users")
         .update({
           first_name: profileName.trim(),
           phone: profilePhone.trim(),
-          role: "member",
+          ...(keepRole ? {} : { role: "member" }),
         })
         .eq("id", userState.user.id);
 

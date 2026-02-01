@@ -71,9 +71,12 @@ export const useAuthStore = create<AuthState>()(
 
       fetchUserData: async (userId: string) => {
         try {
-          const [userRes, memberRes] = await Promise.all([
+          // Run all three queries in parallel for speed.
+          // is_admin() is SECURITY DEFINER — always works regardless of RLS.
+          const [userRes, memberRes, adminRpc] = await Promise.all([
             supabase.from('users').select('role').eq('id', userId).single(),
             supabase.from('members').select('*').eq('user_id', userId).single(),
+            supabase.rpc('is_admin'),
           ]);
 
           if (userRes.error) {
@@ -85,9 +88,9 @@ export const useAuthStore = create<AuthState>()(
 
           const memberData = memberRes.data;
 
-          // Determine admin from public.users OR members.role (fallback if users query fails due to RLS)
-          const isAdmin = userRes.data?.role === 'admin' || memberData?.role === 'admin';
-          console.info('[auth] fetchUserData:', { userId, isAdmin, hasMember: !!memberData, userRole: userRes.data?.role, memberRole: memberData?.role });
+          // Determine admin from: is_admin() RPC (most reliable), users.role, OR members.role
+          const isAdmin = adminRpc.data === true || userRes.data?.role === 'admin' || memberData?.role === 'admin';
+          console.info('[auth] fetchUserData:', { userId, isAdmin, hasMember: !!memberData, userRole: userRes.data?.role, memberRole: memberData?.role, rpcAdmin: adminRpc.data });
 
           if (memberData) {
             const memberObj: Member = {
