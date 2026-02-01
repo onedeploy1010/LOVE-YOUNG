@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
 import { Loader2, Mail, ArrowLeft, User, Gift } from "lucide-react";
@@ -167,7 +168,7 @@ export default function AuthLoginPage() {
         });
       } else {
         // verifyOTP triggers onAuthStateChange → fetchUserData runs automatically.
-        // We only need to check if the user has completed their profile.
+        // We need to check if the user has completed their profile, then navigate.
         const { data: { user: authUser } } = await supabase.auth.getUser();
         if (authUser) {
           const { data: userData } = await supabase
@@ -181,7 +182,18 @@ export default function AuthLoginPage() {
             setStep("profile");
           } else {
             toast({ title: t("auth.loginSuccess") });
-            // Navigation handled by useEffect once AuthContext finishes loading
+            // Fetch role from DB before navigating — don't rely on useEffect
+            // because step is "otp" and the redirect effect only fires on "email"
+            const store = useAuthStore.getState();
+            await store.fetchUserData(authUser.id);
+            const { role: resolvedRole } = useAuthStore.getState();
+            if (resolvedRole === 'admin') {
+              navigate("/admin");
+            } else if (resolvedRole === 'partner') {
+              navigate("/member/partner");
+            } else {
+              navigate("/member");
+            }
           }
         }
       }
