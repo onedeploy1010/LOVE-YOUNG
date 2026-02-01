@@ -269,10 +269,23 @@ export function initAuthListener() {
 
   const store = useAuthStore.getState();
 
-  // If we have cached state, trust it and set loading=false immediately.
-  // Fresh data will be fetched in background when onAuthStateChange fires.
   if (store.user) {
-    store._setLoading(false);
+    if (store.member || store.role !== 'user') {
+      // Have meaningful cached data — show immediately, fetch in background
+      store._setLoading(false);
+    } else {
+      // Cached user but role is 'user' with no member data — likely stale.
+      // Keep loading=true, proactively fetch now rather than waiting for onAuthStateChange.
+      console.info('[auth] stale cache detected, fetching user data eagerly');
+      store.fetchUserData(store.user.id).then(() => {
+        useAuthStore.getState()._setLoading(false);
+        useAuthStore.getState()._setInitialized(true);
+      }).catch((err) => {
+        console.error('[auth] eager fetchUserData failed:', err);
+        useAuthStore.getState()._setLoading(false);
+        useAuthStore.getState()._setInitialized(true);
+      });
+    }
   }
 
   supabase.auth.onAuthStateChange(
