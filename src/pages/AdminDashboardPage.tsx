@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  SidebarProvider, 
-  Sidebar, 
-  SidebarContent, 
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarContent,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupContent,
@@ -15,15 +13,12 @@ import {
   SidebarMenuButton,
   SidebarTrigger
 } from "@/components/ui/sidebar";
-import { 
+import {
   LayoutDashboard,
   Users,
-  Package,
   ShoppingCart,
-  Truck,
   ClipboardCheck,
   Wallet,
-  FileText,
   Settings,
   BarChart3,
   Boxes,
@@ -32,30 +27,22 @@ import {
   DollarSign,
   TrendingUp
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useTranslation } from "@/lib/i18n";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [activeSection, setActiveSection] = useState("dashboard");
-
-  const { data: user, isLoading: userLoading } = useQuery<any>({
-    queryKey: ["/api/auth/user"],
-  });
-
-  const { data: member } = useQuery<any>({
-    queryKey: ["/api/member/profile"],
-    enabled: !!user,
-  });
+  const { user, loading } = useAuth();
 
   const sidebarStyle = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
   };
 
-  if (userLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -77,20 +64,7 @@ export default function AdminDashboardPage() {
     );
   }
 
-  // TODO: 最后再启用管理员权限检查
-  // if (member?.role !== "admin") {
-  //   return (
-  //     <div className="min-h-screen bg-background flex items-center justify-center">
-  //       <Card className="p-8 max-w-md text-center">
-  //         <h1 className="text-2xl font-bold mb-4">{t("admin.insufficientPermission")}</h1>
-  //         <p className="text-muted-foreground mb-6">{t("admin.noAdminPermission")}</p>
-  //         <Button onClick={() => setLocation("/")} data-testid="button-go-home">
-  //           {t("admin.goHome")}
-  //         </Button>
-  //       </Card>
-  //     </div>
-  //   );
-  // }
+  // AdminRoute already verifies admin role, so no need to check again here
 
   const menuItems = [
     { id: "dashboard", label: t("admin.dashboard"), icon: LayoutDashboard },
