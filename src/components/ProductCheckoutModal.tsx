@@ -187,49 +187,45 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
     setPaymentError(null);
 
     try {
-      console.info("[checkout] Calling create-checkout edge function via fetch...");
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            orderId,
-            orderNumber,
-            amount: currentPrice * 100,
-            customerEmail: user?.email || null,
-            customerName: deliveryInfo.customerName,
-            productName: product.name,
-            productDescription: `Order #${orderNumber}`,
-            productImage: product.image.startsWith("http")
-              ? product.image
-              : `${window.location.origin}${product.image}`,
-            successUrl: `${window.location.origin}/checkout/success?order=${orderNumber}`,
-            cancelUrl: `${window.location.origin}/products?payment=cancelled`,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok && data.url) {
-        saveCheckoutContext({
+      console.info("[checkout] Invoking create-checkout edge function...");
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: {
           orderId,
           orderNumber,
-          deliveryInfo,
-          currentPrice,
-          saveNewAddress,
-          selectedAddressId,
-          referrerId,
-        });
-        window.location.href = data.url;
-        return;
+          amount: currentPrice * 100,
+          customerEmail: user?.email || null,
+          customerName: deliveryInfo.customerName,
+          productName: product.name,
+          productDescription: `Order #${orderNumber}`,
+          productImage: product.image.startsWith("http")
+            ? product.image
+            : `${window.location.origin}${product.image}`,
+          successUrl: `${window.location.origin}/checkout/success?order=${orderNumber}`,
+          cancelUrl: `${window.location.origin}/products?payment=cancelled`,
+        },
+      });
+
+      if (error) {
+        console.error("Stripe edge function error:", error);
+        throw new Error(error.message || "Failed to create checkout session");
       }
 
-      throw new Error(data.error || "Failed to create checkout session");
+      if (!data?.url) {
+        console.error("Stripe edge function returned no URL:", data);
+        throw new Error(data?.error || "No checkout URL returned from payment service");
+      }
+
+      saveCheckoutContext({
+        orderId,
+        orderNumber,
+        deliveryInfo,
+        currentPrice,
+        saveNewAddress,
+        selectedAddressId,
+        referrerId,
+      });
+
+      window.location.href = data.url;
     } catch (err) {
       console.error("Payment error:", err);
       setPaymentError(err instanceof Error ? err.message : "Payment failed. Please try again.");
