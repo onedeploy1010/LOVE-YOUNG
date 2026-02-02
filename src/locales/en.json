@@ -1651,7 +1651,10 @@
       "lyBalanceLabel": "LY Balance",
       "inviteTitle": "Invite More Friends",
       "inviteDesc": "Earn LY points for every partner you refer",
-      "inviteNow": "Invite Now"
+      "inviteNow": "Invite Now",
+      "tierPhase1": "Starter Package",
+      "tierPhase2": "Growth Package",
+      "tierPhase3": "Elite Package"
     },
     "lyPoints": {
       "title": "LY Points",
@@ -1736,7 +1739,9 @@
       "brandPpt": "Brand Presentation PPT",
       "brandVideo": "Brand Video",
       "productProcess": "Product Making Process",
-      "successStory": "Partner Success Story"
+      "successStory": "Partner Success Story",
+      "shareText": "Love Young Premium Bird's Nest - Your Choice for Quality Living! Use my referral code {code} to register and enjoy exclusive member benefits!",
+      "itemShareText": "Check this out: {title}! Use my referral code {code} to register and get exclusive offers!"
     },
     "rwa": {
       "title": "RWA Bonus Pool",
@@ -1759,11 +1764,24 @@
       "active": "Active",
       "dividendReceived": "Dividend Paid",
       "tokenHistory": "Token Acquisition History",
+      "tokenHistoryDesc": "RWA token source details",
       "howItWorks": "RWA Bonus Pool Rules",
-      "rule1": "Each cycle lasts 10 days",
-      "rule2": "30% of sales go to the pool",
-      "rule3": "Dividends based on token holdings",
-      "rule4": "Dividends auto-credited to wallet"
+      "rule1": "1. The RWA bonus pool runs on a 10-day dividend cycle, with 30% of sales going into the pool",
+      "rule2": "2. You can earn RWA tokens by purchasing packages, referring new partners, etc.",
+      "rule3": "3. At the end of each cycle, the pool is distributed proportionally to all token holders",
+      "rule4": "4. Tokens are held permanently and participate in every dividend cycle",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "currentPool": "Current Pool",
+      "noCycle": "No active cycle",
+      "cycleHistoryDesc": "Dividend records from past cycles",
+      "tokensParticipated": "tokens participated",
+      "noCycles": "No dividend cycle records yet",
+      "noTokens": "No token records yet",
+      "sourcePackage": "Package Purchase",
+      "sourceNetworkOrder": "Network Order Reward",
+      "sourceMilestone": "Milestone Reward",
+      "sourceReferral": "Referral Reward"
     },
     "partnerJoin": {
       "title": "Become a Partner",

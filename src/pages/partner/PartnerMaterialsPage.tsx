@@ -55,7 +55,7 @@ export default function PartnerMaterialsPage() {
   };
 
   const shareToWhatsApp = () => {
-    const text = `LOVEYOUNG 养乐鲜炖 - 马来西亚优质燕窝花胶品牌！使用我的推荐码 ${referralCode} 注册享优惠！\n${referralLink}`;
+    const text = `${t("partner.materials.shareText").replace("{code}", referralCode)}\n${referralLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
@@ -193,7 +193,7 @@ export default function PartnerMaterialsPage() {
                     </Button>
                     <Button variant="outline" size="sm" className="flex-1"
                       onClick={() => {
-                        const text = `${item.title} - LOVEYOUNG 养乐鲜炖\n推荐码: ${referralCode}\n${referralLink}`;
+                        const text = `${t("partner.materials.itemShareText").replace("{title}", item.title).replace("{code}", referralCode)}\n${referralLink}`;
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
                       }}
                     >
@@ -269,7 +269,7 @@ export default function PartnerMaterialsPage() {
                     </Button>
                     <Button variant="outline" size="sm" className="flex-1"
                       onClick={() => {
-                        const text = `${video.title} - LOVEYOUNG 养乐鲜炖\n推荐码: ${referralCode}\n${referralLink}`;
+                        const text = `${t("partner.materials.itemShareText").replace("{title}", video.title).replace("{code}", referralCode)}\n${referralLink}`;
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
                       }}
                     >

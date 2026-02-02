@@ -115,10 +115,10 @@ export default function PartnerRwaPage() {
 
   const getSourceLabel = (source: string) => {
     const labels: Record<string, string> = {
-      package: "套餐购买",
-      network_order: "网络订单奖励",
-      milestone: "里程碑奖励",
-      referral: "推荐奖励",
+      package: t("partner.rwa.sourcePackage"),
+      network_order: t("partner.rwa.sourceNetworkOrder"),
+      milestone: t("partner.rwa.sourceMilestone"),
+      referral: t("partner.rwa.sourceReferral"),
     };
     return labels[source] || source;
   };
@@ -152,24 +152,24 @@ export default function PartnerRwaPage() {
                     <Award className="w-6 h-6 text-secondary" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">我的RWA令牌</p>
-                    <h2 className="text-3xl font-bold text-primary">{stats.totalTokens} <span className="text-lg font-normal">枚</span></h2>
+                    <p className="text-sm text-muted-foreground">{t("partner.rwa.myTokens")}</p>
+                    <h2 className="text-3xl font-bold text-primary">{stats.totalTokens} <span className="text-lg font-normal">{t("partner.rwa.tokenUnit")}</span></h2>
                   </div>
                 </div>
-                <Badge className="bg-secondary/20 text-secondary">活跃持有</Badge>
+                <Badge className="bg-secondary/20 text-secondary">{t("partner.rwa.activeHolding")}</Badge>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center p-3 bg-background/50 rounded-lg">
                   <p className="text-2xl font-bold text-secondary">RM {stats.totalDividends.toFixed(0)}</p>
-                  <p className="text-xs text-muted-foreground">累计分红</p>
+                  <p className="text-xs text-muted-foreground">{t("partner.rwa.totalDividends")}</p>
                 </div>
                 <div className="text-center p-3 bg-background/50 rounded-lg">
                   <p className="text-2xl font-bold text-primary">RM {stats.currentCycleEstimate.toFixed(0)}</p>
-                  <p className="text-xs text-muted-foreground">本期预估</p>
+                  <p className="text-xs text-muted-foreground">{t("partner.rwa.currentEstimate")}</p>
                 </div>
                 <div className="text-center p-3 bg-background/50 rounded-lg">
                   <p className="text-2xl font-bold text-foreground">RM {stats.avgDividendPerToken.toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground">平均每令牌</p>
+                  <p className="text-xs text-muted-foreground">{t("partner.rwa.avgPerToken")}</p>
                 </div>
               </div>
             </CardContent>
@@ -179,19 +179,19 @@ export default function PartnerRwaPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Clock className="w-4 h-4 text-primary" />
-                当前周期
+                {t("partner.rwa.currentCycle")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {activeCycle ? (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <Badge>第 {activeCycle.cycleNumber} 期</Badge>
-                    <Badge variant="outline" className="text-green-500 border-green-500">进行中</Badge>
+                    <Badge>{t("partner.rwa.cycle").replace("{n}", String(activeCycle.cycleNumber))}</Badge>
+                    <Badge variant="outline" className="text-green-500 border-green-500">{t("partner.rwa.active")}</Badge>
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-2">
-                      <span className="text-muted-foreground">周期进度</span>
+                      <span className="text-muted-foreground">{t("partner.rwa.cycleProgress")}</span>
                       <span className="font-medium">{Math.round(calculateProgress(activeCycle))}%</span>
                     </div>
                     <Progress value={calculateProgress(activeCycle)} className="h-2" />
@@ -199,23 +199,23 @@ export default function PartnerRwaPage() {
                   <Separator />
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
-                      <p className="text-muted-foreground">开始日期</p>
+                      <p className="text-muted-foreground">{t("partner.rwa.startDate")}</p>
                       <p className="font-medium">{formatDate(activeCycle.startDate)}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">结束日期</p>
+                      <p className="text-muted-foreground">{t("partner.rwa.endDate")}</p>
                       <p className="font-medium">{formatDate(activeCycle.endDate)}</p>
                     </div>
                   </div>
                   <div className="p-3 bg-secondary/10 rounded-lg text-center">
-                    <p className="text-xs text-muted-foreground mb-1">本期奖金池</p>
+                    <p className="text-xs text-muted-foreground mb-1">{t("partner.rwa.currentPool")}</p>
                     <p className="text-xl font-bold text-secondary">RM {(activeCycle.poolAmount / 100).toLocaleString()}</p>
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>暂无活跃周期</p>
+                  <p>{t("partner.rwa.noCycle")}</p>
                 </div>
               )}
             </CardContent>
@@ -227,9 +227,9 @@ export default function PartnerRwaPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-primary" />
-                分红周期历史
+                {t("partner.rwa.cycleHistory")}
               </CardTitle>
-              <CardDescription>过往周期的分红记录</CardDescription>
+              <CardDescription>{t("partner.rwa.cycleHistoryDesc")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -251,9 +251,9 @@ export default function PartnerRwaPage() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-medium">第 {cycle.cycleNumber} 期</p>
+                          <p className="font-medium">{t("partner.rwa.cycle").replace("{n}", String(cycle.cycleNumber))}</p>
                           {cycle.status === "active" && (
-                            <Badge className="bg-green-500/10 text-green-500 text-xs">进行中</Badge>
+                            <Badge className="bg-green-500/10 text-green-500 text-xs">{t("partner.rwa.active")}</Badge>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">
@@ -263,13 +263,13 @@ export default function PartnerRwaPage() {
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-secondary">RM {(cycle.poolAmount / 100).toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground">{cycle.totalTokens || 0} 令牌参与</p>
+                      <p className="text-xs text-muted-foreground">{cycle.totalTokens || 0} {t("partner.rwa.tokensParticipated")}</p>
                     </div>
                   </div>
                 )) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>暂无分红周期记录</p>
+                    <p>{t("partner.rwa.noCycles")}</p>
                   </div>
                 )}
               </div>
@@ -280,9 +280,9 @@ export default function PartnerRwaPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Coins className="w-5 h-5 text-secondary" />
-                令牌获得记录
+                {t("partner.rwa.tokenHistory")}
               </CardTitle>
-              <CardDescription>RWA令牌来源明细</CardDescription>
+              <CardDescription>{t("partner.rwa.tokenHistoryDesc")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -301,12 +301,12 @@ export default function PartnerRwaPage() {
                         <p className="text-xs text-muted-foreground">{formatDate(token.createdAt)}</p>
                       </div>
                     </div>
-                    <Badge className="bg-secondary/20 text-secondary">+{token.tokens} 枚</Badge>
+                    <Badge className="bg-secondary/20 text-secondary">+{token.tokens} {t("partner.rwa.tokenUnit")}</Badge>
                   </div>
                 )) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <Coins className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>暂无令牌获得记录</p>
+                    <p>{t("partner.rwa.noTokens")}</p>
                   </div>
                 )}
               </div>
@@ -321,12 +321,12 @@ export default function PartnerRwaPage() {
                 <Info className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-bold mb-2">RWA奖金池规则说明</h3>
+                <h3 className="font-bold mb-2">{t("partner.rwa.howItWorks")}</h3>
                 <div className="text-sm text-muted-foreground space-y-2">
-                  <p>1. RWA奖金池每10天为一个分红周期，销售额的30%注入奖金池</p>
-                  <p>2. 购买套餐、推荐新经营人等行为可获得RWA令牌</p>
-                  <p>3. 周期结束后，奖金池按令牌比例分配给所有持有者</p>
-                  <p>4. 令牌为永久持有，可持续参与每期分红</p>
+                  <p>{t("partner.rwa.rule1")}</p>
+                  <p>{t("partner.rwa.rule2")}</p>
+                  <p>{t("partner.rwa.rule3")}</p>
+                  <p>{t("partner.rwa.rule4")}</p>
                 </div>
               </div>
             </div>

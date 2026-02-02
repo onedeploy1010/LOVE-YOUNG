@@ -1651,7 +1651,10 @@
       "lyBalanceLabel": "LY余额",
       "inviteTitle": "邀请更多好友加入",
       "inviteDesc": "每成功推荐一位经营人，可获得LY积分奖励",
-      "inviteNow": "立即邀请"
+      "inviteNow": "立即邀请",
+      "tierPhase1": "启航配套",
+      "tierPhase2": "成长配套",
+      "tierPhase3": "卓越配套"
     },
     "lyPoints": {
       "title": "LY积分",
@@ -1736,7 +1739,9 @@
       "brandPpt": "品牌介绍PPT",
       "brandVideo": "品牌宣传片",
       "productProcess": "产品制作过程",
-      "successStory": "经营人成功案例"
+      "successStory": "经营人成功案例",
+      "shareText": "Love Young 天然燕窝，品质生活之选！使用我的专属推荐码 {code} 注册，享受会员专属优惠！",
+      "itemShareText": "推荐给你：{title}！使用我的推荐码 {code} 注册下单，享受专属优惠！"
     },
     "rwa": {
       "title": "RWA奖金池",
@@ -1759,11 +1764,24 @@
       "active": "进行中",
       "dividendReceived": "已分红",
       "tokenHistory": "令牌获取记录",
-      "howItWorks": "RWA奖金池规则",
-      "rule1": "每10天为一个分红周期",
-      "rule2": "销售额30%进入奖金池",
-      "rule3": "按令牌持有比例分配",
-      "rule4": "分红自动转入现金钱包"
+      "tokenHistoryDesc": "RWA令牌来源明细",
+      "howItWorks": "RWA奖金池规则说明",
+      "rule1": "1. RWA奖金池每10天为一个分红周期，销售额的30%注入奖金池",
+      "rule2": "2. 购买套餐、推荐新经营人等行为可获得RWA令牌",
+      "rule3": "3. 周期结束后，奖金池按令牌比例分配给所有持有者",
+      "rule4": "4. 令牌为永久持有，可持续参与每期分红",
+      "startDate": "开始日期",
+      "endDate": "结束日期",
+      "currentPool": "本期奖金池",
+      "noCycle": "暂无活跃周期",
+      "cycleHistoryDesc": "过往周期的分红记录",
+      "tokensParticipated": "令牌参与",
+      "noCycles": "暂无分红周期记录",
+      "noTokens": "暂无令牌获得记录",
+      "sourcePackage": "套餐购买",
+      "sourceNetworkOrder": "网络订单奖励",
+      "sourceMilestone": "里程碑奖励",
+      "sourceReferral": "推荐奖励"
     },
     "partnerJoin": {
       "title": "成为联合经营人",

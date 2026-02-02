@@ -1651,7 +1651,10 @@
       "lyBalanceLabel": "Baki LY",
       "inviteTitle": "Jemput Lebih Ramai Rakan",
       "inviteDesc": "Dapatkan mata LY untuk setiap rakan kongsi yang dirujuk",
-      "inviteNow": "Jemput Sekarang"
+      "inviteNow": "Jemput Sekarang",
+      "tierPhase1": "Pakej Permulaan",
+      "tierPhase2": "Pakej Pertumbuhan",
+      "tierPhase3": "Pakej Elite"
     },
     "lyPoints": {
       "title": "Mata LY",
@@ -1736,7 +1739,9 @@
       "brandPpt": "Pembentangan Jenama PPT",
       "brandVideo": "Video Jenama",
       "productProcess": "Proses Pembuatan Produk",
-      "successStory": "Cerita Kejayaan Rakan Kongsi"
+      "successStory": "Cerita Kejayaan Rakan Kongsi",
+      "shareText": "Love Young Sarang Burung Premium - Pilihan Hidup Berkualiti! Gunakan kod rujukan saya {code} untuk mendaftar dan nikmati manfaat ahli eksklusif!",
+      "itemShareText": "Disyorkan untuk anda: {title}! Gunakan kod rujukan saya {code} untuk mendaftar dan dapatkan tawaran eksklusif!"
     },
     "rwa": {
       "title": "Kolam Bonus RWA",
@@ -1759,11 +1764,24 @@
       "active": "Aktif",
       "dividendReceived": "Dividen Dibayar",
       "tokenHistory": "Sejarah Perolehan Token",
+      "tokenHistoryDesc": "Butiran sumber token RWA",
       "howItWorks": "Peraturan Kolam Bonus RWA",
-      "rule1": "Setiap kitaran berlangsung 10 hari",
-      "rule2": "30% jualan masuk ke kolam",
-      "rule3": "Dividen berdasarkan pegangan token",
-      "rule4": "Dividen dikreditkan auto ke dompet"
+      "rule1": "1. Kolam bonus RWA berjalan dalam kitaran dividen 10 hari, dengan 30% jualan masuk ke kolam",
+      "rule2": "2. Anda boleh mendapat token RWA dengan membeli pakej, merujuk rakan niaga baharu, dll.",
+      "rule3": "3. Pada akhir setiap kitaran, kolam diagihkan secara berkadar kepada semua pemegang token",
+      "rule4": "4. Token dipegang secara kekal dan menyertai setiap kitaran dividen",
+      "startDate": "Tarikh Mula",
+      "endDate": "Tarikh Tamat",
+      "currentPool": "Kolam Semasa",
+      "noCycle": "Tiada kitaran aktif",
+      "cycleHistoryDesc": "Rekod dividen dari kitaran lepas",
+      "tokensParticipated": "token menyertai",
+      "noCycles": "Tiada rekod kitaran dividen lagi",
+      "noTokens": "Tiada rekod token lagi",
+      "sourcePackage": "Pembelian Pakej",
+      "sourceNetworkOrder": "Ganjaran Pesanan Rangkaian",
+      "sourceMilestone": "Ganjaran Pencapaian",
+      "sourceReferral": "Ganjaran Rujukan"
     },
     "partnerJoin": {
       "title": "Jadi Rakan Niaga",

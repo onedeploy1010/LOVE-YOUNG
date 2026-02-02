@@ -106,9 +106,9 @@ export default function PartnerReferralsPage() {
 
   const getTierLabel = (tier: string) => {
     const tierMap: Record<string, string> = {
-      "phase1": "Phase 1",
-      "phase2": "Phase 2",
-      "phase3": "Phase 3",
+      "phase1": t("partner.referrals.tierPhase1"),
+      "phase2": t("partner.referrals.tierPhase2"),
+      "phase3": t("partner.referrals.tierPhase3"),
     };
     return tierMap[tier] || tier;
   };
