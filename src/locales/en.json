@@ -225,7 +225,18 @@
     "selectSavedAddress": "Select saved address",
     "useNewAddress": "Use new address",
     "backToSavedAddresses": "Back to saved addresses",
-    "saveAddressToProfile": "Save address to my account"
+    "saveAddressToProfile": "Save address to my account",
+    "payment": "Payment",
+    "paymentDesc": "Complete your payment to confirm the order",
+    "proceedToPayment": "Proceed to Payment",
+    "totalAmount": "Total Amount",
+    "payOnline": "Pay Online (Stripe)",
+    "processing": "Processing...",
+    "paymentMethods": "Supports Credit Card, FPX, GrabPay",
+    "needHelp": "Need help?",
+    "referralCode": "Referral Code (Optional)",
+    "referralCodeValid": "Valid referral code",
+    "referralCodeInvalid": "Enter a valid referral code"
   },
   "testimonials": {
     "realReviews": "Real Reviews",

@@ -225,7 +225,18 @@
     "selectSavedAddress": "Pilih alamat tersimpan",
     "useNewAddress": "Gunakan alamat baru",
     "backToSavedAddresses": "Kembali ke alamat tersimpan",
-    "saveAddressToProfile": "Simpan alamat ke akaun saya"
+    "saveAddressToProfile": "Simpan alamat ke akaun saya",
+    "payment": "Pembayaran",
+    "paymentDesc": "Lengkapkan pembayaran untuk mengesahkan pesanan",
+    "proceedToPayment": "Teruskan ke Pembayaran",
+    "totalAmount": "Jumlah Keseluruhan",
+    "payOnline": "Bayar Dalam Talian (Stripe)",
+    "processing": "Memproses...",
+    "paymentMethods": "Menyokong Kad Kredit, FPX, GrabPay",
+    "needHelp": "Perlukan bantuan?",
+    "referralCode": "Kod Rujukan (Pilihan)",
+    "referralCodeValid": "Kod rujukan sah",
+    "referralCodeInvalid": "Masukkan kod rujukan yang sah"
   },
   "testimonials": {
     "realReviews": "Ulasan Sebenar",

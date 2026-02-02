@@ -225,7 +225,18 @@
     "selectSavedAddress": "选择已保存的地址",
     "useNewAddress": "使用新地址",
     "backToSavedAddresses": "返回已保存地址",
-    "saveAddressToProfile": "保存地址到我的账户"
+    "saveAddressToProfile": "保存地址到我的账户",
+    "payment": "支付",
+    "paymentDesc": "完成支付以确认订单",
+    "proceedToPayment": "前往支付",
+    "totalAmount": "总金额",
+    "payOnline": "在线支付 (Stripe)",
+    "processing": "处理中...",
+    "paymentMethods": "支持信用卡、FPX、GrabPay 等支付方式",
+    "needHelp": "需要帮助？",
+    "referralCode": "推荐码（可选）",
+    "referralCodeValid": "推荐码有效",
+    "referralCodeInvalid": "请输入有效的推荐码"
   },
   "testimonials": {
     "realReviews": "Real Reviews",

@@ -93,9 +93,23 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
       const { data, error } = await supabase
         .from("member_addresses")
         .select("*")
-        .eq("member_id", member.id);
+        .eq("member_id", member.id)
+        .order("is_default", { ascending: false });
       if (error) return [];
-      return data as MemberAddress[];
+      return (data || []).map((row: Record<string, unknown>): MemberAddress => ({
+        id: row.id as string,
+        memberId: row.member_id as string,
+        label: (row.label as string) || null,
+        recipientName: (row.recipient_name as string) || "",
+        phone: (row.phone as string) || "",
+        addressLine1: (row.address_line_1 as string) || "",
+        addressLine2: (row.address_line_2 as string) || null,
+        city: (row.city as string) || "",
+        state: (row.state as string) || "",
+        postcode: (row.postcode as string) || "",
+        isDefault: (row.is_default as boolean) || false,
+        createdAt: (row.created_at as string) || null,
+      }));
     },
     enabled: isAuthenticated && !!member,
   });
@@ -768,11 +782,11 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
                     </div>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Order Number</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t("order.yourOrderNumber")}</p>
                     <p className="text-xl font-bold text-primary">{orderNumber}</p>
                   </div>
                   <div className="border-t border-border pt-4">
-                    <p className="text-sm text-muted-foreground mb-1">Total Amount</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t("order.totalAmount")}</p>
                     <p className="text-3xl font-bold">RM {currentPrice}</p>
                   </div>
                 </div>
@@ -794,20 +808,18 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
                   {isProcessingPayment ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      {language === "zh" ? "处理中..." : "Processing..."}
+                      {t("order.processing")}
                     </>
                   ) : (
                     <>
                       <CreditCard className="w-5 h-5" />
-                      {language === "zh" ? "在线支付 (Stripe)" : "Pay Online (Stripe)"}
+                      {t("order.payOnline")}
                     </>
                   )}
                 </Button>
 
                 <p className="text-xs text-center text-muted-foreground">
-                  {language === "zh"
-                    ? "在线支付支持信用卡、FPX、GrabPay"
-                    : "Online payment supports Credit Card, FPX, GrabPay"}
+                  {t("order.paymentMethods")}
                 </p>
                 <p className="text-xs text-center">
                   <a
@@ -816,7 +828,7 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
                     rel="noopener noreferrer"
                     className="text-muted-foreground underline hover:text-foreground"
                   >
-                    {language === "zh" ? "需要帮助？" : "Need help?"}
+                    {t("order.needHelp")}
                   </a>
                 </p>
               </div>
