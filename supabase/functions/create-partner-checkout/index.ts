@@ -11,19 +11,19 @@ const PARTNER_TIERS = {
     name: "启航配套 Starter Package",
     price: 100000, // RM 1000 in cents
     lyPoints: 2000,
-    rwaTokens: 2,
+    rwaTokens: 1,
   },
   phase2: {
     name: "成长配套 Growth Package",
     price: 130000, // RM 1300 in cents
     lyPoints: 2600,
-    rwaTokens: 3,
+    rwaTokens: 1,
   },
   phase3: {
     name: "卓越配套 Elite Package",
     price: 150000, // RM 1500 in cents
     lyPoints: 3000,
-    rwaTokens: 4,
+    rwaTokens: 1,
   },
 };
 

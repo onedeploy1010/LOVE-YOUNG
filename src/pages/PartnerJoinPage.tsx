@@ -26,6 +26,8 @@ interface UserStateData {
   partner: Partner | null;
 }
 
+const REFERRAL_STORAGE_KEY = "loveyoung_referral_code";
+
 const getPackages = (t: (key: string) => string) => [
   {
     id: "phase1",
@@ -33,14 +35,15 @@ const getPackages = (t: (key: string) => string) => [
     name: t("member.partnerJoin.packages.phase1.name"),
     price: 1000,
     lyPoints: 2000,
-    rwaTokens: 2,
+    rwaTokens: 1,
     features: [
       t("member.partnerJoin.packages.phase1.feature1"),
       t("member.partnerJoin.packages.phase1.feature2"),
       t("member.partnerJoin.packages.phase1.feature3"),
       t("member.partnerJoin.packages.phase1.feature4")
     ],
-    popular: false
+    popular: false,
+    available: true
   },
   {
     id: "phase2",
@@ -48,14 +51,15 @@ const getPackages = (t: (key: string) => string) => [
     name: t("member.partnerJoin.packages.phase2.name"),
     price: 1300,
     lyPoints: 2600,
-    rwaTokens: 3,
+    rwaTokens: 1,
     features: [
       t("member.partnerJoin.packages.phase2.feature1"),
       t("member.partnerJoin.packages.phase2.feature2"),
       t("member.partnerJoin.packages.phase2.feature3"),
       t("member.partnerJoin.packages.phase2.feature4")
     ],
-    popular: true
+    popular: true,
+    available: false
   },
   {
     id: "phase3",
@@ -63,7 +67,7 @@ const getPackages = (t: (key: string) => string) => [
     name: t("member.partnerJoin.packages.phase3.name"),
     price: 1500,
     lyPoints: 3000,
-    rwaTokens: 4,
+    rwaTokens: 1,
     features: [
       t("member.partnerJoin.packages.phase3.feature1"),
       t("member.partnerJoin.packages.phase3.feature2"),
@@ -71,7 +75,8 @@ const getPackages = (t: (key: string) => string) => [
       t("member.partnerJoin.packages.phase3.feature4"),
       t("member.partnerJoin.packages.phase3.feature5")
     ],
-    popular: false
+    popular: false,
+    available: false
   }
 ];
 
@@ -80,8 +85,9 @@ export default function PartnerJoinPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { user: authUser, refreshUserData, loading: authLoading } = useAuth();
-  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<string | null>("phase1");
   const [referralCode, setReferralCode] = useState("");
+  const [referralAutoFilled, setReferralAutoFilled] = useState(false);
   const [step, setStep] = useState<"profile" | "package" | "payment" | "success">("profile");
 
   // Profile form state
@@ -125,6 +131,27 @@ export default function PartnerJoinPage() {
   });
 
   const isLoading = authLoading || isQueryLoading;
+
+  // Auto-fill referral code from URL (?ref=CODE) or localStorage
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refFromUrl = params.get("ref");
+    if (refFromUrl) {
+      setReferralCode(refFromUrl.toUpperCase());
+      setReferralAutoFilled(true);
+      // Also cache to localStorage so it survives page reloads
+      try { localStorage.setItem(REFERRAL_STORAGE_KEY, refFromUrl.toUpperCase()); } catch {}
+    } else {
+      // Check localStorage for cached referral code
+      try {
+        const cached = localStorage.getItem(REFERRAL_STORAGE_KEY);
+        if (cached) {
+          setReferralCode(cached.toUpperCase());
+          setReferralAutoFilled(true);
+        }
+      } catch {}
+    }
+  }, []);
 
   // Handle payment=success redirect from Stripe
   useEffect(() => {
@@ -511,17 +538,24 @@ export default function PartnerJoinPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {packages.map((pkg) => (
-                <Card 
+                <Card
                   key={pkg.id}
-                  className={`relative cursor-pointer transition-all ${
-                    selectedPackage === pkg.id 
-                      ? "border-secondary ring-2 ring-secondary/20" 
-                      : "hover:border-primary/50"
+                  className={`relative transition-all ${
+                    !pkg.available
+                      ? "opacity-60 cursor-not-allowed"
+                      : selectedPackage === pkg.id
+                        ? "border-secondary ring-2 ring-secondary/20 cursor-pointer"
+                        : "hover:border-primary/50 cursor-pointer"
                   }`}
-                  onClick={() => setSelectedPackage(pkg.id)}
+                  onClick={() => pkg.available && setSelectedPackage(pkg.id)}
                   data-testid={`package-${pkg.id}`}
                 >
-                  {pkg.popular && (
+                  {!pkg.available && (
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-muted text-muted-foreground">
+                      {t("member.partnerJoin.comingSoon") || "即将推出"}
+                    </Badge>
+                  )}
+                  {pkg.available && pkg.popular && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground">
                       {t("member.partnerJoin.mostPopular")}
                     </Badge>
@@ -536,7 +570,7 @@ export default function PartnerJoinPage() {
                     <div className="space-y-2 mb-4">
                       {pkg.features.map((feature, idx) => (
                         <div key={idx} className="flex items-center gap-2 text-sm">
-                          <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          <CheckCircle className={`w-4 h-4 flex-shrink-0 ${pkg.available ? "text-green-500" : "text-muted-foreground"}`} />
                           <span>{feature}</span>
                         </div>
                       ))}
@@ -558,20 +592,20 @@ export default function PartnerJoinPage() {
               ))}
             </div>
 
-            <Card>
-              <CardContent className="p-4">
-                <Label htmlFor="referral" className="text-sm font-medium">{t("member.partnerJoin.referralCodeLabel")}</Label>
-                <Input 
-                  id="referral"
-                  placeholder={t("member.partnerJoin.referralCodePlaceholder")}
-                  className="mt-2"
-                  value={referralCode}
-                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                  maxLength={8}
-                  data-testid="input-referral"
-                />
-              </CardContent>
-            </Card>
+            {referralCode && (
+              <Card className="border-green-200 bg-green-50/50">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{t("member.partnerJoin.referralCodeLabel")}</p>
+                    <p className="font-mono text-lg font-bold text-primary">{referralCode}</p>
+                  </div>
+                  <Badge variant="outline" className="text-green-600 border-green-300">
+                    {t("member.partnerJoin.referralApplied") || "已应用"}
+                  </Badge>
+                </CardContent>
+              </Card>
+            )}
 
             <Button
               className="w-full bg-secondary text-secondary-foreground gap-2"
