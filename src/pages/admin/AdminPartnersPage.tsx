@@ -10,8 +10,21 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Users, Search, CheckCircle, XCircle, Clock, Eye,
-  TrendingUp, Loader2, UserPlus, Filter
+  TrendingUp, Loader2, UserPlus, Filter, Ban, Play
 } from "lucide-react";
 
 interface Partner {
@@ -23,9 +36,26 @@ interface Partner {
   rwa_tokens: number;
   cash_wallet_balance: number;
   total_sales: number;
+  total_commission: number;
   created_at: string;
   member_name?: string;
   member_email?: string;
+  member_phone?: string;
+}
+
+interface PartnerReferral {
+  id: string;
+  member_name: string;
+  tier: string;
+  status: string;
+}
+
+interface PartnerOrder {
+  id: string;
+  order_number: string;
+  total_amount: number;
+  status: string;
+  created_at: string;
 }
 
 export default function AdminPartnersPage() {
@@ -34,6 +64,83 @@ export default function AdminPartnersPage() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+  // Query: direct referrals for selected partner
+  const { data: referrals = [] } = useQuery<PartnerReferral[]>({
+    queryKey: ["partner-referrals", selectedPartner?.id],
+    enabled: !!selectedPartner,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("partners")
+        .select("id, tier, status, members(name)")
+        .eq("referrer_id", selectedPartner!.id);
+      if (error) { console.error(error); return []; }
+      return (data || []).map((p: any) => ({
+        id: p.id,
+        member_name: p.members?.name || "Partner",
+        tier: p.tier,
+        status: p.status,
+      }));
+    },
+  });
+
+  // Query: network orders for selected partner
+  const { data: networkOrders = [] } = useQuery<PartnerOrder[]>({
+    queryKey: ["partner-orders", selectedPartner?.referral_code],
+    enabled: !!selectedPartner?.referral_code,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("id, order_number, total_amount, status, created_at")
+        .eq("source", selectedPartner!.referral_code)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (error) { console.error(error); return []; }
+      return (data || []) as PartnerOrder[];
+    },
+  });
+
+  // Mutation: update tier
+  const updateTierMutation = useMutation({
+    mutationFn: async ({ partnerId, tier }: { partnerId: string; tier: string }) => {
+      const { error } = await supabase.from("partners").update({ tier }).eq("id", partnerId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-partners"] });
+      toast({ title: "等级已更新" });
+      if (selectedPartner) setSelectedPartner({ ...selectedPartner, tier: updateTierMutation.variables?.tier || selectedPartner.tier });
+    },
+    onError: (error: Error) => {
+      toast({ title: "更新失败", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Mutation: toggle status
+  const toggleStatusMutation = useMutation({
+    mutationFn: async ({ partnerId, status }: { partnerId: string; status: string }) => {
+      const { error } = await supabase.from("partners").update({ status }).eq("id", partnerId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-partners"] });
+      toast({ title: "状态已更新" });
+      if (selectedPartner) {
+        const newStatus = selectedPartner.status === "active" ? "suspended" : "active";
+        setSelectedPartner({ ...selectedPartner, status: newStatus });
+      }
+    },
+    onError: (error: Error) => {
+      toast({ title: "更新失败", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const handleViewPartnerDetails = (partner: Partner) => {
+    setSelectedPartner(partner);
+    setShowDetailsModal(true);
+  };
 
   const { data: partners = [], isLoading } = useQuery({
     queryKey: ["admin-partners"],
@@ -44,7 +151,8 @@ export default function AdminPartnersPage() {
           *,
           members (
             name,
-            email
+            email,
+            phone
           )
         `)
         .order("created_at", { ascending: false });
@@ -63,9 +171,11 @@ export default function AdminPartnersPage() {
         rwa_tokens: p.rwa_tokens || 0,
         cash_wallet_balance: p.cash_wallet_balance || 0,
         total_sales: p.total_sales || 0,
+        total_commission: p.total_commission || 0,
         created_at: p.created_at,
         member_name: p.members?.name,
         member_email: p.members?.email,
+        member_phone: p.members?.phone,
       }));
     },
   });
@@ -229,7 +339,7 @@ export default function AdminPartnersPage() {
                                 <span className="hidden sm:inline">{t("admin.partnersPage.activate")}</span>
                               </Button>
                             )}
-                            <Button variant="outline" size="sm" className="gap-1" data-testid={`button-view-${partner.id}`}>
+                            <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewPartnerDetails(partner)} data-testid={`button-view-${partner.id}`}>
                               <Eye className="w-4 h-4" />
                               <span className="hidden sm:inline">{t("admin.partnersPage.viewDetails")}</span>
                             </Button>
@@ -244,6 +354,165 @@ export default function AdminPartnersPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Partner Details Modal */}
+      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary" />
+              经营人详情
+            </DialogTitle>
+          </DialogHeader>
+          {selectedPartner && (
+            <div className="space-y-6">
+              {/* Basic Info */}
+              <Card className="p-4">
+                <h4 className="font-semibold mb-3">基本信息</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">姓名:</span>
+                    <span className="ml-2 font-medium">{selectedPartner.member_name || "-"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">邮箱:</span>
+                    <span className="ml-2 font-medium">{selectedPartner.member_email || "-"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">手机:</span>
+                    <span className="ml-2 font-medium">{selectedPartner.member_phone || "-"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">推荐码:</span>
+                    <span className="ml-2 font-mono font-medium">{selectedPartner.referral_code}</span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-muted-foreground">注册日期:</span>
+                    <span className="ml-2 font-medium">
+                      {new Date(selectedPartner.created_at).toLocaleDateString("zh-CN")}
+                    </span>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Financial Overview */}
+              <Card className="p-4">
+                <h4 className="font-semibold mb-3">财务概览</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                  <div className="p-2 bg-muted rounded text-center">
+                    <p className="text-muted-foreground text-xs">LY积分</p>
+                    <p className="text-lg font-bold">{selectedPartner.ly_balance}</p>
+                  </div>
+                  <div className="p-2 bg-muted rounded text-center">
+                    <p className="text-muted-foreground text-xs">现金钱包</p>
+                    <p className="text-lg font-bold">RM {(selectedPartner.cash_wallet_balance / 100).toFixed(2)}</p>
+                  </div>
+                  <div className="p-2 bg-muted rounded text-center">
+                    <p className="text-muted-foreground text-xs">RWA令牌</p>
+                    <p className="text-lg font-bold">{selectedPartner.rwa_tokens}</p>
+                  </div>
+                  <div className="p-2 bg-muted rounded text-center">
+                    <p className="text-muted-foreground text-xs">总销售额</p>
+                    <p className="text-lg font-bold text-primary">RM {(selectedPartner.total_sales / 100).toFixed(2)}</p>
+                  </div>
+                  <div className="p-2 bg-muted rounded text-center">
+                    <p className="text-muted-foreground text-xs">总返佣</p>
+                    <p className="text-lg font-bold text-green-500">RM {(selectedPartner.total_commission / 100).toFixed(2)}</p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Tier & Status */}
+              <Card className="p-4">
+                <h4 className="font-semibold mb-3">等级与状态</h4>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">等级:</span>
+                    <Select
+                      value={selectedPartner.tier}
+                      onValueChange={(value) => {
+                        updateTierMutation.mutate({ partnerId: selectedPartner.id, tier: value });
+                      }}
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="phase1">Phase 1</SelectItem>
+                        <SelectItem value="phase2">Phase 2</SelectItem>
+                        <SelectItem value="phase3">Phase 3</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">状态:</span>
+                    <Badge variant={selectedPartner.status === "active" ? "default" : "destructive"}>
+                      {selectedPartner.status === "active" ? "激活" : selectedPartner.status === "suspended" ? "暂停" : selectedPartner.status}
+                    </Badge>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newStatus = selectedPartner.status === "active" ? "suspended" : "active";
+                        toggleStatusMutation.mutate({ partnerId: selectedPartner.id, status: newStatus });
+                      }}
+                      disabled={toggleStatusMutation.isPending}
+                    >
+                      {selectedPartner.status === "active" ? (
+                        <><Ban className="w-4 h-4 mr-1" /> 暂停</>
+                      ) : (
+                        <><Play className="w-4 h-4 mr-1" /> 激活</>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Direct Referrals */}
+              <Card className="p-4">
+                <h4 className="font-semibold mb-3">直接推荐 ({referrals.length})</h4>
+                {referrals.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">暂无直接推荐</p>
+                ) : (
+                  <div className="space-y-2">
+                    {referrals.map((r) => (
+                      <div key={r.id} className="flex items-center justify-between text-sm p-2 border rounded">
+                        <span className="font-medium">{r.member_name}</span>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">Phase {r.tier === "phase1" ? 1 : r.tier === "phase2" ? 2 : 3}</Badge>
+                          <Badge variant={r.status === "active" ? "default" : "outline"}>
+                            {r.status === "active" ? "激活" : "待审核"}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+
+              {/* Network Orders */}
+              <Card className="p-4">
+                <h4 className="font-semibold mb-3">网络订单 (最近10单)</h4>
+                {networkOrders.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">暂无网络订单</p>
+                ) : (
+                  <div className="space-y-2">
+                    {networkOrders.map((o) => (
+                      <div key={o.id} className="flex items-center justify-between text-sm p-2 border rounded">
+                        <span className="font-mono">#{o.order_number}</span>
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-primary">RM {(o.total_amount / 100).toFixed(2)}</span>
+                          <Badge variant="outline">{o.status}</Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

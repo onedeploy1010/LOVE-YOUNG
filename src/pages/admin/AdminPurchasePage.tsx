@@ -1,17 +1,70 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminLayout } from "@/components/AdminLayout";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   ClipboardCheck, Search, Plus, Building2, Eye,
-  Clock, CheckCircle, Truck, Package, Loader2
+  Clock, CheckCircle, Truck, Package, Loader2, Trash2
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
+
+const supplierFormSchema = z.object({
+  name: z.string().min(1, "请输入供应商名称"),
+  contactPerson: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().optional(),
+  address: z.string().optional(),
+  category: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+type SupplierFormValues = z.infer<typeof supplierFormSchema>;
+
+const poFormSchema = z.object({
+  supplierId: z.string().min(1, "请选择供应商"),
+  expectedDate: z.string().optional(),
+  notes: z.string().optional(),
+  items: z.array(z.object({
+    itemName: z.string().min(1, "请输入物品名"),
+    quantity: z.coerce.number().min(1, "数量至少为1"),
+    unitPrice: z.coerce.number().min(0.01, "单价必须大于0"),
+  })).min(1, "至少添加一项物品"),
+});
+
+type PoFormValues = z.infer<typeof poFormSchema>;
 
 interface PurchaseOrder {
   id: string;
@@ -40,8 +93,95 @@ interface Supplier {
 
 export default function AdminPurchasePage() {
   const { t } = useTranslation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("orders");
+  const [showSupplierModal, setShowSupplierModal] = useState(false);
+  const [showPoModal, setShowPoModal] = useState(false);
+
+  const supplierForm = useForm<SupplierFormValues>({
+    resolver: zodResolver(supplierFormSchema),
+    defaultValues: { name: "", contactPerson: "", phone: "", email: "", address: "", category: "", notes: "" },
+  });
+
+  const poForm = useForm<PoFormValues>({
+    resolver: zodResolver(poFormSchema),
+    defaultValues: { supplierId: "", expectedDate: "", notes: "", items: [{ itemName: "", quantity: 1, unitPrice: 0 }] },
+  });
+
+  const { fields: poItems, append: addPoItem, remove: removePoItem } = useFieldArray({
+    control: poForm.control,
+    name: "items",
+  });
+
+  const generatePoNumber = () => {
+    const now = new Date();
+    const datePart = now.toISOString().slice(0, 10).replace(/-/g, "");
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    return `PO-${datePart}-${rand}`;
+  };
+
+  const createSupplierMutation = useMutation({
+    mutationFn: async (data: SupplierFormValues) => {
+      const { error } = await supabase.from("suppliers").insert({
+        name: data.name,
+        contact_person: data.contactPerson || null,
+        phone: data.phone || null,
+        email: data.email || null,
+        address: data.address || null,
+        category: data.category || null,
+        notes: data.notes || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-suppliers"] });
+      setShowSupplierModal(false);
+      supplierForm.reset();
+      toast({ title: "供应商已创建" });
+    },
+    onError: (error) => {
+      toast({ title: "创建失败", description: String(error), variant: "destructive" });
+    },
+  });
+
+  const createPoMutation = useMutation({
+    mutationFn: async (data: PoFormValues) => {
+      const supplier = suppliers.find(s => s.id === data.supplierId);
+      const itemsJson = data.items.map(item => ({
+        name: item.itemName,
+        quantity: item.quantity,
+        unit_price: Math.round(item.unitPrice * 100),
+        total: Math.round(item.quantity * item.unitPrice * 100),
+      }));
+      const totalAmount = itemsJson.reduce((sum, i) => sum + i.total, 0);
+
+      const { error } = await supabase.from("purchase_orders").insert({
+        order_number: generatePoNumber(),
+        supplier_id: data.supplierId,
+        supplier_name: supplier?.name || "",
+        items: itemsJson,
+        total_amount: totalAmount,
+        status: "pending",
+        expected_date: data.expectedDate || null,
+        notes: data.notes || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-purchase-orders"] });
+      setShowPoModal(false);
+      poForm.reset();
+      toast({ title: "采购单已创建" });
+    },
+    onError: (error) => {
+      toast({ title: "创建失败", description: String(error), variant: "destructive" });
+    },
+  });
+
+  const watchedPoItems = poForm.watch("items");
+  const poTotal = (watchedPoItems || []).reduce((sum, item) => sum + (item.quantity || 0) * (item.unitPrice || 0), 0);
 
   // Fetch purchase orders
   const { data: orders = [], isLoading: loadingOrders } = useQuery({
@@ -123,7 +263,7 @@ export default function AdminPurchasePage() {
             <h1 className="text-2xl font-serif text-primary" data-testid="text-purchase-title">{t("admin.purchasePage.title")}</h1>
             <p className="text-muted-foreground">{t("admin.purchasePage.subtitle")}</p>
           </div>
-          <Button className="gap-2 bg-secondary text-secondary-foreground" data-testid="button-new-po">
+          <Button className="gap-2 bg-secondary text-secondary-foreground" onClick={() => { poForm.reset({ supplierId: "", expectedDate: "", notes: "", items: [{ itemName: "", quantity: 1, unitPrice: 0 }] }); setShowPoModal(true); }} data-testid="button-new-po">
             <Plus className="w-4 h-4" />
             {t("admin.purchasePage.newPo")}
           </Button>
@@ -211,7 +351,7 @@ export default function AdminPurchasePage() {
                     <Building2 className="w-5 h-5 text-primary" />
                     {t("admin.purchasePage.supplierList")}
                   </CardTitle>
-                  <Button variant="outline" className="gap-2" data-testid="button-add-supplier">
+                  <Button variant="outline" className="gap-2" onClick={() => { supplierForm.reset(); setShowSupplierModal(true); }} data-testid="button-add-supplier">
                     <Plus className="w-4 h-4" />
                     {t("admin.purchasePage.addSupplier")}
                   </Button>
@@ -257,6 +397,182 @@ export default function AdminPurchasePage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Add Supplier Modal */}
+      <Dialog open={showSupplierModal} onOpenChange={setShowSupplierModal}>
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-primary" />
+              新增供应商
+            </DialogTitle>
+            <DialogDescription>添加新的供应商信息</DialogDescription>
+          </DialogHeader>
+          <Form {...supplierForm}>
+            <form onSubmit={supplierForm.handleSubmit((data) => createSupplierMutation.mutate(data))} className="space-y-4 py-4">
+              <FormField control={supplierForm.control} name="name" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>名称 *</FormLabel>
+                  <FormControl><Input {...field} placeholder="供应商名称" data-testid="input-supplier-name" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField control={supplierForm.control} name="contactPerson" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>联系人</FormLabel>
+                    <FormControl><Input {...field} placeholder="联系人姓名" data-testid="input-supplier-contact" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={supplierForm.control} name="phone" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>电话</FormLabel>
+                    <FormControl><Input {...field} placeholder="电话号码" data-testid="input-supplier-phone" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+              <FormField control={supplierForm.control} name="email" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>邮箱</FormLabel>
+                  <FormControl><Input {...field} type="email" placeholder="邮箱地址" data-testid="input-supplier-email" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={supplierForm.control} name="address" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>地址</FormLabel>
+                  <FormControl><Input {...field} placeholder="供应商地址" data-testid="input-supplier-address" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={supplierForm.control} name="category" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>分类</FormLabel>
+                  <FormControl><Input {...field} placeholder="分类（可选）" data-testid="input-supplier-category" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={supplierForm.control} name="notes" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>备注</FormLabel>
+                  <FormControl><Textarea {...field} placeholder="备注（可选）" data-testid="input-supplier-notes" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setShowSupplierModal(false)}>取消</Button>
+                <Button type="submit" disabled={createSupplierMutation.isPending} data-testid="button-confirm-supplier">
+                  {createSupplierMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  创建
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Purchase Order Modal */}
+      <Dialog open={showPoModal} onOpenChange={setShowPoModal}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardCheck className="w-5 h-5 text-primary" />
+              新增采购单
+            </DialogTitle>
+            <DialogDescription>创建新的采购订单</DialogDescription>
+          </DialogHeader>
+          <Form {...poForm}>
+            <form onSubmit={poForm.handleSubmit((data) => createPoMutation.mutate(data))} className="space-y-4 py-4">
+              <FormField control={poForm.control} name="supplierId" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>供应商 *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-po-supplier">
+                        <SelectValue placeholder="选择供应商" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {suppliers.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <FormLabel>物品清单 *</FormLabel>
+                  <Button type="button" variant="outline" size="sm" onClick={() => addPoItem({ itemName: "", quantity: 1, unitPrice: 0 })}>
+                    <Plus className="w-4 h-4 mr-1" /> 添加物品
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {poItems.map((item, index) => (
+                    <div key={item.id} className="flex items-end gap-2 p-3 border rounded-lg">
+                      <FormField control={poForm.control} name={`items.${index}.itemName`} render={({ field }) => (
+                        <FormItem className="flex-1">
+                          {index === 0 && <FormLabel>物品名</FormLabel>}
+                          <FormControl><Input {...field} placeholder="物品名称" /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={poForm.control} name={`items.${index}.quantity`} render={({ field }) => (
+                        <FormItem className="w-24">
+                          {index === 0 && <FormLabel>数量</FormLabel>}
+                          <FormControl><Input {...field} type="number" min={1} placeholder="1" /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={poForm.control} name={`items.${index}.unitPrice`} render={({ field }) => (
+                        <FormItem className="w-28">
+                          {index === 0 && <FormLabel>单价(RM)</FormLabel>}
+                          <FormControl><Input {...field} type="number" step="0.01" placeholder="0.00" /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      {poItems.length > 1 && (
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removePoItem(index)}>
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="text-right mt-2 font-bold text-primary">
+                  合计: RM {poTotal.toFixed(2)}
+                </div>
+              </div>
+
+              <FormField control={poForm.control} name="expectedDate" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>预计到货日</FormLabel>
+                  <FormControl><Input {...field} type="date" data-testid="input-po-expected-date" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={poForm.control} name="notes" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>备注</FormLabel>
+                  <FormControl><Textarea {...field} placeholder="备注（可选）" data-testid="input-po-notes" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setShowPoModal(false)}>取消</Button>
+                <Button type="submit" disabled={createPoMutation.isPending} data-testid="button-confirm-po">
+                  {createPoMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  创建采购单
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

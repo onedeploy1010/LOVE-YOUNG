@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { AdminLayout } from "@/components/AdminLayout";
+import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -91,6 +92,9 @@ type ProductCategory = {
 
 export default function AdminProductsPage() {
   const { t } = useTranslation();
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
@@ -257,6 +261,38 @@ export default function AdminProductsPage() {
   const handleDeleteProduct = (product: Product) => {
     setEditingProduct(product);
     setShowDeleteConfirm(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast({ title: "文件类型不支持", description: "请上传 JPG, PNG 或 WebP 格式的图片", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "文件过大", description: "图片大小不能超过 5MB", variant: "destructive" });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const filePath = `products/${crypto.randomUUID()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("product-images").upload(filePath, file);
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(filePath);
+      productForm.setValue("image", urlData.publicUrl);
+      toast({ title: "图片上传成功" });
+    } catch (err) {
+      toast({ title: "上传失败", description: String(err), variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const productSaveMutation = useMutation({
@@ -761,8 +797,26 @@ export default function AdminProductsPage() {
                         ) : (
                           <ImageIcon className="w-12 h-12 mx-auto text-muted-foreground/50 mb-2" />
                         )}
-                        <Button type="button" variant="outline" size="sm" data-testid="button-upload-image">
-                          {t("admin.productsPage.uploadImage")}
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          accept="image/jpeg,image/png,image/webp"
+                          className="hidden"
+                          onChange={handleImageUpload}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploading}
+                          data-testid="button-upload-image"
+                        >
+                          {uploading ? (
+                            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> 上传中...</>
+                          ) : (
+                            t("admin.productsPage.uploadImage")
+                          )}
                         </Button>
                       </div>
                     </FormControl>
