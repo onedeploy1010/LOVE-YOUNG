@@ -35,6 +35,7 @@ interface Member {
   orders_count?: number;
   referrer_name?: string;
   downline_count?: number;
+  is_registered_only?: boolean; // true = user without member record
 }
 
 export default function AdminMembersPage() {
@@ -62,12 +63,15 @@ export default function AdminMembersPage() {
         return [];
       }
 
-      // Get users for role info
+      // Get all users (including those without member records)
       const { data: usersData } = await supabase
         .from("users")
-        .select("id, role");
+        .select("id, email, first_name, last_name, phone, role, created_at");
 
-      const usersMap = new Map(usersData?.map(u => [u.id, u.role]) || []);
+      const usersMap = new Map(usersData?.map(u => [u.id, u]) || []);
+
+      // Track which user_ids already have a member record
+      const memberUserIds = new Set(membersData?.map(m => m.user_id) || []);
 
       // Get orders count per member
       const { data: ordersData } = await supabase
@@ -93,13 +97,14 @@ export default function AdminMembersPage() {
         }
       });
 
-      return (membersData || []).map((m): Member => ({
+      // Map existing members
+      const membersList: Member[] = (membersData || []).map((m): Member => ({
         id: m.id,
         user_id: m.user_id,
         name: m.name || "未命名",
         email: m.email || "",
         phone: m.phone || "",
-        role: usersMap.get(m.user_id) || m.role || "member",
+        role: usersMap.get(m.user_id)?.role || m.role || "member",
         points_balance: m.points_balance || 0,
         referral_code: m.referral_code || "",
         referrer_id: m.referrer_id,
@@ -107,7 +112,30 @@ export default function AdminMembersPage() {
         orders_count: ordersCountMap.get(m.id) || 0,
         referrer_name: m.referrer_id ? memberMap.get(m.referrer_id) : undefined,
         downline_count: downlineCountMap.get(m.id) || 0,
+        is_registered_only: false,
       }));
+
+      // Add registered-only users (no member record)
+      const registeredOnly: Member[] = (usersData || [])
+        .filter(u => !memberUserIds.has(u.id))
+        .map((u): Member => ({
+          id: u.id, // use user id as id
+          user_id: u.id,
+          name: [u.first_name, u.last_name].filter(Boolean).join(" ") || u.email || "未命名",
+          email: u.email || "",
+          phone: u.phone || "",
+          role: "user",
+          points_balance: 0,
+          referral_code: "",
+          referrer_id: null,
+          created_at: u.created_at,
+          orders_count: 0,
+          referrer_name: undefined,
+          downline_count: 0,
+          is_registered_only: true,
+        }));
+
+      return [...membersList, ...registeredOnly];
     },
   });
 
@@ -193,10 +221,11 @@ export default function AdminMembersPage() {
 
   const getRoleBadge = (role: string) => {
     switch (role) {
+      case "user": return { label: "已注册", icon: UserPlus, variant: "outline" as const };
       case "member": return { label: t("admin.membersPage.roleMember"), icon: Star, variant: "secondary" as const };
       case "partner": return { label: t("admin.membersPage.rolePartner"), icon: Crown, variant: "default" as const };
       case "admin": return { label: t("admin.membersPage.roleAdmin"), icon: Shield, variant: "destructive" as const };
-      default: return { label: t("admin.membersPage.roleUser"), icon: Users, variant: "outline" as const };
+      default: return { label: "已注册", icon: UserPlus, variant: "outline" as const };
     }
   };
 
@@ -205,7 +234,11 @@ export default function AdminMembersPage() {
     const badges: Array<{ label: string; icon: React.ElementType; variant: "default" | "secondary" | "outline" | "destructive" }> = [];
     if (role === "admin") badges.push({ label: t("admin.membersPage.roleAdmin"), icon: Shield, variant: "destructive" });
     if (role === "admin" || role === "partner") badges.push({ label: t("admin.membersPage.rolePartner"), icon: Crown, variant: "default" });
-    badges.push({ label: t("admin.membersPage.roleMember"), icon: Star, variant: "secondary" });
+    if (role === "user") {
+      badges.push({ label: "已注册", icon: UserPlus, variant: "outline" });
+    } else {
+      badges.push({ label: t("admin.membersPage.roleMember"), icon: Star, variant: "secondary" });
+    }
     return badges;
   };
 
@@ -220,6 +253,7 @@ export default function AdminMembersPage() {
 
   const stats = {
     total: members.length,
+    registered: members.filter(m => m.role === "user").length,
     members: members.filter(m => m.role === "member").length,
     partners: members.filter(m => m.role === "partner").length,
     admins: members.filter(m => m.role === "admin").length,
@@ -257,48 +291,59 @@ export default function AdminMembersPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
           <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Users className="w-6 h-6 text-primary" />
+            <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.total}</p>
-                <p className="text-sm text-muted-foreground">{t("admin.membersPage.totalUsers")}</p>
+              <div className="text-center sm:text-left">
+                <p className="text-lg sm:text-2xl font-bold">{stats.total}</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">{t("admin.membersPage.totalUsers")}</p>
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
-                <Star className="w-6 h-6 text-secondary" />
+            <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
+                <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-secondary">{stats.members}</p>
-                <p className="text-sm text-muted-foreground">{t("admin.membersPage.regularMembers")}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Crown className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-primary">{stats.partners}</p>
-                <p className="text-sm text-muted-foreground">{t("admin.membersPage.partners")}</p>
+              <div className="text-center sm:text-left">
+                <p className="text-lg sm:text-2xl font-bold text-blue-500">{stats.registered}</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">已注册</p>
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
-                <Shield className="w-6 h-6 text-red-500" />
+            <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+                <Star className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-red-500">{stats.admins}</p>
-                <p className="text-sm text-muted-foreground">管理员</p>
+              <div className="text-center sm:text-left">
+                <p className="text-lg sm:text-2xl font-bold text-secondary">{stats.members}</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">{t("admin.membersPage.regularMembers")}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="hidden sm:block">
+            <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+              </div>
+              <div className="text-center sm:text-left">
+                <p className="text-lg sm:text-2xl font-bold text-primary">{stats.partners}</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">{t("admin.membersPage.partners")}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="hidden sm:block">
+            <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+              </div>
+              <div className="text-center sm:text-left">
+                <p className="text-lg sm:text-2xl font-bold text-red-500">{stats.admins}</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">管理员</p>
               </div>
             </CardContent>
           </Card>
@@ -326,8 +371,9 @@ export default function AdminMembersPage() {
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <div className="overflow-x-auto -mx-1 px-1">
-                <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-4">
+                <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-5">
                   <TabsTrigger value="all" className="flex-1 md:flex-none" data-testid="tab-all">{t("admin.membersPage.tabAll")} ({stats.total})</TabsTrigger>
+                  <TabsTrigger value="user" className="flex-1 md:flex-none" data-testid="tab-user">已注册 ({stats.registered})</TabsTrigger>
                   <TabsTrigger value="member" className="flex-1 md:flex-none" data-testid="tab-member">{t("admin.membersPage.tabMember")} ({stats.members})</TabsTrigger>
                   <TabsTrigger value="partner" className="flex-1 md:flex-none" data-testid="tab-partner">{t("admin.membersPage.tabPartner")} ({stats.partners})</TabsTrigger>
                   <TabsTrigger value="admin" className="flex-1 md:flex-none" data-testid="tab-admin">{t("admin.membersPage.tabAdmin")} ({stats.admins})</TabsTrigger>
@@ -350,15 +396,16 @@ export default function AdminMembersPage() {
                       const roleConfig = getRoleBadge(member.role);
                       const RoleIcon = roleConfig.icon;
                       const badges = getAllRoleBadges(member.role);
+                      const isRegisteredOnly = member.is_registered_only;
                       return (
                         <div
                           key={member.id}
-                          className="p-3 md:p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                          className={`p-3 md:p-4 border rounded-lg hover:bg-muted/50 transition-colors ${isRegisteredOnly ? "border-dashed opacity-80" : ""}`}
                           data-testid={`member-${member.id}`}
                         >
                           <div className="flex items-start gap-3 md:gap-4">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex-shrink-0 flex items-center justify-center">
-                              <RoleIcon className="w-5 h-5 text-primary" />
+                            <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${isRegisteredOnly ? "bg-blue-500/10" : "bg-primary/10"}`}>
+                              <RoleIcon className={`w-5 h-5 ${isRegisteredOnly ? "text-blue-500" : "text-primary"}`} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-wrap items-center gap-1.5">
@@ -368,8 +415,10 @@ export default function AdminMembersPage() {
                                 ))}
                               </div>
                               <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-muted-foreground mt-0.5">
-                                <span className="font-mono text-xs">{member.referral_code}</span>
-                                <span className="hidden sm:flex items-center gap-1 truncate">
+                                {member.referral_code && (
+                                  <span className="font-mono text-xs">{member.referral_code}</span>
+                                )}
+                                <span className="flex items-center gap-1 truncate">
                                   <Mail className="w-3 h-3 flex-shrink-0" />
                                   <span className="truncate">{member.email}</span>
                                 </span>
@@ -385,29 +434,46 @@ export default function AdminMembersPage() {
                                   推荐人: {member.referrer_name}
                                 </p>
                               )}
-                              {/* Stats shown inline on mobile */}
-                              <div className="flex items-center gap-3 mt-1.5 md:hidden text-xs text-muted-foreground">
-                                <span>{member.points_balance} {t("admin.membersPage.points")}</span>
-                                <span>{member.orders_count} 订单</span>
-                                <span>{member.downline_count} 下级</span>
-                              </div>
+                              {/* Stats shown inline on mobile — only for actual members */}
+                              {!isRegisteredOnly && (
+                                <div className="flex items-center gap-3 mt-1.5 md:hidden text-xs text-muted-foreground">
+                                  <span>{member.points_balance} {t("admin.membersPage.points")}</span>
+                                  <span>{member.orders_count} 订单</span>
+                                  <span>{member.downline_count} 下级</span>
+                                </div>
+                              )}
+                              {isRegisteredOnly && (
+                                <p className="text-xs text-muted-foreground mt-1.5 md:hidden">
+                                  注册于 {formatDate(member.created_at)}
+                                </p>
+                              )}
                             </div>
                             <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-                              <div className="text-right hidden md:block">
-                                <p className="text-sm">{member.points_balance} {t("admin.membersPage.points")}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {member.orders_count} 订单 · {member.downline_count} 下级
-                                </p>
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="gap-1"
-                                onClick={() => handleViewNetwork(member)}
-                                data-testid={`button-network-${member.id}`}
-                              >
-                                <Network className="w-4 h-4" />
-                              </Button>
+                              {!isRegisteredOnly ? (
+                                <>
+                                  <div className="text-right hidden md:block">
+                                    <p className="text-sm">{member.points_balance} {t("admin.membersPage.points")}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {member.orders_count} 订单 · {member.downline_count} 下级
+                                    </p>
+                                  </div>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-1"
+                                    onClick={() => handleViewNetwork(member)}
+                                    data-testid={`button-network-${member.id}`}
+                                  >
+                                    <Network className="w-4 h-4" />
+                                  </Button>
+                                </>
+                              ) : (
+                                <div className="text-right hidden md:block">
+                                  <p className="text-xs text-muted-foreground">
+                                    注册于 {formatDate(member.created_at)}
+                                  </p>
+                                </div>
+                              )}
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -433,63 +499,78 @@ export default function AdminMembersPage() {
 
       {/* Member Details Dialog */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>会员详情 - {selectedMember?.name}</DialogTitle>
+            <DialogTitle>
+              {selectedMember?.is_registered_only ? "用户详情" : "会员详情"} - {selectedMember?.name}
+            </DialogTitle>
           </DialogHeader>
           {selectedMember && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">推荐码</p>
-                  <p className="font-mono font-bold text-lg text-primary">{selectedMember.referral_code}</p>
-                </div>
+                {selectedMember.referral_code ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground">推荐码</p>
+                    <p className="font-mono font-bold text-lg text-primary">{selectedMember.referral_code}</p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-sm text-muted-foreground">状态</p>
+                    <Badge variant="outline" className="mt-1">已注册 · 未成为会员</Badge>
+                  </div>
+                )}
                 <div>
                   <p className="text-sm text-muted-foreground">角色</p>
-                  <Select
-                    value={selectedMember.role}
-                    onValueChange={(role) => updateRoleMutation.mutate({
-                      memberId: selectedMember.id,
-                      userId: selectedMember.user_id,
-                      role,
-                      referralCode: selectedMember.referral_code,
-                    })}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="member">普通会员</SelectItem>
-                      <SelectItem value="partner">合伙人</SelectItem>
-                      <SelectItem value="admin">管理员</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {selectedMember.is_registered_only ? (
+                    <Badge variant="outline" className="mt-1">已注册用户</Badge>
+                  ) : (
+                    <Select
+                      value={selectedMember.role}
+                      onValueChange={(role) => updateRoleMutation.mutate({
+                        memberId: selectedMember.id,
+                        userId: selectedMember.user_id,
+                        role,
+                        referralCode: selectedMember.referral_code,
+                      })}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="member">普通会员</SelectItem>
+                        <SelectItem value="partner">合伙人</SelectItem>
+                        <SelectItem value="admin">管理员</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">邮箱</p>
-                  <p>{selectedMember.email}</p>
+                  <p className="break-all">{selectedMember.email}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">电话</p>
                   <p>{selectedMember.phone || "-"}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">积分</p>
-                  <p className="font-bold">{selectedMember.points_balance}</p>
+              {!selectedMember.is_registered_only && (
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">积分</p>
+                    <p className="font-bold">{selectedMember.points_balance}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">订单数</p>
+                    <p className="font-bold">{selectedMember.orders_count}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">下级数</p>
+                    <p className="font-bold">{selectedMember.downline_count}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">订单数</p>
-                  <p className="font-bold">{selectedMember.orders_count}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">下级数</p>
-                  <p className="font-bold">{selectedMember.downline_count}</p>
-                </div>
-              </div>
+              )}
               {selectedMember.referrer_name && (
                 <div>
                   <p className="text-sm text-muted-foreground">推荐人</p>
