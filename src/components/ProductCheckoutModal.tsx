@@ -187,10 +187,16 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
     setPaymentError(null);
 
     try {
-      console.info("[checkout] Invoking create-checkout edge function...");
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        headers: { Authorization: `Bearer ${supabaseAnonKey}` },
-        body: {
+      console.info("[checkout] Calling create-checkout edge function...");
+      const functionUrl = `https://vpzmhglfwomgrashheol.supabase.co/functions/v1/create-checkout`;
+      const res = await fetch(functionUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseAnonKey}`,
+          "apikey": supabaseAnonKey,
+        },
+        body: JSON.stringify({
           orderId,
           orderNumber,
           amount: currentPrice * 100,
@@ -203,12 +209,14 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
             : `${window.location.origin}${product.image}`,
           successUrl: `${window.location.origin}/checkout/success?order=${orderNumber}`,
           cancelUrl: `${window.location.origin}/products?payment=cancelled`,
-        },
+        }),
       });
 
-      if (error) {
-        console.error("Stripe edge function error:", error);
-        throw new Error(error.message || "Failed to create checkout session");
+      const data = await res.json();
+      console.info("[checkout] Edge function response:", { status: res.status, data });
+
+      if (!res.ok) {
+        throw new Error(data?.error || `Edge function returned ${res.status}`);
       }
 
       if (!data?.url) {
