@@ -15,21 +15,21 @@ import { useState } from "react";
 
 const getMaterials = (t: (key: string) => string) => ({
   images: [
-    { id: 1, title: t("partner.materials.productPoster"), thumbnail: "/pics/love_young_brand_identity_20260106043554_1.png", size: "1080x1920" },
-    { id: 2, title: t("partner.materials.brandStory"), thumbnail: "/pics/love_young_founders_story_20260106043351_1.png", size: "1200x630" },
-    { id: 3, title: t("partner.materials.recruitPoster"), thumbnail: "/pics/love_young_digital_marketing_20260106043418_1.png", size: "1080x1920" },
-    { id: 4, title: t("partner.materials.holidayPromo"), thumbnail: "/pics/love_young_community_impact_20260106043528_1.png", size: "1080x1080" },
+    { id: 1, title: t("member.materials.productPoster"), thumbnail: "/pics/love_young_brand_identity_20260106043554_1.png", size: "1080x1920" },
+    { id: 2, title: t("member.materials.brandStory"), thumbnail: "/pics/love_young_founders_story_20260106043351_1.png", size: "1200x630" },
+    { id: 3, title: t("member.materials.recruitPoster"), thumbnail: "/pics/love_young_digital_marketing_20260106043418_1.png", size: "1080x1920" },
+    { id: 4, title: t("member.materials.holidayPromo"), thumbnail: "/pics/love_young_community_impact_20260106043528_1.png", size: "1080x1080" },
   ],
   documents: [
-    { id: 1, title: t("partner.materials.productManual"), type: "PDF", size: "2.5 MB" },
-    { id: 2, title: t("partner.materials.trainingMaterial"), type: "PDF", size: "5.2 MB" },
-    { id: 3, title: t("partner.materials.faqDocument"), type: "PDF", size: "1.1 MB" },
-    { id: 4, title: t("partner.materials.brandPpt"), type: "PPTX", size: "8.7 MB" },
+    { id: 1, title: t("member.materials.productManual"), type: "PDF", size: "2.5 MB" },
+    { id: 2, title: t("member.materials.trainingMaterial"), type: "PDF", size: "5.2 MB" },
+    { id: 3, title: t("member.materials.faqDocument"), type: "PDF", size: "1.1 MB" },
+    { id: 4, title: t("member.materials.brandPpt"), type: "PPTX", size: "8.7 MB" },
   ],
   videos: [
-    { id: 1, title: t("partner.materials.brandVideo"), duration: "2:30", thumbnail: "/pics/love_young_brand_identity_20260106043554_1.png" },
-    { id: 2, title: t("partner.materials.productProcess"), duration: "5:15", thumbnail: "/pics/craftsmanship_journey.webp" },
-    { id: 3, title: t("partner.materials.successStory"), duration: "3:45", thumbnail: "/pics/partner_story_1.webp" },
+    { id: 1, title: t("member.materials.brandVideo"), duration: "2:30", thumbnail: "/pics/love_young_brand_identity_20260106043554_1.png" },
+    { id: 2, title: t("member.materials.productProcess"), duration: "5:15", thumbnail: "/pics/craftsmanship_journey.webp" },
+    { id: 3, title: t("member.materials.successStory"), duration: "3:45", thumbnail: "/pics/partner_story_1.webp" },
   ]
 });
 
@@ -48,14 +48,14 @@ export default function PartnerMaterialsPage() {
   const copyToClipboard = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast({ title: t("partner.materials.copiedToClipboard") });
+      toast({ title: t("member.materials.copiedToClipboard") });
     } catch {
-      toast({ title: t("partner.materials.copyFailed"), variant: "destructive" });
+      toast({ title: t("member.materials.copyFailed"), variant: "destructive" });
     }
   };
 
   const shareToWhatsApp = () => {
-    const text = `${t("partner.materials.shareText").replace("{code}", referralCode)}\n${referralLink}`;
+    const text = `${t("member.materials.shareText").replace("{code}", referralCode)}\n${referralLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
@@ -79,12 +79,12 @@ export default function PartnerMaterialsPage() {
       <MemberLayout>
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
           <Share2 className="w-16 h-16 text-muted-foreground/40 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">{t("partner.materials.notMember")}</h2>
+          <h2 className="text-xl font-semibold mb-2">{t("member.materials.notMember")}</h2>
           <p className="text-muted-foreground mb-6 max-w-sm">
-            {t("partner.materials.notMemberDesc")}
+            {t("member.materials.notMemberDesc")}
           </p>
           <a href="/#products">
-            <Button>{t("partner.materials.goShopping")}</Button>
+            <Button>{t("member.materials.goShopping")}</Button>
           </a>
         </div>
       </MemberLayout>
@@ -95,8 +95,8 @@ export default function PartnerMaterialsPage() {
     <MemberLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-materials-title">{t("partner.materials.title")}</h1>
-          <p className="text-muted-foreground">{t("partner.materials.subtitle")}</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-materials-title">{t("member.materials.title")}</h1>
+          <p className="text-muted-foreground">{t("member.materials.subtitle")}</p>
         </div>
 
       {/* Referral Link Card */}
@@ -108,20 +108,20 @@ export default function PartnerMaterialsPage() {
                 <QrCode className="w-8 h-8 text-primary" />
               </div>
               <div>
-                <h3 className="font-bold text-lg">{t("partner.materials.myReferralLink")}</h3>
+                <h3 className="font-bold text-lg">{t("member.materials.myReferralLink")}</h3>
                 <p className="text-muted-foreground text-sm">
-                  {t("partner.materials.referralCodeLabel")}: <span className="font-mono font-bold text-primary">{referralCode}</span>
+                  {t("member.materials.referralCodeLabel")}: <span className="font-mono font-bold text-primary">{referralCode}</span>
                 </p>
               </div>
             </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => copyToClipboard(referralCode, t("partner.materials.referralCodeLabel"))}
+                onClick={() => copyToClipboard(referralCode, t("member.materials.referralCodeLabel"))}
                 data-testid="button-copy-code"
               >
                 <Copy className="w-4 h-4 mr-2" />
-                {t("partner.materials.copyReferralCode")}
+                {t("member.materials.copyReferralCode")}
               </Button>
               <Button
                 onClick={shareToWhatsApp}
@@ -129,13 +129,13 @@ export default function PartnerMaterialsPage() {
                 data-testid="button-share-whatsapp"
               >
                 <Share2 className="w-4 h-4 mr-2" />
-                {t("partner.materials.shareWhatsApp")}
+                {t("member.materials.shareWhatsApp")}
               </Button>
             </div>
           </div>
 
           <div>
-            <p className="text-sm text-muted-foreground mb-1">{t("partner.materials.referralLinkLabel")}</p>
+            <p className="text-sm text-muted-foreground mb-1">{t("member.materials.referralLinkLabel")}</p>
             <div className="flex items-center gap-2">
               <Input
                 value={referralLink}
@@ -146,7 +146,7 @@ export default function PartnerMaterialsPage() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => copyToClipboard(referralLink, t("partner.materials.referralLinkLabel"))}
+                onClick={() => copyToClipboard(referralLink, t("member.materials.referralLinkLabel"))}
                 data-testid="button-copy-link"
               >
                 <Copy className="w-4 h-4" />
@@ -160,15 +160,15 @@ export default function PartnerMaterialsPage() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="images" className="gap-2" data-testid="tab-images">
             <Image className="w-4 h-4" />
-            {t("partner.materials.tabs.images")}
+            {t("member.materials.tabs.images")}
           </TabsTrigger>
           <TabsTrigger value="documents" className="gap-2" data-testid="tab-documents">
             <FileText className="w-4 h-4" />
-            {t("partner.materials.tabs.documents")}
+            {t("member.materials.tabs.documents")}
           </TabsTrigger>
           <TabsTrigger value="videos" className="gap-2" data-testid="tab-videos">
             <Video className="w-4 h-4" />
-            {t("partner.materials.tabs.videos")}
+            {t("member.materials.tabs.videos")}
           </TabsTrigger>
         </TabsList>
 
@@ -189,16 +189,16 @@ export default function PartnerMaterialsPage() {
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" className="flex-1">
                       <Download className="w-3 h-3 mr-1" />
-                      {t("partner.materials.download")}
+                      {t("member.materials.download")}
                     </Button>
                     <Button variant="outline" size="sm" className="flex-1"
                       onClick={() => {
-                        const text = `${t("partner.materials.itemShareText").replace("{title}", item.title).replace("{code}", referralCode)}\n${referralLink}`;
+                        const text = `${t("member.materials.itemShareText").replace("{title}", item.title).replace("{code}", referralCode)}\n${referralLink}`;
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
                       }}
                     >
                       <Share2 className="w-3 h-3 mr-1" />
-                      {t("partner.materials.share")}
+                      {t("member.materials.share")}
                     </Button>
                   </div>
                 </CardContent>
@@ -229,11 +229,11 @@ export default function PartnerMaterialsPage() {
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm">
                         <ExternalLink className="w-4 h-4 mr-1" />
-                        {t("partner.materials.preview")}
+                        {t("member.materials.preview")}
                       </Button>
                       <Button variant="outline" size="sm">
                         <Download className="w-4 h-4 mr-1" />
-                        {t("partner.materials.download")}
+                        {t("member.materials.download")}
                       </Button>
                     </div>
                   </div>
@@ -265,16 +265,16 @@ export default function PartnerMaterialsPage() {
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" className="flex-1">
                       <ExternalLink className="w-3 h-3 mr-1" />
-                      {t("partner.materials.play")}
+                      {t("member.materials.play")}
                     </Button>
                     <Button variant="outline" size="sm" className="flex-1"
                       onClick={() => {
-                        const text = `${t("partner.materials.itemShareText").replace("{title}", video.title).replace("{code}", referralCode)}\n${referralLink}`;
+                        const text = `${t("member.materials.itemShareText").replace("{title}", video.title).replace("{code}", referralCode)}\n${referralLink}`;
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
                       }}
                     >
                       <Share2 className="w-3 h-3 mr-1" />
-                      {t("partner.materials.share")}
+                      {t("member.materials.share")}
                     </Button>
                   </div>
                 </CardContent>
@@ -288,9 +288,9 @@ export default function PartnerMaterialsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Smartphone className="w-5 h-5 text-primary" />
-            {t("partner.materials.socialShare")}
+            {t("member.materials.socialShare")}
           </CardTitle>
-          <CardDescription>{t("partner.materials.socialShareDesc")}</CardDescription>
+          <CardDescription>{t("member.materials.socialShareDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -317,7 +317,7 @@ export default function PartnerMaterialsPage() {
             <Button
               variant="outline"
               className="h-auto py-4 flex-col gap-2 bg-pink-500/5 border-pink-500/20 hover:bg-pink-500/10"
-              onClick={() => copyToClipboard(referralLink, t("partner.materials.referralLinkLabel"))}
+              onClick={() => copyToClipboard(referralLink, t("member.materials.referralLinkLabel"))}
             >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center">
                 <span className="text-white text-lg">I</span>
@@ -327,7 +327,7 @@ export default function PartnerMaterialsPage() {
             <Button
               variant="outline"
               className="h-auto py-4 flex-col gap-2 bg-red-500/5 border-red-500/20 hover:bg-red-500/10"
-              onClick={() => copyToClipboard(referralLink, t("partner.materials.referralLinkLabel"))}
+              onClick={() => copyToClipboard(referralLink, t("member.materials.referralLinkLabel"))}
             >
               <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
                 <span className="text-white text-lg">小</span>

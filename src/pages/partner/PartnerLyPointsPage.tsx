@@ -83,8 +83,8 @@ export default function PartnerLyPointsPage() {
     <PartnerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-ly-points-title">{t("partner.lyPoints.title")}</h1>
-          <p className="text-muted-foreground">{t("partner.lyPoints.subtitle")}</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-ly-points-title">{t("member.lyPoints.title")}</h1>
+          <p className="text-muted-foreground">{t("member.lyPoints.subtitle")}</p>
         </div>
 
         <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
@@ -95,18 +95,18 @@ export default function PartnerLyPointsPage() {
                   <Star className="w-8 h-8 text-secondary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">{t("partner.lyPoints.currentBalance")}</p>
+                  <p className="text-sm text-muted-foreground">{t("member.lyPoints.currentBalance")}</p>
                   <h2 className="text-4xl font-bold text-primary">{stats.totalBalance.toLocaleString()}</h2>
                 </div>
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" data-testid="button-redeem">
                   <Gift className="w-4 h-4 mr-2" />
-                  {t("partner.lyPoints.redeemGift")}
+                  {t("member.lyPoints.redeemGift")}
                 </Button>
                 <Button data-testid="button-use-points">
                   <ShoppingBag className="w-4 h-4 mr-2" />
-                  {t("partner.lyPoints.usePoints")}
+                  {t("member.lyPoints.usePoints")}
                 </Button>
               </div>
             </div>
@@ -118,7 +118,7 @@ export default function PartnerLyPointsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="w-4 h-4 text-green-500" />
-                <span className="text-xs text-muted-foreground">{t("partner.lyPoints.totalEarned")}</span>
+                <span className="text-xs text-muted-foreground">{t("member.lyPoints.totalEarned")}</span>
               </div>
               <p className="text-2xl font-bold text-green-500">+{stats.totalEarned.toLocaleString()}</p>
             </CardContent>
@@ -127,7 +127,7 @@ export default function PartnerLyPointsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-2">
                 <ArrowDownRight className="w-4 h-4 text-orange-500" />
-                <span className="text-xs text-muted-foreground">{t("partner.lyPoints.totalSpent")}</span>
+                <span className="text-xs text-muted-foreground">{t("member.lyPoints.totalSpent")}</span>
               </div>
               <p className="text-2xl font-bold text-orange-500">-{stats.totalSpent.toLocaleString()}</p>
             </CardContent>
@@ -136,7 +136,7 @@ export default function PartnerLyPointsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Users className="w-4 h-4 text-primary" />
-                <span className="text-xs text-muted-foreground">{t("partner.lyPoints.fromReferrals")}</span>
+                <span className="text-xs text-muted-foreground">{t("member.lyPoints.fromReferrals")}</span>
               </div>
               <p className="text-2xl font-bold text-primary">+{stats.fromReferrals.toLocaleString()}</p>
             </CardContent>
@@ -145,7 +145,7 @@ export default function PartnerLyPointsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-2">
                 <ShoppingBag className="w-4 h-4 text-secondary" />
-                <span className="text-xs text-muted-foreground">{t("partner.lyPoints.fromReplenishment")}</span>
+                <span className="text-xs text-muted-foreground">{t("member.lyPoints.fromReplenishment")}</span>
               </div>
               <p className="text-2xl font-bold text-secondary">+{stats.fromReplenishment.toLocaleString()}</p>
             </CardContent>
@@ -158,18 +158,18 @@ export default function PartnerLyPointsPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <History className="w-5 h-5 text-primary" />
-                  {t("partner.lyPoints.history")}
+                  {t("member.lyPoints.history")}
                 </CardTitle>
-                <CardDescription>{t("partner.lyPoints.historyDesc")}</CardDescription>
+                <CardDescription>{t("member.lyPoints.historyDesc")}</CardDescription>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" data-testid="button-filter-ledger">
                   <Filter className="w-4 h-4 mr-1" />
-                  {t("partner.lyPoints.filter")}
+                  {t("member.lyPoints.filter")}
                 </Button>
                 <Button variant="outline" size="sm" data-testid="button-export-ledger">
                   <Download className="w-4 h-4 mr-1" />
-                  {t("partner.lyPoints.export")}
+                  {t("member.lyPoints.export")}
                 </Button>
               </div>
             </div>
@@ -177,9 +177,9 @@ export default function PartnerLyPointsPage() {
           <CardContent>
             <Tabs defaultValue="all">
               <TabsList className="mb-4">
-                <TabsTrigger value="all" data-testid="tab-all-ledger">{t("partner.lyPoints.tabs.all")}</TabsTrigger>
-                <TabsTrigger value="earn" data-testid="tab-earn">{t("partner.lyPoints.tabs.earn")}</TabsTrigger>
-                <TabsTrigger value="spend" data-testid="tab-spend">{t("partner.lyPoints.tabs.spend")}</TabsTrigger>
+                <TabsTrigger value="all" data-testid="tab-all-ledger">{t("member.lyPoints.tabs.all")}</TabsTrigger>
+                <TabsTrigger value="earn" data-testid="tab-earn">{t("member.lyPoints.tabs.earn")}</TabsTrigger>
+                <TabsTrigger value="spend" data-testid="tab-spend">{t("member.lyPoints.tabs.spend")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="all" className="space-y-0">
@@ -216,7 +216,7 @@ export default function PartnerLyPointsPage() {
                 {ledger.length === 0 && (
                   <div className="text-center py-12 text-muted-foreground">
                     <Star className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>{t("partner.lyPoints.noRecords")}</p>
+                    <p>{t("member.lyPoints.noRecords")}</p>
                   </div>
                 )}
               </TabsContent>
@@ -274,34 +274,34 @@ export default function PartnerLyPointsPage() {
 
         <Card className="bg-muted/30">
           <CardContent className="p-6">
-            <h3 className="font-bold mb-4">{t("partner.lyPoints.rulesTitle")}</h3>
+            <h3 className="font-bold mb-4">{t("member.lyPoints.rulesTitle")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
               <div className="space-y-2">
                 <p className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">{t("partner.lyPoints.earnBadge")}</Badge>
-                  {t("partner.lyPoints.ruleEarn1")}
+                  <Badge variant="outline" className="text-xs">{t("member.lyPoints.earnBadge")}</Badge>
+                  {t("member.lyPoints.ruleEarn1")}
                 </p>
                 <p className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">{t("partner.lyPoints.earnBadge")}</Badge>
-                  {t("partner.lyPoints.ruleEarn2")}
+                  <Badge variant="outline" className="text-xs">{t("member.lyPoints.earnBadge")}</Badge>
+                  {t("member.lyPoints.ruleEarn2")}
                 </p>
                 <p className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">{t("partner.lyPoints.earnBadge")}</Badge>
-                  {t("partner.lyPoints.ruleEarn3")}
+                  <Badge variant="outline" className="text-xs">{t("member.lyPoints.earnBadge")}</Badge>
+                  {t("member.lyPoints.ruleEarn3")}
                 </p>
               </div>
               <div className="space-y-2">
                 <p className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">{t("partner.lyPoints.useBadge")}</Badge>
-                  {t("partner.lyPoints.ruleUse1")}
+                  <Badge variant="outline" className="text-xs">{t("member.lyPoints.useBadge")}</Badge>
+                  {t("member.lyPoints.ruleUse1")}
                 </p>
                 <p className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">{t("partner.lyPoints.useBadge")}</Badge>
-                  {t("partner.lyPoints.ruleUse2")}
+                  <Badge variant="outline" className="text-xs">{t("member.lyPoints.useBadge")}</Badge>
+                  {t("member.lyPoints.ruleUse2")}
                 </p>
                 <p className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">{t("partner.lyPoints.noteBadge")}</Badge>
-                  {t("partner.lyPoints.ruleNote")}
+                  <Badge variant="outline" className="text-xs">{t("member.lyPoints.noteBadge")}</Badge>
+                  {t("member.lyPoints.ruleNote")}
                 </p>
               </div>
             </div>

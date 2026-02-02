@@ -74,7 +74,7 @@ export default function PartnerReferralsPage() {
             tier: child.tier,
             status: child.status,
             level: currentLevel,
-            joinDate: child.created_at?.split("T")[0] || "",
+            joinDate: child.created_at?.split(/[T ]/)[0] || "",
             lyBalance: child.ly_balance || 0,
           });
           nextParentIds.push(child.id);
@@ -106,9 +106,9 @@ export default function PartnerReferralsPage() {
 
   const getTierLabel = (tier: string) => {
     const tierMap: Record<string, string> = {
-      "phase1": t("partner.referrals.tierPhase1"),
-      "phase2": t("partner.referrals.tierPhase2"),
-      "phase3": t("partner.referrals.tierPhase3"),
+      "phase1": t("member.referrals.tierPhase1"),
+      "phase2": t("member.referrals.tierPhase2"),
+      "phase3": t("member.referrals.tierPhase3"),
     };
     return tierMap[tier] || tier;
   };
@@ -127,8 +127,8 @@ export default function PartnerReferralsPage() {
     <PartnerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-referrals-title">{t("partner.referrals.title")}</h1>
-          <p className="text-muted-foreground">{t("partner.referrals.subtitle")}</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-referrals-title">{t("member.referrals.title")}</h1>
+          <p className="text-muted-foreground">{t("member.referrals.subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -140,7 +140,7 @@ export default function PartnerReferralsPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.total}</p>
-                  <p className="text-xs text-muted-foreground">{t("partner.referrals.totalReferrals")}</p>
+                  <p className="text-xs text-muted-foreground">{t("member.referrals.totalReferrals")}</p>
                 </div>
               </div>
             </CardContent>
@@ -153,7 +153,7 @@ export default function PartnerReferralsPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.active}</p>
-                  <p className="text-xs text-muted-foreground">{t("partner.referrals.activeMembers")}</p>
+                  <p className="text-xs text-muted-foreground">{t("member.referrals.activeMembers")}</p>
                 </div>
               </div>
             </CardContent>
@@ -166,7 +166,7 @@ export default function PartnerReferralsPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.level1}</p>
-                  <p className="text-xs text-muted-foreground">{t("partner.referrals.directReferrals")}</p>
+                  <p className="text-xs text-muted-foreground">{t("member.referrals.directReferrals")}</p>
                 </div>
               </div>
             </CardContent>
@@ -179,7 +179,7 @@ export default function PartnerReferralsPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.totalLyEarned.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">{t("partner.referrals.teamTotalLy")}</p>
+                  <p className="text-xs text-muted-foreground">{t("member.referrals.teamTotalLy")}</p>
                 </div>
               </div>
             </CardContent>
@@ -190,14 +190,14 @@ export default function PartnerReferralsPage() {
           <CardHeader>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <CardTitle>{t("partner.referrals.teamList")}</CardTitle>
-                <CardDescription>{t("partner.referrals.teamListDesc")}</CardDescription>
+                <CardTitle>{t("member.referrals.teamList")}</CardTitle>
+                <CardDescription>{t("member.referrals.teamListDesc")}</CardDescription>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder={t("partner.referrals.searchPlaceholder")}
+                    placeholder={t("member.referrals.searchPlaceholder")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-9 w-[200px]"
@@ -218,7 +218,7 @@ export default function PartnerReferralsPage() {
                 onClick={() => setLevelFilter(null)}
                 data-testid="button-filter-all"
               >
-                {t("partner.referrals.allFilter")}
+                {t("member.referrals.allFilter")}
               </Button>
               <Button
                 variant={levelFilter === 1 ? "default" : "outline"}
@@ -226,7 +226,7 @@ export default function PartnerReferralsPage() {
                 onClick={() => setLevelFilter(1)}
                 data-testid="button-filter-level-1"
               >
-                {t("partner.referrals.level").replace("{n}", "1")} ({stats.level1})
+                {t("member.referrals.level").replace("{n}", "1")} ({stats.level1})
               </Button>
               <Button
                 variant={levelFilter === 2 ? "default" : "outline"}
@@ -234,7 +234,7 @@ export default function PartnerReferralsPage() {
                 onClick={() => setLevelFilter(2)}
                 data-testid="button-filter-level-2"
               >
-                {t("partner.referrals.level").replace("{n}", "2")} ({stats.level2})
+                {t("member.referrals.level").replace("{n}", "2")} ({stats.level2})
               </Button>
               <Button
                 variant={levelFilter === 3 ? "default" : "outline"}
@@ -242,7 +242,7 @@ export default function PartnerReferralsPage() {
                 onClick={() => setLevelFilter(3)}
                 data-testid="button-filter-level-3"
               >
-                {t("partner.referrals.level").replace("{n}", "3")} ({stats.level3})
+                {t("member.referrals.level").replace("{n}", "3")} ({stats.level3})
               </Button>
             </div>
 
@@ -263,21 +263,21 @@ export default function PartnerReferralsPage() {
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{referral.name}</p>
                         <Badge className={levelColors[referral.level] || "bg-gray-500"} variant="secondary">
-                          {t("partner.referrals.level").replace("{n}", String(referral.level))}
+                          {t("member.referrals.level").replace("{n}", String(referral.level))}
                         </Badge>
                         {referral.status === "pending" && (
-                          <Badge variant="outline" className="text-orange-500 border-orange-500">{t("partner.referrals.pendingActivation")}</Badge>
+                          <Badge variant="outline" className="text-orange-500 border-orange-500">{t("member.referrals.pendingActivation")}</Badge>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {t("partner.referrals.joinTime")}: {referral.joinDate} · {getTierLabel(referral.tier)}
+                        {t("member.referrals.joinTime")}: {referral.joinDate} · {getTierLabel(referral.tier)}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="font-medium text-secondary">{referral.lyBalance.toLocaleString()} LY</p>
-                      <p className="text-xs text-muted-foreground">{t("partner.referrals.lyBalanceLabel")}</p>
+                      <p className="text-xs text-muted-foreground">{t("member.referrals.lyBalanceLabel")}</p>
                     </div>
                     <ChevronRight className="w-5 h-5 text-muted-foreground" />
                   </div>
@@ -288,7 +288,7 @@ export default function PartnerReferralsPage() {
             {filteredReferrals.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>{referrals.length === 0 ? t("partner.referrals.noMembers") : t("partner.referrals.noMatchingMembers")}</p>
+                <p>{referrals.length === 0 ? t("member.referrals.noMembers") : t("member.referrals.noMatchingMembers")}</p>
               </div>
             )}
           </CardContent>
@@ -302,13 +302,13 @@ export default function PartnerReferralsPage() {
                   <UserPlus className="w-6 h-6 text-secondary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg">{t("partner.referrals.inviteTitle")}</h3>
-                  <p className="text-muted-foreground">{t("partner.referrals.inviteDesc")}</p>
+                  <h3 className="font-bold text-lg">{t("member.referrals.inviteTitle")}</h3>
+                  <p className="text-muted-foreground">{t("member.referrals.inviteDesc")}</p>
                 </div>
               </div>
               <Button className="bg-secondary text-secondary-foreground hover:bg-secondary/90" data-testid="button-invite">
                 <UserPlus className="w-4 h-4 mr-2" />
-                {t("partner.referrals.inviteNow")}
+                {t("member.referrals.inviteNow")}
               </Button>
             </div>
           </CardContent>

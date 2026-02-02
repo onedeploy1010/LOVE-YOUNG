@@ -108,12 +108,12 @@ export default function PartnerWalletPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner-pending-withdrawals"] });
-      toast({ title: t("partner.wallet.withdrawSuccess"), description: t("partner.wallet.withdrawSuccessDesc") });
+      toast({ title: t("member.wallet.withdrawSuccess"), description: t("member.wallet.withdrawSuccessDesc") });
       setIsWithdrawOpen(false);
       setWithdrawAmount("");
     },
     onError: (error: Error) => {
-      toast({ title: t("partner.wallet.withdrawFailed"), description: error.message, variant: "destructive" });
+      toast({ title: t("member.wallet.withdrawFailed"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -139,11 +139,11 @@ export default function PartnerWalletPage() {
   const handleWithdraw = () => {
     const amount = parseFloat(withdrawAmount);
     if (isNaN(amount) || amount < 50) {
-      toast({ title: t("partner.wallet.invalidAmount"), description: t("partner.wallet.minAmountMsg"), variant: "destructive" });
+      toast({ title: t("member.wallet.invalidAmount"), description: t("member.wallet.minAmountMsg"), variant: "destructive" });
       return;
     }
     if (amount > stats.availableBalance) {
-      toast({ title: t("partner.wallet.insufficientBalance"), description: t("partner.wallet.exceedsBalanceMsg"), variant: "destructive" });
+      toast({ title: t("member.wallet.insufficientBalance"), description: t("member.wallet.exceedsBalanceMsg"), variant: "destructive" });
       return;
     }
     withdrawMutation.mutate(amount);
@@ -163,8 +163,8 @@ export default function PartnerWalletPage() {
     <PartnerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-wallet-title">{t("partner.wallet.title")}</h1>
-          <p className="text-muted-foreground">{t("partner.wallet.subtitle")}</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-wallet-title">{t("member.wallet.title")}</h1>
+          <p className="text-muted-foreground">{t("member.wallet.subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -172,12 +172,12 @@ export default function PartnerWalletPage() {
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-2">{t("partner.wallet.availableBalance")}</p>
+                  <p className="text-sm text-muted-foreground mb-2">{t("member.wallet.availableBalance")}</p>
                   <h2 className="text-4xl font-bold text-primary">RM {stats.availableBalance.toFixed(2)}</h2>
                   {stats.pendingWithdraw > 0 && (
                     <p className="text-sm text-orange-500 mt-2 flex items-center gap-1">
                       <Clock className="w-4 h-4" />
-                      RM {stats.pendingWithdraw.toFixed(2)} {t("partner.wallet.pendingWithdraw")}
+                      RM {stats.pendingWithdraw.toFixed(2)} {t("member.wallet.pendingWithdraw")}
                     </p>
                   )}
                 </div>
@@ -185,50 +185,50 @@ export default function PartnerWalletPage() {
                   <DialogTrigger asChild>
                     <Button size="lg" data-testid="button-withdraw">
                       <Wallet className="w-4 h-4 mr-2" />
-                      {t("partner.wallet.applyWithdraw")}
+                      {t("member.wallet.applyWithdraw")}
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>{t("partner.wallet.withdrawTitle")}</DialogTitle>
+                      <DialogTitle>{t("member.wallet.withdrawTitle")}</DialogTitle>
                       <DialogDescription>
-                        {t("partner.wallet.withdrawDesc")}
+                        {t("member.wallet.withdrawDesc")}
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                       <div className="space-y-2">
-                        <Label>{t("partner.wallet.withdrawAmount")}</Label>
+                        <Label>{t("member.wallet.withdrawAmount")}</Label>
                         <Input
                           type="number"
-                          placeholder={t("partner.wallet.withdrawPlaceholder")}
+                          placeholder={t("member.wallet.withdrawPlaceholder")}
                           value={withdrawAmount}
                           onChange={(e) => setWithdrawAmount(e.target.value)}
                           data-testid="input-withdraw-amount"
                         />
                         <p className="text-xs text-muted-foreground">
-                          {t("partner.wallet.availableBalanceLabel")}: RM {stats.availableBalance.toFixed(2)}
+                          {t("member.wallet.availableBalanceLabel")}: RM {stats.availableBalance.toFixed(2)}
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <Label>{t("partner.wallet.selectBank")}</Label>
+                        <Label>{t("member.wallet.selectBank")}</Label>
                         <div className="p-3 bg-muted rounded-lg flex items-center gap-3">
                           <Building2 className="w-5 h-5 text-muted-foreground" />
                           <div>
-                            <p className="font-medium">{t("partner.wallet.bindBankFirst")}</p>
-                            <p className="text-xs text-muted-foreground">{t("partner.wallet.contactToAdd")}</p>
+                            <p className="font-medium">{t("member.wallet.bindBankFirst")}</p>
+                            <p className="text-xs text-muted-foreground">{t("member.wallet.contactToAdd")}</p>
                           </div>
                         </div>
                       </div>
                       <div className="p-3 bg-orange-500/10 rounded-lg flex items-start gap-2">
                         <AlertCircle className="w-4 h-4 text-orange-500 mt-0.5" />
                         <p className="text-sm text-orange-500">
-                          {t("partner.wallet.minWithdrawNote")}
+                          {t("member.wallet.minWithdrawNote")}
                         </p>
                       </div>
                     </div>
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setIsWithdrawOpen(false)}>
-                        {t("partner.wallet.cancel")}
+                        {t("member.wallet.cancel")}
                       </Button>
                       <Button
                         onClick={handleWithdraw}
@@ -236,7 +236,7 @@ export default function PartnerWalletPage() {
                         data-testid="button-confirm-withdraw"
                       >
                         {withdrawMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                        {t("partner.wallet.confirmWithdraw")}
+                        {t("member.wallet.confirmWithdraw")}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -248,18 +248,18 @@ export default function PartnerWalletPage() {
           <Card>
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{t("partner.wallet.thisMonthIncome")}</span>
+                <span className="text-sm text-muted-foreground">{t("member.wallet.thisMonthIncome")}</span>
                 <TrendingUp className="w-4 h-4 text-green-500" />
               </div>
               <p className="text-2xl font-bold text-green-500">+RM {stats.thisMonthIncome.toFixed(2)}</p>
               <Separator />
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-muted-foreground">{t("partner.wallet.totalIncome")}</p>
+                  <p className="text-xs text-muted-foreground">{t("member.wallet.totalIncome")}</p>
                   <p className="font-bold">RM {stats.totalIncome.toFixed(2)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">{t("partner.wallet.totalWithdrawn")}</p>
+                  <p className="text-xs text-muted-foreground">{t("member.wallet.totalWithdrawn")}</p>
                   <p className="font-bold">RM {stats.totalWithdrawn.toFixed(2)}</p>
                 </div>
               </div>
@@ -273,13 +273,13 @@ export default function PartnerWalletPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <History className="w-5 h-5 text-primary" />
-                  {t("partner.wallet.transactions")}
+                  {t("member.wallet.transactions")}
                 </CardTitle>
-                <CardDescription>{t("partner.wallet.transactionsDesc")}</CardDescription>
+                <CardDescription>{t("member.wallet.transactionsDesc")}</CardDescription>
               </div>
               <Button variant="outline" size="sm" data-testid="button-export-transactions">
                 <Download className="w-4 h-4 mr-1" />
-                {t("partner.wallet.exportRecords")}
+                {t("member.wallet.exportRecords")}
               </Button>
             </div>
           </CardHeader>
@@ -311,7 +311,7 @@ export default function PartnerWalletPage() {
                           <span className="text-sm text-muted-foreground">{formatDate(tx.createdAt)}</span>
                           <Badge variant="outline" className={`text-xs ${statusInfo.color}`}>
                             <StatusIcon className="w-3 h-3 mr-1" />
-                            {t(`partner.wallet.status.${tx.status}`)}
+                            {t(`member.wallet.status.${tx.status}`)}
                           </Badge>
                         </div>
                       </div>
@@ -326,7 +326,7 @@ export default function PartnerWalletPage() {
             {transactions.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <Wallet className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>{t("partner.wallet.noTransactions")}</p>
+                <p>{t("member.wallet.noTransactions")}</p>
               </div>
             )}
           </CardContent>
@@ -336,18 +336,18 @@ export default function PartnerWalletPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-primary" />
-              {t("partner.wallet.bankAccount")}
+              {t("member.wallet.bankAccount")}
             </CardTitle>
-            <CardDescription>{t("partner.wallet.bankAccountDesc")}</CardDescription>
+            <CardDescription>{t("member.wallet.bankAccountDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-center py-8 text-muted-foreground">
               <Building2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>{t("partner.wallet.noBankAccount")}</p>
-              <p className="text-sm">{t("partner.wallet.contactForBank")}</p>
+              <p>{t("member.wallet.noBankAccount")}</p>
+              <p className="text-sm">{t("member.wallet.contactForBank")}</p>
             </div>
             <Button variant="outline" className="w-full mt-4" data-testid="button-add-bank">
-              {t("partner.wallet.addBankAccount")}
+              {t("member.wallet.addBankAccount")}
             </Button>
           </CardContent>
         </Card>

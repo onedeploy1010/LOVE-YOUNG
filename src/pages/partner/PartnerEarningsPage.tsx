@@ -33,10 +33,10 @@ export default function PartnerEarningsPage() {
   const { partner } = useAuth();
 
   const typeLabels: Record<string, string> = {
-    cashback: t("partner.earnings.cashback"),
-    pool_reward: t("partner.earnings.rwaDividend"),
-    referral: t("partner.earnings.referralReward"),
-    income: t("partner.earnings.income"),
+    cashback: t("member.earnings.cashback"),
+    pool_reward: t("member.earnings.rwaDividend"),
+    referral: t("member.earnings.referralReward"),
+    income: t("member.earnings.income"),
   };
 
   const { data: earnings = [], isLoading } = useQuery({
@@ -110,8 +110,8 @@ export default function PartnerEarningsPage() {
     <PartnerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-earnings-title">{t("partner.earnings.title")}</h1>
-          <p className="text-muted-foreground">{t("partner.earnings.subtitle")}</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-earnings-title">{t("member.earnings.title")}</h1>
+          <p className="text-muted-foreground">{t("member.earnings.subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -119,14 +119,14 @@ export default function PartnerEarningsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">{t("partner.earnings.totalEarnings")}</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("member.earnings.totalEarnings")}</p>
                   <h2 className="text-4xl font-bold text-primary">RM {stats.totalEarnings.toFixed(2)}</h2>
                   <div className="flex items-center gap-2 mt-2">
                     <Badge className="bg-green-500/20 text-green-500">
                       <ArrowUpRight className="w-3 h-3 mr-1" />
                       +{growthPercent}%
                     </Badge>
-                    <span className="text-sm text-muted-foreground">{t("partner.earnings.vsLastMonth")}</span>
+                    <span className="text-sm text-muted-foreground">{t("member.earnings.vsLastMonth")}</span>
                   </div>
                 </div>
                 <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center">
@@ -140,10 +140,10 @@ export default function PartnerEarningsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <Calendar className="w-5 h-5 text-muted-foreground" />
-                <Badge variant="outline">{t("partner.earnings.thisMonth")}</Badge>
+                <Badge variant="outline">{t("member.earnings.thisMonth")}</Badge>
               </div>
               <p className="text-3xl font-bold text-foreground">RM {stats.thisMonthEarnings.toFixed(2)}</p>
-              <p className="text-sm text-muted-foreground mt-1">{t("partner.earnings.thisMonthEarnings")}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t("member.earnings.thisMonthEarnings")}</p>
             </CardContent>
           </Card>
 
@@ -151,10 +151,10 @@ export default function PartnerEarningsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <Calendar className="w-5 h-5 text-muted-foreground" />
-                <Badge variant="outline">{t("partner.earnings.lastMonth")}</Badge>
+                <Badge variant="outline">{t("member.earnings.lastMonth")}</Badge>
               </div>
               <p className="text-3xl font-bold text-foreground">RM {stats.lastMonthEarnings.toFixed(2)}</p>
-              <p className="text-sm text-muted-foreground mt-1">{t("partner.earnings.lastMonthEarnings")}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t("member.earnings.lastMonthEarnings")}</p>
             </CardContent>
           </Card>
         </div>
@@ -167,7 +167,7 @@ export default function PartnerEarningsPage() {
                   <DollarSign className="w-5 h-5 text-green-500" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">{t("partner.earnings.cashback")}</p>
+                  <p className="text-sm text-muted-foreground">{t("member.earnings.cashback")}</p>
                   <p className="text-xl font-bold">RM {stats.cashbackTotal.toFixed(2)}</p>
                 </div>
                 {stats.totalEarnings > 0 && (
@@ -186,7 +186,7 @@ export default function PartnerEarningsPage() {
                   <Award className="w-5 h-5 text-secondary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">{t("partner.earnings.rwaDividend")}</p>
+                  <p className="text-sm text-muted-foreground">{t("member.earnings.rwaDividend")}</p>
                   <p className="text-xl font-bold">RM {stats.rwaTotal.toFixed(2)}</p>
                 </div>
                 {stats.totalEarnings > 0 && (
@@ -205,7 +205,7 @@ export default function PartnerEarningsPage() {
                   <Users className="w-5 h-5 text-blue-500" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">{t("partner.earnings.referralReward")}</p>
+                  <p className="text-sm text-muted-foreground">{t("member.earnings.referralReward")}</p>
                   <p className="text-xl font-bold">RM {stats.referralTotal.toFixed(2)}</p>
                 </div>
                 {stats.totalEarnings > 0 && (
@@ -224,18 +224,18 @@ export default function PartnerEarningsPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <PieChart className="w-5 h-5 text-primary" />
-                  {t("partner.earnings.history")}
+                  {t("member.earnings.history")}
                 </CardTitle>
-                <CardDescription>{t("partner.earnings.historyDesc")}</CardDescription>
+                <CardDescription>{t("member.earnings.historyDesc")}</CardDescription>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" data-testid="button-filter-earnings">
                   <Filter className="w-4 h-4 mr-1" />
-                  {t("partner.earnings.filter")}
+                  {t("member.earnings.filter")}
                 </Button>
                 <Button variant="outline" size="sm" data-testid="button-export-earnings">
                   <Download className="w-4 h-4 mr-1" />
-                  {t("partner.earnings.export")}
+                  {t("member.earnings.export")}
                 </Button>
               </div>
             </div>
@@ -243,10 +243,10 @@ export default function PartnerEarningsPage() {
           <CardContent>
             <Tabs defaultValue="all">
               <TabsList className="mb-4">
-                <TabsTrigger value="all" data-testid="tab-all-earnings">{t("partner.earnings.tabs.all")}</TabsTrigger>
-                <TabsTrigger value="cashback" data-testid="tab-cashback">{t("partner.earnings.cashback")}</TabsTrigger>
-                <TabsTrigger value="pool_reward" data-testid="tab-rwa-earnings">{t("partner.earnings.rwaDividend")}</TabsTrigger>
-                <TabsTrigger value="referral" data-testid="tab-referral">{t("partner.earnings.referralReward")}</TabsTrigger>
+                <TabsTrigger value="all" data-testid="tab-all-earnings">{t("member.earnings.tabs.all")}</TabsTrigger>
+                <TabsTrigger value="cashback" data-testid="tab-cashback">{t("member.earnings.cashback")}</TabsTrigger>
+                <TabsTrigger value="pool_reward" data-testid="tab-rwa-earnings">{t("member.earnings.rwaDividend")}</TabsTrigger>
+                <TabsTrigger value="referral" data-testid="tab-referral">{t("member.earnings.referralReward")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="all" className="space-y-0">
@@ -280,7 +280,7 @@ export default function PartnerEarningsPage() {
                 {earnings.length === 0 && (
                   <div className="text-center py-12 text-muted-foreground">
                     <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>{t("partner.earnings.noRecords")}</p>
+                    <p>{t("member.earnings.noRecords")}</p>
                   </div>
                 )}
               </TabsContent>
@@ -315,7 +315,7 @@ export default function PartnerEarningsPage() {
                   </div>
                   {earnings.filter(e => e.type === type).length === 0 && (
                     <div className="text-center py-12 text-muted-foreground">
-                      <p>{t("partner.earnings.noRecordsForType")}</p>
+                      <p>{t("member.earnings.noRecordsForType")}</p>
                     </div>
                   )}
                 </TabsContent>

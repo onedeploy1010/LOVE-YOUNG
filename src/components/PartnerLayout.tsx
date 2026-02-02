@@ -30,12 +30,12 @@ interface PartnerLayoutProps {
 
 const getMenuItems = (t: (key: string) => string) => [
   { path: "/member/partner", label: t("member.center.sections.partner.dashboard"), icon: LayoutDashboard },
-  { path: "/member/partner/referrals", label: t("partner.referrals.title"), icon: Users },
-  { path: "/member/partner/materials", label: t("partner.materials.title"), icon: FileText },
-  { path: "/member/partner/ly-points", label: t("partner.lyPoints.title"), icon: Star },
-  { path: "/member/partner/wallet", label: t("partner.wallet.title"), icon: Wallet },
-  { path: "/member/partner/rwa", label: t("partner.rwa.title"), icon: PieChart },
-  { path: "/member/partner/earnings", label: t("partner.earnings.title"), icon: TrendingUp },
+  { path: "/member/partner/referrals", label: t("member.referrals.title"), icon: Users },
+  { path: "/member/partner/materials", label: t("member.materials.title"), icon: FileText },
+  { path: "/member/partner/ly-points", label: t("member.lyPoints.title"), icon: Star },
+  { path: "/member/partner/wallet", label: t("member.wallet.title"), icon: Wallet },
+  { path: "/member/partner/rwa", label: t("member.rwa.title"), icon: PieChart },
+  { path: "/member/partner/earnings", label: t("member.earnings.title"), icon: TrendingUp },
 ];
 
 export function PartnerLayout({ children }: PartnerLayoutProps) {
