@@ -129,7 +129,20 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
         .eq("member_id", member.id);
 
       if (error) return [];
-      return data as MemberAddress[];
+      return (data || []).map((row: Record<string, unknown>): MemberAddress => ({
+        id: row.id as string,
+        memberId: row.member_id as string,
+        label: (row.label as string) || null,
+        recipientName: (row.recipient_name as string) || "",
+        phone: (row.phone as string) || "",
+        addressLine1: (row.address_line_1 as string) || "",
+        addressLine2: (row.address_line_2 as string) || null,
+        city: (row.city as string) || "",
+        state: (row.state as string) || "",
+        postcode: (row.postcode as string) || "",
+        isDefault: (row.is_default as boolean) || false,
+        createdAt: (row.created_at as string) || null,
+      }));
     },
     enabled: isAuthenticated && !!member,
   });
