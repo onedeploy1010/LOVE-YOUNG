@@ -83,29 +83,29 @@ export default function PartnerLyPointsPage() {
     <PartnerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-ly-points-title">{t("member.lyPoints.title")}</h1>
-          <p className="text-muted-foreground">{t("member.lyPoints.subtitle")}</p>
+          <h1 className="text-xl sm:text-2xl font-serif text-primary" data-testid="text-ly-points-title">{t("member.lyPoints.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("member.lyPoints.subtitle")}</p>
         </div>
 
         <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center">
-                  <Star className="w-8 h-8 text-secondary" />
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 sm:gap-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-secondary/20 flex items-center justify-center shrink-0">
+                  <Star className="w-6 h-6 sm:w-8 sm:h-8 text-secondary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">{t("member.lyPoints.currentBalance")}</p>
-                  <h2 className="text-4xl font-bold text-primary">{stats.totalBalance.toLocaleString()}</h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{t("member.lyPoints.currentBalance")}</p>
+                  <h2 className="text-3xl sm:text-4xl font-bold text-primary">{stats.totalBalance.toLocaleString()}</h2>
                 </div>
               </div>
-              <div className="flex gap-3">
-                <Button variant="outline" data-testid="button-redeem">
-                  <Gift className="w-4 h-4 mr-2" />
+              <div className="flex gap-2 sm:gap-3">
+                <Button variant="outline" size="sm" className="flex-1 md:flex-none" data-testid="button-redeem">
+                  <Gift className="w-4 h-4 mr-1.5" />
                   {t("member.lyPoints.redeemGift")}
                 </Button>
-                <Button data-testid="button-use-points">
-                  <ShoppingBag className="w-4 h-4 mr-2" />
+                <Button size="sm" className="flex-1 md:flex-none" data-testid="button-use-points">
+                  <ShoppingBag className="w-4 h-4 mr-1.5" />
                   {t("member.lyPoints.usePoints")}
                 </Button>
               </div>
@@ -113,63 +113,63 @@ export default function PartnerLyPointsPage() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-green-500" />
-                <span className="text-xs text-muted-foreground">{t("member.lyPoints.totalEarned")}</span>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-1.5 mb-1 sm:mb-2">
+                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500 shrink-0" />
+                <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight truncate">{t("member.lyPoints.totalEarned")}</span>
               </div>
-              <p className="text-2xl font-bold text-green-500">+{stats.totalEarned.toLocaleString()}</p>
+              <p className="text-lg sm:text-2xl font-bold text-green-500">+{stats.totalEarned.toLocaleString()}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <ArrowDownRight className="w-4 h-4 text-orange-500" />
-                <span className="text-xs text-muted-foreground">{t("member.lyPoints.totalSpent")}</span>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-1.5 mb-1 sm:mb-2">
+                <ArrowDownRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 shrink-0" />
+                <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight truncate">{t("member.lyPoints.totalSpent")}</span>
               </div>
-              <p className="text-2xl font-bold text-orange-500">-{stats.totalSpent.toLocaleString()}</p>
+              <p className="text-lg sm:text-2xl font-bold text-orange-500">-{stats.totalSpent.toLocaleString()}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Users className="w-4 h-4 text-primary" />
-                <span className="text-xs text-muted-foreground">{t("member.lyPoints.fromReferrals")}</span>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-1.5 mb-1 sm:mb-2">
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
+                <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight truncate">{t("member.lyPoints.fromReferrals")}</span>
               </div>
-              <p className="text-2xl font-bold text-primary">+{stats.fromReferrals.toLocaleString()}</p>
+              <p className="text-lg sm:text-2xl font-bold text-primary">+{stats.fromReferrals.toLocaleString()}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <ShoppingBag className="w-4 h-4 text-secondary" />
-                <span className="text-xs text-muted-foreground">{t("member.lyPoints.fromReplenishment")}</span>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-1.5 mb-1 sm:mb-2">
+                <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-secondary shrink-0" />
+                <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight truncate">{t("member.lyPoints.fromReplenishment")}</span>
               </div>
-              <p className="text-2xl font-bold text-secondary">+{stats.fromReplenishment.toLocaleString()}</p>
+              <p className="text-lg sm:text-2xl font-bold text-secondary">+{stats.fromReplenishment.toLocaleString()}</p>
             </CardContent>
           </Card>
         </div>
 
         <Card>
           <CardHeader>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <History className="w-5 h-5 text-primary" />
+            <div className="flex items-start sm:items-center justify-between gap-3">
+              <div className="min-w-0">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <History className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
                   {t("member.lyPoints.history")}
                 </CardTitle>
-                <CardDescription>{t("member.lyPoints.historyDesc")}</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">{t("member.lyPoints.historyDesc")}</CardDescription>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" data-testid="button-filter-ledger">
-                  <Filter className="w-4 h-4 mr-1" />
-                  {t("member.lyPoints.filter")}
+              <div className="flex gap-1.5 sm:gap-2 shrink-0">
+                <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3" data-testid="button-filter-ledger">
+                  <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline ml-1">{t("member.lyPoints.filter")}</span>
                 </Button>
-                <Button variant="outline" size="sm" data-testid="button-export-ledger">
-                  <Download className="w-4 h-4 mr-1" />
-                  {t("member.lyPoints.export")}
+                <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3" data-testid="button-export-ledger">
+                  <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline ml-1">{t("member.lyPoints.export")}</span>
                 </Button>
               </div>
             </div>
@@ -187,26 +187,26 @@ export default function PartnerLyPointsPage() {
                   {ledger.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between py-4"
+                      className="flex items-center justify-between py-3 sm:py-4 gap-3"
                       data-testid={`ledger-item-${item.id}`}
                     >
-                      <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 ${
                           item.points > 0 ? "bg-green-500/10" : "bg-orange-500/10"
                         }`}>
                           {item.points > 0 ? (
-                            <ArrowUpRight className="w-5 h-5 text-green-500" />
+                            <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
                           ) : (
-                            <ArrowDownRight className="w-5 h-5 text-orange-500" />
+                            <ArrowDownRight className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                           )}
                         </div>
-                        <div>
-                          <p className="font-medium">{item.description || item.type}</p>
-                          <p className="text-sm text-muted-foreground">{formatDate(item.createdAt)}</p>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm sm:text-base truncate">{item.description || item.type}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">{formatDate(item.createdAt)}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className={`font-bold ${item.points > 0 ? "text-green-500" : "text-orange-500"}`}>
+                      <div className="text-right shrink-0">
+                        <p className={`font-bold text-sm sm:text-base ${item.points > 0 ? "text-green-500" : "text-orange-500"}`}>
                           {item.points > 0 ? "+" : ""}{item.points.toLocaleString()}
                         </p>
                       </div>
@@ -226,19 +226,19 @@ export default function PartnerLyPointsPage() {
                   {ledger.filter(i => i.points > 0).map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between py-4"
+                      className="flex items-center justify-between py-3 sm:py-4 gap-3"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                          <ArrowUpRight className="w-5 h-5 text-green-500" />
+                      <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
+                          <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
                         </div>
-                        <div>
-                          <p className="font-medium">{item.description || item.type}</p>
-                          <p className="text-sm text-muted-foreground">{formatDate(item.createdAt)}</p>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm sm:text-base truncate">{item.description || item.type}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">{formatDate(item.createdAt)}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-green-500">+{item.points.toLocaleString()}</p>
+                      <div className="text-right shrink-0">
+                        <p className="font-bold text-sm sm:text-base text-green-500">+{item.points.toLocaleString()}</p>
                       </div>
                     </div>
                   ))}
@@ -250,19 +250,19 @@ export default function PartnerLyPointsPage() {
                   {ledger.filter(i => i.points < 0).map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between py-4"
+                      className="flex items-center justify-between py-3 sm:py-4 gap-3"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
-                          <ArrowDownRight className="w-5 h-5 text-orange-500" />
+                      <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-500/10 flex items-center justify-center shrink-0">
+                          <ArrowDownRight className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                         </div>
-                        <div>
-                          <p className="font-medium">{item.description || item.type}</p>
-                          <p className="text-sm text-muted-foreground">{formatDate(item.createdAt)}</p>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm sm:text-base truncate">{item.description || item.type}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">{formatDate(item.createdAt)}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-orange-500">{item.points.toLocaleString()}</p>
+                      <div className="text-right shrink-0">
+                        <p className="font-bold text-sm sm:text-base text-orange-500">{item.points.toLocaleString()}</p>
                       </div>
                     </div>
                   ))}
@@ -273,9 +273,9 @@ export default function PartnerLyPointsPage() {
         </Card>
 
         <Card className="bg-muted/30">
-          <CardContent className="p-6">
-            <h3 className="font-bold mb-4">{t("member.lyPoints.rulesTitle")}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+          <CardContent className="p-4 sm:p-6">
+            <h3 className="font-bold text-sm sm:text-base mb-3 sm:mb-4">{t("member.lyPoints.rulesTitle")}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
               <div className="space-y-2">
                 <p className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs">{t("member.lyPoints.earnBadge")}</Badge>

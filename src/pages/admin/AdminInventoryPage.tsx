@@ -343,15 +343,16 @@ export default function AdminInventoryPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-start sm:items-center justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <h1 className="text-xl sm:text-2xl font-serif" data-testid="text-inventory-title">{t("admin.inventoryPage.title")}</h1>
             <p className="text-sm text-muted-foreground">{t("admin.inventoryPage.subtitle")}</p>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="gap-2 bg-secondary text-secondary-foreground" data-testid="button-add-stock">
+              <Button className="gap-2 bg-secondary text-secondary-foreground shrink-0" size="sm" data-testid="button-add-stock">
                 <Plus className="w-4 h-4" />
-                {t("admin.inventoryPage.addStock")}
+                <span className="hidden sm:inline">{t("admin.inventoryPage.addStock")}</span>
+                <span className="sm:hidden">操作</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -371,37 +372,37 @@ export default function AdminInventoryPage() {
           </DropdownMenu>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Boxes className="w-6 h-6 text-primary" />
+            <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-4">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Boxes className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
               </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.totalSku}</p>
-                <p className="text-sm text-muted-foreground">{t("admin.inventoryPage.productSku")}</p>
+              <div className="text-center sm:text-left">
+                <p className="text-lg sm:text-2xl font-bold">{stats.totalSku}</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">{t("admin.inventoryPage.productSku")}</p>
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-yellow-500" />
+            <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-4">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-yellow-500/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-4 h-4 sm:w-6 sm:h-6 text-yellow-500" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-yellow-500">{stats.lowStock}</p>
-                <p className="text-sm text-muted-foreground">{t("admin.inventoryPage.lowStock")}</p>
+              <div className="text-center sm:text-left">
+                <p className="text-lg sm:text-2xl font-bold text-yellow-500">{stats.lowStock}</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">{t("admin.inventoryPage.lowStock")}</p>
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-red-500" />
+            <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-4">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-4 h-4 sm:w-6 sm:h-6 text-red-500" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-red-500">{stats.critical}</p>
-                <p className="text-sm text-muted-foreground">{t("admin.inventoryPage.criticalStock")}</p>
+              <div className="text-center sm:text-left">
+                <p className="text-lg sm:text-2xl font-bold text-red-500">{stats.critical}</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">{t("admin.inventoryPage.criticalStock")}</p>
               </div>
             </CardContent>
           </Card>
@@ -456,61 +457,114 @@ export default function AdminInventoryPage() {
                 <p className="text-muted-foreground">暂无库存数据</p>
               </div>
             ) : (
-              <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-              <Table className="min-w-[640px]">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("admin.inventoryPage.itemName")}</TableHead>
-                    <TableHead>{t("admin.inventoryPage.sku")}</TableHead>
-                    <TableHead>{t("admin.inventoryPage.category")}</TableHead>
-                    <TableHead className="text-center">{t("admin.inventoryPage.currentStock")}</TableHead>
-                    <TableHead className="text-center">{t("admin.inventoryPage.minStock")}</TableHead>
-                    <TableHead>{t("admin.inventoryPage.status")}</TableHead>
-                    <TableHead className="text-right">{t("admin.inventoryPage.actions")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <>
+                {/* Mobile card view */}
+                <div className="md:hidden space-y-3">
                   {filteredInventory.map((item) => {
                     const category = categories.find(c => c.id === item.category_id);
                     return (
-                      <TableRow key={item.id} data-testid={`inventory-row-${item.id}`}>
-                        <TableCell className="font-medium">{item.name}</TableCell>
-                        <TableCell className="text-muted-foreground">{item.sku}</TableCell>
-                        <TableCell>
-                          {category && (
-                            <Badge variant="outline" className={getCategoryColor(category.color)}>
-                              {category.name}
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center font-bold">{item.stock} {item.unit}</TableCell>
-                        <TableCell className="text-center text-muted-foreground">{item.min_stock} {item.unit}</TableCell>
-                        <TableCell>{getStatusBadge(item.status)}</TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" data-testid={`button-actions-${item.id}`}>
-                                <MoreHorizontal className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => { setSelectedItem(item); setShowStockInModal(true); }}>
-                                <ArrowUpRight className="w-4 h-4 mr-2 text-green-500" />
-                                {t("admin.inventoryPage.stockIn")}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => { setSelectedItem(item); setShowStockOutModal(true); }}>
-                                <ArrowDownRight className="w-4 h-4 mr-2 text-red-500" />
-                                {t("admin.inventoryPage.stockOut")}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
+                      <div key={item.id} className="border rounded-lg p-3 space-y-2" data-testid={`inventory-card-${item.id}`}>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-sm truncate">{item.name}</p>
+                            <p className="text-xs text-muted-foreground font-mono">{item.sku}</p>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {getStatusBadge(item.status)}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" data-testid={`button-actions-${item.id}`}>
+                                  <MoreHorizontal className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => { setSelectedItem(item); setShowStockInModal(true); }}>
+                                  <ArrowUpRight className="w-4 h-4 mr-2 text-green-500" />
+                                  {t("admin.inventoryPage.stockIn")}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setSelectedItem(item); setShowStockOutModal(true); }}>
+                                  <ArrowDownRight className="w-4 h-4 mr-2 text-red-500" />
+                                  {t("admin.inventoryPage.stockOut")}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            {category && (
+                              <Badge variant="outline" className={`text-xs ${getCategoryColor(category.color)}`}>
+                                {category.name}
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 text-xs">
+                            <span className="font-bold">{item.stock} <span className="text-muted-foreground font-normal">{item.unit}</span></span>
+                            <span className="text-muted-foreground">/ {t("admin.inventoryPage.minStock")}: {item.min_stock}</span>
+                          </div>
+                        </div>
+                      </div>
                     );
                   })}
-                </TableBody>
-              </Table>
-              </div>
+                </div>
+
+                {/* Desktop table view */}
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t("admin.inventoryPage.itemName")}</TableHead>
+                        <TableHead>{t("admin.inventoryPage.sku")}</TableHead>
+                        <TableHead>{t("admin.inventoryPage.category")}</TableHead>
+                        <TableHead className="text-center">{t("admin.inventoryPage.currentStock")}</TableHead>
+                        <TableHead className="text-center">{t("admin.inventoryPage.minStock")}</TableHead>
+                        <TableHead>{t("admin.inventoryPage.status")}</TableHead>
+                        <TableHead className="text-right">{t("admin.inventoryPage.actions")}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredInventory.map((item) => {
+                        const category = categories.find(c => c.id === item.category_id);
+                        return (
+                          <TableRow key={item.id} data-testid={`inventory-row-${item.id}`}>
+                            <TableCell className="font-medium">{item.name}</TableCell>
+                            <TableCell className="text-muted-foreground">{item.sku}</TableCell>
+                            <TableCell>
+                              {category && (
+                                <Badge variant="outline" className={getCategoryColor(category.color)}>
+                                  {category.name}
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center font-bold">{item.stock} {item.unit}</TableCell>
+                            <TableCell className="text-center text-muted-foreground">{item.min_stock} {item.unit}</TableCell>
+                            <TableCell>{getStatusBadge(item.status)}</TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" data-testid={`button-actions-${item.id}`}>
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => { setSelectedItem(item); setShowStockInModal(true); }}>
+                                    <ArrowUpRight className="w-4 h-4 mr-2 text-green-500" />
+                                    {t("admin.inventoryPage.stockIn")}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => { setSelectedItem(item); setShowStockOutModal(true); }}>
+                                    <ArrowDownRight className="w-4 h-4 mr-2 text-red-500" />
+                                    {t("admin.inventoryPage.stockOut")}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -528,38 +582,67 @@ export default function AdminInventoryPage() {
                 <p className="text-muted-foreground">暂无库存变动记录</p>
               </div>
             ) : (
-              <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-              <Table className="min-w-[600px]">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("admin.inventoryPage.date")}</TableHead>
-                    <TableHead>{t("admin.inventoryPage.type")}</TableHead>
-                    <TableHead>{t("admin.inventoryPage.product")}</TableHead>
-                    <TableHead className="text-center">{t("admin.inventoryPage.quantity")}</TableHead>
-                    <TableHead>{t("admin.inventoryPage.note")}</TableHead>
-                    <TableHead>{t("admin.inventoryPage.operator")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <>
+                {/* Mobile card view */}
+                <div className="md:hidden space-y-3">
                   {ledger.map((record: any) => (
-                    <TableRow key={record.id} data-testid={`ledger-row-${record.id}`}>
-                      <TableCell>{formatDate(record.created_at)}</TableCell>
-                      <TableCell>
-                        <Badge className={record.type === "in" ? "bg-green-500" : "bg-red-500"}>
-                          {record.type === "in" ? t("admin.inventoryPage.stockIn") : t("admin.inventoryPage.stockOut")}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">{record.item_name}</TableCell>
-                      <TableCell className={`text-center font-bold ${record.type === "in" ? "text-green-500" : "text-red-500"}`}>
-                        {record.type === "in" ? "+" : "-"}{record.quantity}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{record.note || record.movement_type}</TableCell>
-                      <TableCell>{record.operator || "-"}</TableCell>
-                    </TableRow>
+                    <div key={record.id} className="border rounded-lg p-3 space-y-2" data-testid={`ledger-card-${record.id}`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Badge className={`shrink-0 text-xs ${record.type === "in" ? "bg-green-500" : "bg-red-500"}`}>
+                            {record.type === "in" ? t("admin.inventoryPage.stockIn") : t("admin.inventoryPage.stockOut")}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">{formatDate(record.created_at)}</span>
+                        </div>
+                        <span className={`font-bold text-sm shrink-0 ${record.type === "in" ? "text-green-500" : "text-red-500"}`}>
+                          {record.type === "in" ? "+" : "-"}{record.quantity}
+                        </span>
+                      </div>
+                      <p className="text-sm font-medium truncate">{record.item_name}</p>
+                      {(record.note || record.movement_type || record.operator) && (
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span className="truncate">{record.note || record.movement_type}</span>
+                          {record.operator && <span className="shrink-0 ml-2">{record.operator}</span>}
+                        </div>
+                      )}
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
-              </div>
+                </div>
+
+                {/* Desktop table view */}
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t("admin.inventoryPage.date")}</TableHead>
+                        <TableHead>{t("admin.inventoryPage.type")}</TableHead>
+                        <TableHead>{t("admin.inventoryPage.product")}</TableHead>
+                        <TableHead className="text-center">{t("admin.inventoryPage.quantity")}</TableHead>
+                        <TableHead>{t("admin.inventoryPage.note")}</TableHead>
+                        <TableHead>{t("admin.inventoryPage.operator")}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {ledger.map((record: any) => (
+                        <TableRow key={record.id} data-testid={`ledger-row-${record.id}`}>
+                          <TableCell>{formatDate(record.created_at)}</TableCell>
+                          <TableCell>
+                            <Badge className={record.type === "in" ? "bg-green-500" : "bg-red-500"}>
+                              {record.type === "in" ? t("admin.inventoryPage.stockIn") : t("admin.inventoryPage.stockOut")}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-medium">{record.item_name}</TableCell>
+                          <TableCell className={`text-center font-bold ${record.type === "in" ? "text-green-500" : "text-red-500"}`}>
+                            {record.type === "in" ? "+" : "-"}{record.quantity}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">{record.note || record.movement_type}</TableCell>
+                          <TableCell>{record.operator || "-"}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -567,7 +650,7 @@ export default function AdminInventoryPage() {
 
       {/* Stock In Modal */}
       <Dialog open={showStockInModal} onOpenChange={setShowStockInModal}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ArrowUpRight className="w-5 h-5 text-green-500" />
@@ -628,7 +711,7 @@ export default function AdminInventoryPage() {
 
       {/* New Item Modal */}
       <Dialog open={showNewItemModal} onOpenChange={setShowNewItemModal}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Plus className="w-5 h-5 text-primary" />
@@ -714,7 +797,7 @@ export default function AdminInventoryPage() {
 
       {/* Stock Out Modal */}
       <Dialog open={showStockOutModal} onOpenChange={setShowStockOutModal}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ArrowDownRight className="w-5 h-5 text-red-500" />
