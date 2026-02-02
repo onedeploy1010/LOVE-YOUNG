@@ -36,10 +36,10 @@ interface Transaction {
   createdAt: string;
 }
 
-const statusConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  completed: { label: "已完成", icon: CheckCircle, color: "text-green-500" },
-  pending: { label: "处理中", icon: Clock, color: "text-orange-500" },
-  failed: { label: "失败", icon: XCircle, color: "text-red-500" },
+const statusConfig: Record<string, { icon: React.ElementType; color: string }> = {
+  completed: { icon: CheckCircle, color: "text-green-500" },
+  pending: { icon: Clock, color: "text-orange-500" },
+  failed: { icon: XCircle, color: "text-red-500" },
 };
 
 export default function PartnerWalletPage() {
@@ -108,12 +108,12 @@ export default function PartnerWalletPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner-pending-withdrawals"] });
-      toast({ title: "提现申请已提交", description: "预计1-3个工作日处理完成" });
+      toast({ title: t("partner.wallet.withdrawSuccess"), description: t("partner.wallet.withdrawSuccessDesc") });
       setIsWithdrawOpen(false);
       setWithdrawAmount("");
     },
     onError: (error: Error) => {
-      toast({ title: "提现失败", description: error.message, variant: "destructive" });
+      toast({ title: t("partner.wallet.withdrawFailed"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -139,11 +139,11 @@ export default function PartnerWalletPage() {
   const handleWithdraw = () => {
     const amount = parseFloat(withdrawAmount);
     if (isNaN(amount) || amount < 50) {
-      toast({ title: "提现金额无效", description: "最低提现金额为 RM 50.00", variant: "destructive" });
+      toast({ title: t("partner.wallet.invalidAmount"), description: t("partner.wallet.minAmountMsg"), variant: "destructive" });
       return;
     }
     if (amount > stats.availableBalance) {
-      toast({ title: "余额不足", description: "提现金额超过可用余额", variant: "destructive" });
+      toast({ title: t("partner.wallet.insufficientBalance"), description: t("partner.wallet.exceedsBalanceMsg"), variant: "destructive" });
       return;
     }
     withdrawMutation.mutate(amount);
@@ -172,12 +172,12 @@ export default function PartnerWalletPage() {
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-2">可提现余额</p>
+                  <p className="text-sm text-muted-foreground mb-2">{t("partner.wallet.availableBalance")}</p>
                   <h2 className="text-4xl font-bold text-primary">RM {stats.availableBalance.toFixed(2)}</h2>
                   {stats.pendingWithdraw > 0 && (
                     <p className="text-sm text-orange-500 mt-2 flex items-center gap-1">
                       <Clock className="w-4 h-4" />
-                      RM {stats.pendingWithdraw.toFixed(2)} 提现处理中
+                      RM {stats.pendingWithdraw.toFixed(2)} {t("partner.wallet.pendingWithdraw")}
                     </p>
                   )}
                 </div>
@@ -185,50 +185,50 @@ export default function PartnerWalletPage() {
                   <DialogTrigger asChild>
                     <Button size="lg" data-testid="button-withdraw">
                       <Wallet className="w-4 h-4 mr-2" />
-                      申请提现
+                      {t("partner.wallet.applyWithdraw")}
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>申请提现</DialogTitle>
+                      <DialogTitle>{t("partner.wallet.withdrawTitle")}</DialogTitle>
                       <DialogDescription>
-                        提现将在1-3个工作日内处理完成
+                        {t("partner.wallet.withdrawDesc")}
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                       <div className="space-y-2">
-                        <Label>提现金额 (RM)</Label>
+                        <Label>{t("partner.wallet.withdrawAmount")}</Label>
                         <Input
                           type="number"
-                          placeholder="请输入提现金额"
+                          placeholder={t("partner.wallet.withdrawPlaceholder")}
                           value={withdrawAmount}
                           onChange={(e) => setWithdrawAmount(e.target.value)}
                           data-testid="input-withdraw-amount"
                         />
                         <p className="text-xs text-muted-foreground">
-                          可提现余额: RM {stats.availableBalance.toFixed(2)}
+                          {t("partner.wallet.availableBalanceLabel")}: RM {stats.availableBalance.toFixed(2)}
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <Label>收款银行账户</Label>
+                        <Label>{t("partner.wallet.selectBank")}</Label>
                         <div className="p-3 bg-muted rounded-lg flex items-center gap-3">
                           <Building2 className="w-5 h-5 text-muted-foreground" />
                           <div>
-                            <p className="font-medium">请先绑定银行账户</p>
-                            <p className="text-xs text-muted-foreground">联系客服添加</p>
+                            <p className="font-medium">{t("partner.wallet.bindBankFirst")}</p>
+                            <p className="text-xs text-muted-foreground">{t("partner.wallet.contactToAdd")}</p>
                           </div>
                         </div>
                       </div>
                       <div className="p-3 bg-orange-500/10 rounded-lg flex items-start gap-2">
                         <AlertCircle className="w-4 h-4 text-orange-500 mt-0.5" />
                         <p className="text-sm text-orange-500">
-                          最低提现金额为 RM 50.00，每笔提现收取 RM 1.00 手续费
+                          {t("partner.wallet.minWithdrawNote")}
                         </p>
                       </div>
                     </div>
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setIsWithdrawOpen(false)}>
-                        取消
+                        {t("partner.wallet.cancel")}
                       </Button>
                       <Button
                         onClick={handleWithdraw}
@@ -236,7 +236,7 @@ export default function PartnerWalletPage() {
                         data-testid="button-confirm-withdraw"
                       >
                         {withdrawMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                        确认提现
+                        {t("partner.wallet.confirmWithdraw")}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -248,18 +248,18 @@ export default function PartnerWalletPage() {
           <Card>
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">本月收入</span>
+                <span className="text-sm text-muted-foreground">{t("partner.wallet.thisMonthIncome")}</span>
                 <TrendingUp className="w-4 h-4 text-green-500" />
               </div>
               <p className="text-2xl font-bold text-green-500">+RM {stats.thisMonthIncome.toFixed(2)}</p>
               <Separator />
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-muted-foreground">累计收入</p>
+                  <p className="text-xs text-muted-foreground">{t("partner.wallet.totalIncome")}</p>
                   <p className="font-bold">RM {stats.totalIncome.toFixed(2)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">累计提现</p>
+                  <p className="text-xs text-muted-foreground">{t("partner.wallet.totalWithdrawn")}</p>
                   <p className="font-bold">RM {stats.totalWithdrawn.toFixed(2)}</p>
                 </div>
               </div>
@@ -273,13 +273,13 @@ export default function PartnerWalletPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <History className="w-5 h-5 text-primary" />
-                  交易记录
+                  {t("partner.wallet.transactions")}
                 </CardTitle>
-                <CardDescription>查看所有钱包交易明细</CardDescription>
+                <CardDescription>{t("partner.wallet.transactionsDesc")}</CardDescription>
               </div>
               <Button variant="outline" size="sm" data-testid="button-export-transactions">
                 <Download className="w-4 h-4 mr-1" />
-                导出记录
+                {t("partner.wallet.exportRecords")}
               </Button>
             </div>
           </CardHeader>
@@ -311,7 +311,7 @@ export default function PartnerWalletPage() {
                           <span className="text-sm text-muted-foreground">{formatDate(tx.createdAt)}</span>
                           <Badge variant="outline" className={`text-xs ${statusInfo.color}`}>
                             <StatusIcon className="w-3 h-3 mr-1" />
-                            {statusInfo.label}
+                            {t(`partner.wallet.status.${tx.status}`)}
                           </Badge>
                         </div>
                       </div>
@@ -326,7 +326,7 @@ export default function PartnerWalletPage() {
             {transactions.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <Wallet className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>暂无交易记录</p>
+                <p>{t("partner.wallet.noTransactions")}</p>
               </div>
             )}
           </CardContent>
@@ -336,18 +336,18 @@ export default function PartnerWalletPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-primary" />
-              收款账户
+              {t("partner.wallet.bankAccount")}
             </CardTitle>
-            <CardDescription>管理您的银行收款账户</CardDescription>
+            <CardDescription>{t("partner.wallet.bankAccountDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-center py-8 text-muted-foreground">
               <Building2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>暂未绑定银行账户</p>
-              <p className="text-sm">请联系客服添加收款账户</p>
+              <p>{t("partner.wallet.noBankAccount")}</p>
+              <p className="text-sm">{t("partner.wallet.contactForBank")}</p>
             </div>
             <Button variant="outline" className="w-full mt-4" data-testid="button-add-bank">
-              + 添加银行账户
+              {t("partner.wallet.addBankAccount")}
             </Button>
           </CardContent>
         </Card>

@@ -140,7 +140,7 @@ export default function PartnerReferralsPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.total}</p>
-                  <p className="text-xs text-muted-foreground">总推荐人数</p>
+                  <p className="text-xs text-muted-foreground">{t("partner.referrals.totalReferrals")}</p>
                 </div>
               </div>
             </CardContent>
@@ -153,7 +153,7 @@ export default function PartnerReferralsPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.active}</p>
-                  <p className="text-xs text-muted-foreground">活跃成员</p>
+                  <p className="text-xs text-muted-foreground">{t("partner.referrals.activeMembers")}</p>
                 </div>
               </div>
             </CardContent>
@@ -166,7 +166,7 @@ export default function PartnerReferralsPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.level1}</p>
-                  <p className="text-xs text-muted-foreground">直推成员</p>
+                  <p className="text-xs text-muted-foreground">{t("partner.referrals.directReferrals")}</p>
                 </div>
               </div>
             </CardContent>
@@ -179,7 +179,7 @@ export default function PartnerReferralsPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.totalLyEarned.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">团队LY总额</p>
+                  <p className="text-xs text-muted-foreground">{t("partner.referrals.teamTotalLy")}</p>
                 </div>
               </div>
             </CardContent>
@@ -190,14 +190,14 @@ export default function PartnerReferralsPage() {
           <CardHeader>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <CardTitle>团队成员列表</CardTitle>
-                <CardDescription>10层深度推荐网络</CardDescription>
+                <CardTitle>{t("partner.referrals.teamList")}</CardTitle>
+                <CardDescription>{t("partner.referrals.teamListDesc")}</CardDescription>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="搜索成员..."
+                    placeholder={t("partner.referrals.searchPlaceholder")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-9 w-[200px]"
@@ -218,7 +218,7 @@ export default function PartnerReferralsPage() {
                 onClick={() => setLevelFilter(null)}
                 data-testid="button-filter-all"
               >
-                全部
+                {t("partner.referrals.allFilter")}
               </Button>
               <Button
                 variant={levelFilter === 1 ? "default" : "outline"}
@@ -226,7 +226,7 @@ export default function PartnerReferralsPage() {
                 onClick={() => setLevelFilter(1)}
                 data-testid="button-filter-level-1"
               >
-                第1层 ({stats.level1})
+                {t("partner.referrals.level").replace("{n}", "1")} ({stats.level1})
               </Button>
               <Button
                 variant={levelFilter === 2 ? "default" : "outline"}
@@ -234,7 +234,7 @@ export default function PartnerReferralsPage() {
                 onClick={() => setLevelFilter(2)}
                 data-testid="button-filter-level-2"
               >
-                第2层 ({stats.level2})
+                {t("partner.referrals.level").replace("{n}", "2")} ({stats.level2})
               </Button>
               <Button
                 variant={levelFilter === 3 ? "default" : "outline"}
@@ -242,7 +242,7 @@ export default function PartnerReferralsPage() {
                 onClick={() => setLevelFilter(3)}
                 data-testid="button-filter-level-3"
               >
-                第3层 ({stats.level3})
+                {t("partner.referrals.level").replace("{n}", "3")} ({stats.level3})
               </Button>
             </div>
 
@@ -263,21 +263,21 @@ export default function PartnerReferralsPage() {
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{referral.name}</p>
                         <Badge className={levelColors[referral.level] || "bg-gray-500"} variant="secondary">
-                          第{referral.level}层
+                          {t("partner.referrals.level").replace("{n}", String(referral.level))}
                         </Badge>
                         {referral.status === "pending" && (
-                          <Badge variant="outline" className="text-orange-500 border-orange-500">待激活</Badge>
+                          <Badge variant="outline" className="text-orange-500 border-orange-500">{t("partner.referrals.pendingActivation")}</Badge>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        加入时间: {referral.joinDate} · {getTierLabel(referral.tier)}
+                        {t("partner.referrals.joinTime")}: {referral.joinDate} · {getTierLabel(referral.tier)}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="font-medium text-secondary">{referral.lyBalance.toLocaleString()} LY</p>
-                      <p className="text-xs text-muted-foreground">LY余额</p>
+                      <p className="text-xs text-muted-foreground">{t("partner.referrals.lyBalanceLabel")}</p>
                     </div>
                     <ChevronRight className="w-5 h-5 text-muted-foreground" />
                   </div>
@@ -288,7 +288,7 @@ export default function PartnerReferralsPage() {
             {filteredReferrals.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>{referrals.length === 0 ? "暂无推荐成员" : "暂无匹配的成员"}</p>
+                <p>{referrals.length === 0 ? t("partner.referrals.noMembers") : t("partner.referrals.noMatchingMembers")}</p>
               </div>
             )}
           </CardContent>
@@ -302,13 +302,13 @@ export default function PartnerReferralsPage() {
                   <UserPlus className="w-6 h-6 text-secondary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg">邀请更多好友加入</h3>
-                  <p className="text-muted-foreground">每成功推荐一位经营人，可获得LY积分奖励</p>
+                  <h3 className="font-bold text-lg">{t("partner.referrals.inviteTitle")}</h3>
+                  <p className="text-muted-foreground">{t("partner.referrals.inviteDesc")}</p>
                 </div>
               </div>
               <Button className="bg-secondary text-secondary-foreground hover:bg-secondary/90" data-testid="button-invite">
                 <UserPlus className="w-4 h-4 mr-2" />
-                立即邀请
+                {t("partner.referrals.inviteNow")}
               </Button>
             </div>
           </CardContent>

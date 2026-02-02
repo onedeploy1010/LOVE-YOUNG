@@ -21,16 +21,23 @@ interface EarningEntry {
   createdAt: string;
 }
 
-const typeConfig: Record<string, { label: string; icon: React.ElementType; color: string; bgColor: string }> = {
-  cashback: { label: "返现分红", icon: DollarSign, color: "text-green-500", bgColor: "bg-green-500/10" },
-  pool_reward: { label: "RWA分红", icon: Award, color: "text-secondary", bgColor: "bg-secondary/10" },
-  referral: { label: "推荐奖励", icon: Users, color: "text-blue-500", bgColor: "bg-blue-500/10" },
-  income: { label: "收入", icon: TrendingUp, color: "text-green-500", bgColor: "bg-green-500/10" },
+const typeIcons: Record<string, { icon: React.ElementType; color: string; bgColor: string }> = {
+  cashback: { icon: DollarSign, color: "text-green-500", bgColor: "bg-green-500/10" },
+  pool_reward: { icon: Award, color: "text-secondary", bgColor: "bg-secondary/10" },
+  referral: { icon: Users, color: "text-blue-500", bgColor: "bg-blue-500/10" },
+  income: { icon: TrendingUp, color: "text-green-500", bgColor: "bg-green-500/10" },
 };
 
 export default function PartnerEarningsPage() {
   const { t } = useTranslation();
   const { partner } = useAuth();
+
+  const typeLabels: Record<string, string> = {
+    cashback: t("partner.earnings.cashback"),
+    pool_reward: t("partner.earnings.rwaDividend"),
+    referral: t("partner.earnings.referralReward"),
+    income: t("partner.earnings.income"),
+  };
 
   const { data: earnings = [], isLoading } = useQuery({
     queryKey: ["partner-earnings", partner?.id],
@@ -112,14 +119,14 @@ export default function PartnerEarningsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">累计总收益</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("partner.earnings.totalEarnings")}</p>
                   <h2 className="text-4xl font-bold text-primary">RM {stats.totalEarnings.toFixed(2)}</h2>
                   <div className="flex items-center gap-2 mt-2">
                     <Badge className="bg-green-500/20 text-green-500">
                       <ArrowUpRight className="w-3 h-3 mr-1" />
                       +{growthPercent}%
                     </Badge>
-                    <span className="text-sm text-muted-foreground">较上月</span>
+                    <span className="text-sm text-muted-foreground">{t("partner.earnings.vsLastMonth")}</span>
                   </div>
                 </div>
                 <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center">
@@ -133,10 +140,10 @@ export default function PartnerEarningsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <Calendar className="w-5 h-5 text-muted-foreground" />
-                <Badge variant="outline">本月</Badge>
+                <Badge variant="outline">{t("partner.earnings.thisMonth")}</Badge>
               </div>
               <p className="text-3xl font-bold text-foreground">RM {stats.thisMonthEarnings.toFixed(2)}</p>
-              <p className="text-sm text-muted-foreground mt-1">本月收益</p>
+              <p className="text-sm text-muted-foreground mt-1">{t("partner.earnings.thisMonthEarnings")}</p>
             </CardContent>
           </Card>
 
@@ -144,10 +151,10 @@ export default function PartnerEarningsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <Calendar className="w-5 h-5 text-muted-foreground" />
-                <Badge variant="outline">上月</Badge>
+                <Badge variant="outline">{t("partner.earnings.lastMonth")}</Badge>
               </div>
               <p className="text-3xl font-bold text-foreground">RM {stats.lastMonthEarnings.toFixed(2)}</p>
-              <p className="text-sm text-muted-foreground mt-1">上月收益</p>
+              <p className="text-sm text-muted-foreground mt-1">{t("partner.earnings.lastMonthEarnings")}</p>
             </CardContent>
           </Card>
         </div>
@@ -160,7 +167,7 @@ export default function PartnerEarningsPage() {
                   <DollarSign className="w-5 h-5 text-green-500" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">返现分红</p>
+                  <p className="text-sm text-muted-foreground">{t("partner.earnings.cashback")}</p>
                   <p className="text-xl font-bold">RM {stats.cashbackTotal.toFixed(2)}</p>
                 </div>
                 {stats.totalEarnings > 0 && (
@@ -179,7 +186,7 @@ export default function PartnerEarningsPage() {
                   <Award className="w-5 h-5 text-secondary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">RWA分红</p>
+                  <p className="text-sm text-muted-foreground">{t("partner.earnings.rwaDividend")}</p>
                   <p className="text-xl font-bold">RM {stats.rwaTotal.toFixed(2)}</p>
                 </div>
                 {stats.totalEarnings > 0 && (
@@ -198,7 +205,7 @@ export default function PartnerEarningsPage() {
                   <Users className="w-5 h-5 text-blue-500" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">推荐奖励</p>
+                  <p className="text-sm text-muted-foreground">{t("partner.earnings.referralReward")}</p>
                   <p className="text-xl font-bold">RM {stats.referralTotal.toFixed(2)}</p>
                 </div>
                 {stats.totalEarnings > 0 && (
@@ -217,18 +224,18 @@ export default function PartnerEarningsPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <PieChart className="w-5 h-5 text-primary" />
-                  收益明细
+                  {t("partner.earnings.history")}
                 </CardTitle>
-                <CardDescription>查看所有收益来源记录</CardDescription>
+                <CardDescription>{t("partner.earnings.historyDesc")}</CardDescription>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" data-testid="button-filter-earnings">
                   <Filter className="w-4 h-4 mr-1" />
-                  筛选
+                  {t("partner.earnings.filter")}
                 </Button>
                 <Button variant="outline" size="sm" data-testid="button-export-earnings">
                   <Download className="w-4 h-4 mr-1" />
-                  导出
+                  {t("partner.earnings.export")}
                 </Button>
               </div>
             </div>
@@ -236,17 +243,17 @@ export default function PartnerEarningsPage() {
           <CardContent>
             <Tabs defaultValue="all">
               <TabsList className="mb-4">
-                <TabsTrigger value="all" data-testid="tab-all-earnings">全部</TabsTrigger>
-                <TabsTrigger value="cashback" data-testid="tab-cashback">返现分红</TabsTrigger>
-                <TabsTrigger value="pool_reward" data-testid="tab-rwa-earnings">RWA分红</TabsTrigger>
-                <TabsTrigger value="referral" data-testid="tab-referral">推荐奖励</TabsTrigger>
+                <TabsTrigger value="all" data-testid="tab-all-earnings">{t("partner.earnings.tabs.all")}</TabsTrigger>
+                <TabsTrigger value="cashback" data-testid="tab-cashback">{t("partner.earnings.cashback")}</TabsTrigger>
+                <TabsTrigger value="pool_reward" data-testid="tab-rwa-earnings">{t("partner.earnings.rwaDividend")}</TabsTrigger>
+                <TabsTrigger value="referral" data-testid="tab-referral">{t("partner.earnings.referralReward")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="all" className="space-y-0">
                 <div className="divide-y">
                   {earnings.map((earning) => {
-                    const config = typeConfig[earning.type] || typeConfig.income;
-                    const TypeIcon = config.icon;
+                    const icons = typeIcons[earning.type] || typeIcons.income;
+                    const TypeIcon = icons.icon;
                     return (
                       <div
                         key={earning.id}
@@ -254,18 +261,18 @@ export default function PartnerEarningsPage() {
                         data-testid={`earning-${earning.id}`}
                       >
                         <div className="flex items-center gap-4">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${config.bgColor}`}>
-                            <TypeIcon className={`w-5 h-5 ${config.color}`} />
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${icons.bgColor}`}>
+                            <TypeIcon className={`w-5 h-5 ${icons.color}`} />
                           </div>
                           <div>
-                            <p className="font-medium">{earning.description || config.label}</p>
+                            <p className="font-medium">{earning.description || typeLabels[earning.type] || earning.type}</p>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-sm text-muted-foreground">{formatDate(earning.createdAt)}</span>
                               <Badge variant="outline" className="text-xs">{earning.source}</Badge>
                             </div>
                           </div>
                         </div>
-                        <p className={`font-bold ${config.color}`}>+RM {(earning.amount / 100).toFixed(2)}</p>
+                        <p className={`font-bold ${icons.color}`}>+RM {(earning.amount / 100).toFixed(2)}</p>
                       </div>
                     );
                   })}
@@ -273,7 +280,7 @@ export default function PartnerEarningsPage() {
                 {earnings.length === 0 && (
                   <div className="text-center py-12 text-muted-foreground">
                     <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>暂无收益记录</p>
+                    <p>{t("partner.earnings.noRecords")}</p>
                   </div>
                 )}
               </TabsContent>
@@ -282,33 +289,33 @@ export default function PartnerEarningsPage() {
                 <TabsContent key={type} value={type} className="space-y-0">
                   <div className="divide-y">
                     {earnings.filter(e => e.type === type).map((earning) => {
-                      const config = typeConfig[earning.type] || typeConfig.income;
-                      const TypeIcon = config.icon;
+                      const icons = typeIcons[earning.type] || typeIcons.income;
+                      const TypeIcon = icons.icon;
                       return (
                         <div
                           key={earning.id}
                           className="flex items-center justify-between py-4"
                         >
                           <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${config.bgColor}`}>
-                              <TypeIcon className={`w-5 h-5 ${config.color}`} />
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${icons.bgColor}`}>
+                              <TypeIcon className={`w-5 h-5 ${icons.color}`} />
                             </div>
                             <div>
-                              <p className="font-medium">{earning.description || config.label}</p>
+                              <p className="font-medium">{earning.description || typeLabels[earning.type] || earning.type}</p>
                               <div className="flex items-center gap-2 mt-1">
                                 <span className="text-sm text-muted-foreground">{formatDate(earning.createdAt)}</span>
                                 <Badge variant="outline" className="text-xs">{earning.source}</Badge>
                               </div>
                             </div>
                           </div>
-                          <p className={`font-bold ${config.color}`}>+RM {(earning.amount / 100).toFixed(2)}</p>
+                          <p className={`font-bold ${icons.color}`}>+RM {(earning.amount / 100).toFixed(2)}</p>
                         </div>
                       );
                     })}
                   </div>
                   {earnings.filter(e => e.type === type).length === 0 && (
                     <div className="text-center py-12 text-muted-foreground">
-                      <p>暂无该类型收益记录</p>
+                      <p>{t("partner.earnings.noRecordsForType")}</p>
                     </div>
                   )}
                 </TabsContent>

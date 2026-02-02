@@ -19,11 +19,9 @@ interface ProductionBatch {
   batch_number: string;
   product_id: string | null;
   product_name: string;
-  planned_qty: number;
-  actual_qty: number | null;
+  planned_quantity: number;
+  actual_quantity: number | null;
   status: string;
-  current_step: number;
-  total_steps: number;
   planned_date: string;
   started_at: string | null;
   completed_at: string | null;
@@ -35,9 +33,9 @@ interface ProductionMaterial {
   id: string;
   batch_id: string;
   material_name: string;
-  planned_qty: number;
-  actual_qty: number | null;
-  wastage: number;
+  planned_quantity: number;
+  actual_quantity: number | null;
+  wastage_quantity: number;
   unit: string;
   created_at: string;
 }
@@ -94,6 +92,19 @@ export default function AdminProductionPage() {
     t("admin.productionPage.stepColdStorage"),
     t("admin.productionPage.stepInspection")
   ];
+
+  const statusStepMap: Record<string, number> = {
+    planned: 0,
+    material_prep: 1,
+    cleaning: 2,
+    cooking: 3,
+    cold_storage: 4,
+    inspection: 5,
+    completed: 5,
+    cancelled: 0,
+  };
+  const totalSteps = stepLabels.length;
+  const getCurrentStep = (status: string) => statusStepMap[status] ?? 0;
 
   const filteredBatches = batches.filter(batch =>
     searchQuery === "" ||
@@ -266,7 +277,7 @@ export default function AdminProductionPage() {
                           <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 sm:gap-3 flex-shrink-0">
                             {getStatusBadge(batch.status)}
                             <span className="text-xs sm:text-sm text-muted-foreground">
-                              {t("admin.productionPage.qty")}: {batch.actual_qty ?? batch.planned_qty}
+                              {t("admin.productionPage.qty")}: {batch.actual_quantity ?? batch.planned_quantity}
                             </span>
                           </div>
                         </div>
@@ -274,14 +285,14 @@ export default function AdminProductionPage() {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">{t("admin.productionPage.progress")}</span>
-                            <span>{batch.current_step}/{batch.total_steps} {t("admin.productionPage.steps")}</span>
+                            <span>{getCurrentStep(batch.status)}/{totalSteps} {t("admin.productionPage.steps")}</span>
                           </div>
-                          <Progress value={(batch.current_step / batch.total_steps) * 100} className="h-2" />
+                          <Progress value={(getCurrentStep(batch.status) / totalSteps) * 100} className="h-2" />
                           <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground gap-1">
                             {stepLabels.map((label, idx) => (
                               <span
                                 key={idx}
-                                className={`text-center truncate ${idx < batch.current_step ? "text-primary font-medium" : ""}`}
+                                className={`text-center truncate ${idx < getCurrentStep(batch.status) ? "text-primary font-medium" : ""}`}
                               >
                                 {label}
                               </span>
@@ -302,11 +313,11 @@ export default function AdminProductionPage() {
                               </div>
                               <div>
                                 <p className="text-muted-foreground">{t("admin.productionPage.plannedQty")}</p>
-                                <p className="font-medium">{batch.planned_qty}</p>
+                                <p className="font-medium">{batch.planned_quantity}</p>
                               </div>
                               <div>
                                 <p className="text-muted-foreground">{t("admin.productionPage.actualQty")}</p>
-                                <p className="font-medium">{batch.actual_qty ?? "-"}</p>
+                                <p className="font-medium">{batch.actual_quantity ?? "-"}</p>
                               </div>
                             </div>
                             <div className="flex gap-2">
@@ -365,16 +376,16 @@ export default function AdminProductionPage() {
                         {materials.map((material) => (
                           <tr key={material.id} className="border-b last:border-0">
                             <td className="py-3 font-medium">{material.material_name}</td>
-                            <td className="py-3">{material.planned_qty} {material.unit}</td>
-                            <td className="py-3">{material.actual_qty ?? "-"} {material.unit}</td>
+                            <td className="py-3">{material.planned_quantity} {material.unit}</td>
+                            <td className="py-3">{material.actual_quantity ?? "-"} {material.unit}</td>
                             <td className="py-3">
-                              <span className={material.wastage > 0 ? "text-orange-500" : "text-green-500"}>
-                                {material.wastage} {material.unit}
+                              <span className={material.wastage_quantity > 0 ? "text-orange-500" : "text-green-500"}>
+                                {material.wastage_quantity} {material.unit}
                               </span>
                             </td>
                             <td className="py-3">
-                              <Badge variant={material.wastage / material.planned_qty > 0.05 ? "destructive" : "outline"}>
-                                {((material.wastage / material.planned_qty) * 100).toFixed(1)}%
+                              <Badge variant={material.planned_quantity > 0 && material.wastage_quantity / material.planned_quantity > 0.05 ? "destructive" : "outline"}>
+                                {material.planned_quantity > 0 ? ((material.wastage_quantity / material.planned_quantity) * 100).toFixed(1) : "0.0"}%
                               </Badge>
                             </td>
                           </tr>

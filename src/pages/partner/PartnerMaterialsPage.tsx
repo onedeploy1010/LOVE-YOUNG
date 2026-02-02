@@ -13,28 +13,29 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-const materials = {
+const getMaterials = (t: (key: string) => string) => ({
   images: [
-    { id: 1, title: "产品海报 - 燕窝系列", thumbnail: "/pics/love_young_brand_identity_20260106043554_1.png", size: "1080x1920" },
-    { id: 2, title: "品牌故事图", thumbnail: "/pics/love_young_founders_story_20260106043351_1.png", size: "1200x630" },
-    { id: 3, title: "经营人招募海报", thumbnail: "/pics/love_young_digital_marketing_20260106043418_1.png", size: "1080x1920" },
-    { id: 4, title: "节日促销素材", thumbnail: "/pics/love_young_community_impact_20260106043528_1.png", size: "1080x1080" },
+    { id: 1, title: t("partner.materials.productPoster"), thumbnail: "/pics/love_young_brand_identity_20260106043554_1.png", size: "1080x1920" },
+    { id: 2, title: t("partner.materials.brandStory"), thumbnail: "/pics/love_young_founders_story_20260106043351_1.png", size: "1200x630" },
+    { id: 3, title: t("partner.materials.recruitPoster"), thumbnail: "/pics/love_young_digital_marketing_20260106043418_1.png", size: "1080x1920" },
+    { id: 4, title: t("partner.materials.holidayPromo"), thumbnail: "/pics/love_young_community_impact_20260106043528_1.png", size: "1080x1080" },
   ],
   documents: [
-    { id: 1, title: "产品手册 PDF", type: "PDF", size: "2.5 MB" },
-    { id: 2, title: "经营人培训资料", type: "PDF", size: "5.2 MB" },
-    { id: 3, title: "常见问题解答", type: "PDF", size: "1.1 MB" },
-    { id: 4, title: "品牌介绍PPT", type: "PPTX", size: "8.7 MB" },
+    { id: 1, title: t("partner.materials.productManual"), type: "PDF", size: "2.5 MB" },
+    { id: 2, title: t("partner.materials.trainingMaterial"), type: "PDF", size: "5.2 MB" },
+    { id: 3, title: t("partner.materials.faqDocument"), type: "PDF", size: "1.1 MB" },
+    { id: 4, title: t("partner.materials.brandPpt"), type: "PPTX", size: "8.7 MB" },
   ],
   videos: [
-    { id: 1, title: "品牌宣传片", duration: "2:30", thumbnail: "/pics/love_young_brand_identity_20260106043554_1.png" },
-    { id: 2, title: "产品制作过程", duration: "5:15", thumbnail: "/pics/craftsmanship_journey.webp" },
-    { id: 3, title: "经营人成功案例", duration: "3:45", thumbnail: "/pics/partner_story_1.webp" },
+    { id: 1, title: t("partner.materials.brandVideo"), duration: "2:30", thumbnail: "/pics/love_young_brand_identity_20260106043554_1.png" },
+    { id: 2, title: t("partner.materials.productProcess"), duration: "5:15", thumbnail: "/pics/craftsmanship_journey.webp" },
+    { id: 3, title: t("partner.materials.successStory"), duration: "3:45", thumbnail: "/pics/partner_story_1.webp" },
   ]
-};
+});
 
 export default function PartnerMaterialsPage() {
   const { t } = useTranslation();
+  const materials = getMaterials(t);
   const { member, loading } = useAuth();
   const { toast } = useToast();
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -47,9 +48,9 @@ export default function PartnerMaterialsPage() {
   const copyToClipboard = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast({ title: `${label}已复制到剪贴板` });
+      toast({ title: t("partner.materials.copiedToClipboard") });
     } catch {
-      toast({ title: "复制失败", variant: "destructive" });
+      toast({ title: t("partner.materials.copyFailed"), variant: "destructive" });
     }
   };
 
@@ -78,12 +79,12 @@ export default function PartnerMaterialsPage() {
       <MemberLayout>
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
           <Share2 className="w-16 h-16 text-muted-foreground/40 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">尚未成为会员</h2>
+          <h2 className="text-xl font-semibold mb-2">{t("partner.materials.notMember")}</h2>
           <p className="text-muted-foreground mb-6 max-w-sm">
-            完成首次购物后即可自动升级为会员，解锁推广物料功能
+            {t("partner.materials.notMemberDesc")}
           </p>
           <a href="/#products">
-            <Button>去购物</Button>
+            <Button>{t("partner.materials.goShopping")}</Button>
           </a>
         </div>
       </MemberLayout>
@@ -94,8 +95,8 @@ export default function PartnerMaterialsPage() {
     <MemberLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-materials-title">推广物料</h1>
-          <p className="text-muted-foreground">获取分享素材，助力您的推广</p>
+          <h1 className="text-2xl font-serif text-primary" data-testid="text-materials-title">{t("partner.materials.title")}</h1>
+          <p className="text-muted-foreground">{t("partner.materials.subtitle")}</p>
         </div>
 
       {/* Referral Link Card */}
@@ -107,20 +108,20 @@ export default function PartnerMaterialsPage() {
                 <QrCode className="w-8 h-8 text-primary" />
               </div>
               <div>
-                <h3 className="font-bold text-lg">我的专属推广链接</h3>
+                <h3 className="font-bold text-lg">{t("partner.materials.myReferralLink")}</h3>
                 <p className="text-muted-foreground text-sm">
-                  推荐码: <span className="font-mono font-bold text-primary">{referralCode}</span>
+                  {t("partner.materials.referralCodeLabel")}: <span className="font-mono font-bold text-primary">{referralCode}</span>
                 </p>
               </div>
             </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => copyToClipboard(referralCode, "推荐码")}
+                onClick={() => copyToClipboard(referralCode, t("partner.materials.referralCodeLabel"))}
                 data-testid="button-copy-code"
               >
                 <Copy className="w-4 h-4 mr-2" />
-                复制推荐码
+                {t("partner.materials.copyReferralCode")}
               </Button>
               <Button
                 onClick={shareToWhatsApp}
@@ -128,13 +129,13 @@ export default function PartnerMaterialsPage() {
                 data-testid="button-share-whatsapp"
               >
                 <Share2 className="w-4 h-4 mr-2" />
-                分享到 WhatsApp
+                {t("partner.materials.shareWhatsApp")}
               </Button>
             </div>
           </div>
 
           <div>
-            <p className="text-sm text-muted-foreground mb-1">推广链接</p>
+            <p className="text-sm text-muted-foreground mb-1">{t("partner.materials.referralLinkLabel")}</p>
             <div className="flex items-center gap-2">
               <Input
                 value={referralLink}
@@ -145,7 +146,7 @@ export default function PartnerMaterialsPage() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => copyToClipboard(referralLink, "推广链接")}
+                onClick={() => copyToClipboard(referralLink, t("partner.materials.referralLinkLabel"))}
                 data-testid="button-copy-link"
               >
                 <Copy className="w-4 h-4" />
@@ -159,15 +160,15 @@ export default function PartnerMaterialsPage() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="images" className="gap-2" data-testid="tab-images">
             <Image className="w-4 h-4" />
-            图片素材
+            {t("partner.materials.tabs.images")}
           </TabsTrigger>
           <TabsTrigger value="documents" className="gap-2" data-testid="tab-documents">
             <FileText className="w-4 h-4" />
-            文档资料
+            {t("partner.materials.tabs.documents")}
           </TabsTrigger>
           <TabsTrigger value="videos" className="gap-2" data-testid="tab-videos">
             <Video className="w-4 h-4" />
-            视频素材
+            {t("partner.materials.tabs.videos")}
           </TabsTrigger>
         </TabsList>
 
@@ -188,7 +189,7 @@ export default function PartnerMaterialsPage() {
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" className="flex-1">
                       <Download className="w-3 h-3 mr-1" />
-                      下载
+                      {t("partner.materials.download")}
                     </Button>
                     <Button variant="outline" size="sm" className="flex-1"
                       onClick={() => {
@@ -197,7 +198,7 @@ export default function PartnerMaterialsPage() {
                       }}
                     >
                       <Share2 className="w-3 h-3 mr-1" />
-                      分享
+                      {t("partner.materials.share")}
                     </Button>
                   </div>
                 </CardContent>
@@ -228,11 +229,11 @@ export default function PartnerMaterialsPage() {
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm">
                         <ExternalLink className="w-4 h-4 mr-1" />
-                        预览
+                        {t("partner.materials.preview")}
                       </Button>
                       <Button variant="outline" size="sm">
                         <Download className="w-4 h-4 mr-1" />
-                        下载
+                        {t("partner.materials.download")}
                       </Button>
                     </div>
                   </div>
@@ -264,7 +265,7 @@ export default function PartnerMaterialsPage() {
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" className="flex-1">
                       <ExternalLink className="w-3 h-3 mr-1" />
-                      播放
+                      {t("partner.materials.play")}
                     </Button>
                     <Button variant="outline" size="sm" className="flex-1"
                       onClick={() => {
@@ -273,7 +274,7 @@ export default function PartnerMaterialsPage() {
                       }}
                     >
                       <Share2 className="w-3 h-3 mr-1" />
-                      分享
+                      {t("partner.materials.share")}
                     </Button>
                   </div>
                 </CardContent>
@@ -287,9 +288,9 @@ export default function PartnerMaterialsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Smartphone className="w-5 h-5 text-primary" />
-            社交媒体快速分享
+            {t("partner.materials.socialShare")}
           </CardTitle>
-          <CardDescription>一键分享到各大社交平台</CardDescription>
+          <CardDescription>{t("partner.materials.socialShareDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -316,7 +317,7 @@ export default function PartnerMaterialsPage() {
             <Button
               variant="outline"
               className="h-auto py-4 flex-col gap-2 bg-pink-500/5 border-pink-500/20 hover:bg-pink-500/10"
-              onClick={() => copyToClipboard(referralLink, "推广链接")}
+              onClick={() => copyToClipboard(referralLink, t("partner.materials.referralLinkLabel"))}
             >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center">
                 <span className="text-white text-lg">I</span>
@@ -326,7 +327,7 @@ export default function PartnerMaterialsPage() {
             <Button
               variant="outline"
               className="h-auto py-4 flex-col gap-2 bg-red-500/5 border-red-500/20 hover:bg-red-500/10"
-              onClick={() => copyToClipboard(referralLink, "推广链接")}
+              onClick={() => copyToClipboard(referralLink, t("partner.materials.referralLinkLabel"))}
             >
               <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
                 <span className="text-white text-lg">小</span>

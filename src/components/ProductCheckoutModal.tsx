@@ -12,7 +12,7 @@ import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseAnonKey } from "@/lib/supabase";
 import { createOrder, updateOrderStatus } from "@/lib/orders";
 import { createOrGetMember, saveMemberAddress } from "@/lib/members";
 import { createOrderBill } from "@/lib/bills";
@@ -189,6 +189,7 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
     try {
       console.info("[checkout] Invoking create-checkout edge function...");
       const { data, error } = await supabase.functions.invoke("create-checkout", {
+        headers: { Authorization: `Bearer ${supabaseAnonKey}` },
         body: {
           orderId,
           orderNumber,

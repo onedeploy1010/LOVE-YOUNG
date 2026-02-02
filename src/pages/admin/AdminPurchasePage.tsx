@@ -15,13 +15,12 @@ import { useTranslation } from "@/lib/i18n";
 
 interface PurchaseOrder {
   id: string;
-  po_number: string;
+  order_number: string;
   supplier_id: string | null;
   supplier_name: string;
   total_amount: number;
   status: string;
-  item_count: number;
-  order_date: string;
+  items: unknown;
   expected_date: string | null;
   received_date: string | null;
   notes: string | null;
@@ -34,8 +33,8 @@ interface Supplier {
   contact_person: string | null;
   phone: string | null;
   email: string | null;
-  total_orders: number;
-  status: string;
+  total_orders: number | null;
+  category: string | null;
   created_at: string;
 }
 
@@ -51,7 +50,7 @@ export default function AdminPurchasePage() {
       const { data, error } = await supabase
         .from("purchase_orders")
         .select("*")
-        .order("order_date", { ascending: false });
+        .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error fetching purchase orders:", error);
@@ -69,7 +68,6 @@ export default function AdminPurchasePage() {
       const { data, error } = await supabase
         .from("suppliers")
         .select("*")
-        .eq("status", "active")
         .order("name");
 
       if (error) {
@@ -93,7 +91,7 @@ export default function AdminPurchasePage() {
 
   const filteredOrders = orders.filter(order =>
     searchQuery === "" ||
-    order.po_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
     order.supplier_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -172,7 +170,7 @@ export default function AdminPurchasePage() {
                         <div
                           key={order.id}
                           className="flex items-center justify-between p-4 border rounded-lg"
-                          data-testid={`po-${order.po_number}`}
+                          data-testid={`po-${order.order_number}`}
                         >
                           <div className="flex items-center gap-4">
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${statusConfig.bg}`}>
@@ -180,19 +178,18 @@ export default function AdminPurchasePage() {
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="font-mono text-sm">{order.po_number}</span>
+                                <span className="font-mono text-sm">{order.order_number}</span>
                                 <Badge variant="outline">{statusConfig.label}</Badge>
                               </div>
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                 <span>{order.supplier_name}</span>
-                                <span>{order.item_count} {t("admin.purchasePage.items")}</span>
-                                <span>{formatDate(order.order_date)}</span>
+                                <span>{formatDate(order.created_at)}</span>
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
                             <span className="font-bold text-primary">RM {(order.total_amount / 100).toLocaleString()}</span>
-                            <Button variant="outline" size="sm" className="gap-1" data-testid={`button-view-${order.po_number}`}>
+                            <Button variant="outline" size="sm" className="gap-1" data-testid={`button-view-${order.order_number}`}>
                               <Eye className="w-4 h-4" />
                               {t("admin.purchasePage.viewDetails")}
                             </Button>
@@ -246,7 +243,7 @@ export default function AdminPurchasePage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
-                          <Badge variant="outline">{supplier.total_orders} {t("admin.purchasePage.orders")}</Badge>
+                          <Badge variant="outline">{supplier.total_orders ?? 0} {t("admin.purchasePage.orders")}</Badge>
                           <Button variant="outline" size="sm" data-testid={`button-edit-${supplier.id}`}>
                             {t("admin.purchasePage.edit")}
                           </Button>
