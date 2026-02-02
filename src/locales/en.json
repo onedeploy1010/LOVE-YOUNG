@@ -236,7 +236,8 @@
     "needHelp": "Need help?",
     "referralCode": "Referral Code (Optional)",
     "referralCodeValid": "Valid referral code",
-    "referralCodeInvalid": "Enter a valid referral code"
+    "referralCodeInvalid": "Enter a valid referral code",
+    "memberDiscount": "Member discount applied"
   },
   "testimonials": {
     "realReviews": "Real Reviews",
@@ -682,7 +683,25 @@
       "statusInspection": "Inspecting",
       "statusCompleted": "Completed",
       "statusCancelled": "Cancelled",
-      "statusUnknown": "Unknown"
+      "statusUnknown": "Unknown",
+      "bomTab": "BOM Recipe",
+      "selectProduct": "Select Product",
+      "selectMaterial": "Select Material",
+      "addBomEntry": "Add Material",
+      "quantityPerUnit": "Qty per Unit",
+      "currentStock": "Current Stock",
+      "createBatch": "Create Batch",
+      "product": "Product",
+      "extractMaterials": "Extract Materials",
+      "materialsExtracted": "Materials deducted from inventory",
+      "noBom": "No BOM recipe configured for this product",
+      "noProductSelected": "Select a product to view recipe",
+      "materialReq": "Material Requirements",
+      "unit": "Unit",
+      "notesLabel": "Notes",
+      "notesPlaceholder": "Optional notes...",
+      "noBatches": "No production batches",
+      "noMaterials": "No material usage records"
     },
     "totalRevenue": "Total Revenue",
     "totalOrders": "Total Orders",

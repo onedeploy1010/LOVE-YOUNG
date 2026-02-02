@@ -236,7 +236,8 @@
     "needHelp": "Perlukan bantuan?",
     "referralCode": "Kod Rujukan (Pilihan)",
     "referralCodeValid": "Kod rujukan sah",
-    "referralCodeInvalid": "Masukkan kod rujukan yang sah"
+    "referralCodeInvalid": "Masukkan kod rujukan yang sah",
+    "memberDiscount": "Diskaun ahli digunakan"
   },
   "testimonials": {
     "realReviews": "Ulasan Sebenar",
@@ -682,7 +683,25 @@
       "statusInspection": "Memeriksa",
       "statusCompleted": "Selesai",
       "statusCancelled": "Dibatalkan",
-      "statusUnknown": "Tidak diketahui"
+      "statusUnknown": "Tidak diketahui",
+      "bomTab": "Resepi BOM",
+      "selectProduct": "Pilih Produk",
+      "selectMaterial": "Pilih Bahan",
+      "addBomEntry": "Tambah Bahan",
+      "quantityPerUnit": "Kuantiti per Unit",
+      "currentStock": "Stok Semasa",
+      "createBatch": "Cipta Kelompok",
+      "product": "Produk",
+      "extractMaterials": "Keluarkan Bahan",
+      "materialsExtracted": "Bahan telah ditolak dari inventori",
+      "noBom": "Tiada resepi BOM untuk produk ini",
+      "noProductSelected": "Pilih produk untuk lihat resepi",
+      "materialReq": "Keperluan Bahan",
+      "unit": "Unit",
+      "notesLabel": "Nota",
+      "notesPlaceholder": "Nota pilihan...",
+      "noBatches": "Tiada kelompok pengeluaran",
+      "noMaterials": "Tiada rekod penggunaan bahan"
     },
     "totalRevenue": "Jumlah Hasil",
     "totalOrders": "Jumlah Pesanan",

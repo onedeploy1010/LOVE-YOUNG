@@ -236,7 +236,8 @@
     "needHelp": "需要帮助？",
     "referralCode": "推荐码（可选）",
     "referralCodeValid": "推荐码有效",
-    "referralCodeInvalid": "请输入有效的推荐码"
+    "referralCodeInvalid": "请输入有效的推荐码",
+    "memberDiscount": "会员优惠已应用"
   },
   "testimonials": {
     "realReviews": "Real Reviews",
@@ -682,7 +683,25 @@
       "statusInspection": "质检中",
       "statusCompleted": "已完成",
       "statusCancelled": "已取消",
-      "statusUnknown": "未知"
+      "statusUnknown": "未知",
+      "bomTab": "配方(BOM)",
+      "selectProduct": "选择产品",
+      "selectMaterial": "选择原材料",
+      "addBomEntry": "添加原料",
+      "quantityPerUnit": "每单位用量",
+      "currentStock": "当前库存",
+      "createBatch": "创建批次",
+      "product": "产品",
+      "extractMaterials": "扣除原料",
+      "materialsExtracted": "原料已从库存扣除",
+      "noBom": "该产品尚未配置BOM配方",
+      "noProductSelected": "请选择产品查看配方",
+      "materialReq": "原料需求",
+      "unit": "单位",
+      "notesLabel": "备注",
+      "notesPlaceholder": "可选，输入备注信息...",
+      "noBatches": "暂无生产批次",
+      "noMaterials": "暂无材料使用记录"
     },
     "totalRevenue": "总收入",
     "totalOrders": "总订单",

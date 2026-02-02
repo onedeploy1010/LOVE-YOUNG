@@ -964,16 +964,16 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
                   </div>
 
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Order Number</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t("order.yourOrderNumber")}</p>
                     <p className="text-xl font-bold text-primary">{orderNumber}</p>
                   </div>
 
                   <div className="border-t border-border pt-4">
-                    <p className="text-sm text-muted-foreground mb-1">Total Amount</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t("order.totalAmount")}</p>
                     <p className="text-3xl font-bold">RM {currentPrice}</p>
                     {isMember && (
                       <p className="text-sm text-green-600">
-                        {language === "zh" ? "会员优惠已应用" : "Member discount applied"}
+                        {t("order.memberDiscount") || "Member discount applied"}
                       </p>
                     )}
                   </div>
@@ -997,20 +997,18 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
                   {isProcessingPayment ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      {language === "zh" ? "处理中..." : "Processing..."}
+                      {t("order.processing")}
                     </>
                   ) : (
                     <>
                       <CreditCard className="w-5 h-5" />
-                      {language === "zh" ? "在线支付 (Stripe)" : "Pay Online (Stripe)"}
+                      {t("order.payOnline")}
                     </>
                   )}
                 </Button>
 
                 <p className="text-xs text-center text-muted-foreground">
-                  {language === "zh"
-                    ? "在线支付支持信用卡、FPX、GrabPay"
-                    : "Online payment supports Credit Card, FPX, GrabPay"}
+                  {t("order.paymentMethods")}
                 </p>
                 <p className="text-xs text-center">
                   <a
@@ -1019,7 +1017,7 @@ export function OrderModal({ open, onOpenChange }: OrderModalProps) {
                     rel="noopener noreferrer"
                     className="text-muted-foreground underline hover:text-foreground"
                   >
-                    {language === "zh" ? "需要帮助？" : "Need help?"}
+                    {t("order.needHelp")}
                   </a>
                 </p>
               </div>
