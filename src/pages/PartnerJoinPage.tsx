@@ -152,7 +152,8 @@ export default function PartnerJoinPage() {
   }, [userState]);
 
   // Compute effective step to avoid blank frame between data load and useEffect
-  const effectiveStep = step === "profile" && userState?.member ? "package" : step;
+  // Existing partners already have a member profile, skip to package
+  const effectiveStep = step === "profile" && (userState?.member || userState?.partner) ? "package" : step;
 
   // Handle profile creation
   const handleCreateProfile = async () => {
@@ -234,6 +235,7 @@ export default function PartnerJoinPage() {
             packageName: selectedPkg.name,
             price: selectedPkg.price * 100, // Convert to cents
             referralCode: referralCode || undefined,
+            isUpgrade: !!userState.partner,
             successUrl: `${window.location.origin}/partner/join?payment=success`,
             cancelUrl: `${window.location.origin}/partner/join?payment=cancelled`,
           }),
@@ -324,51 +326,7 @@ export default function PartnerJoinPage() {
     );
   }
 
-  if (userState.partner) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-primary/10 to-background">
-        <div className="max-w-2xl mx-auto px-4 py-16">
-          <Card className="text-center">
-            <CardHeader>
-              <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-8 h-8 text-green-500" />
-              </div>
-              <CardTitle className="text-2xl">{t("member.partnerJoin.alreadyPartner")}</CardTitle>
-              <CardDescription>
-                {userState.partner.status === "active" 
-                  ? t("member.partnerJoin.accountActive")
-                  : t("member.partnerJoin.pendingReview")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-secondary">{userState.partner.lyBalance}</div>
-                  <div className="text-xs text-muted-foreground">{t("member.partnerDashboard.lyPoints")}</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{userState.partner.rwaTokens}</div>
-                  <div className="text-xs text-muted-foreground">{t("member.partnerDashboard.rwaToken")}</div>
-                </div>
-                <div className="text-center">
-                  <Badge variant={userState.partner.status === "active" ? "default" : "outline"}>
-                    {userState.partner.status === "active" ? t("member.partnerJoin.activated") : t("member.partnerJoin.pending")}
-                  </Badge>
-                </div>
-              </div>
-
-              <Link href="/member/partner">
-                <Button className="w-full bg-secondary text-secondary-foreground gap-2" data-testid="button-go-dashboard">
-                  <TrendingUp className="w-5 h-5" />
-                  {t("member.partnerJoin.goToDashboard")}
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  // Existing partners can still buy additional packages — no blocking screen
 
   if (step === "success") {
     return (
@@ -523,6 +481,34 @@ export default function PartnerJoinPage() {
               <p className="text-muted-foreground">{t("member.partnerJoin.selectPackageDesc")}</p>
             </div>
 
+            {/* Existing partner info banner */}
+            {userState?.partner && (
+              <Card className="border-secondary/50 bg-secondary/5">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="font-medium">{t("member.partnerJoin.alreadyPartner")}</span>
+                    <Badge variant="outline" className="ml-auto">
+                      Phase {userState.partner.tier === "phase1" ? 1 : userState.partner.tier === "phase2" ? 2 : 3}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex justify-between p-2 bg-background rounded">
+                      <span className="text-muted-foreground">LY积分</span>
+                      <span className="font-bold text-secondary">{userState.partner.lyBalance}</span>
+                    </div>
+                    <div className="flex justify-between p-2 bg-background rounded">
+                      <span className="text-muted-foreground">RWA令牌</span>
+                      <span className="font-bold text-primary">{userState.partner.rwaTokens}</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    购买额外配套将增加您每周期获得的 RWA 令牌和 LY 积分
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {packages.map((pkg) => (
                 <Card 
@@ -618,6 +604,12 @@ export default function PartnerJoinPage() {
                 <CardContent className="space-y-4">
                   {selectedPackage && (
                     <>
+                      {userState?.partner && (
+                        <div className="flex items-center gap-2 p-2 bg-secondary/10 rounded text-sm mb-2">
+                          <TrendingUp className="w-4 h-4 text-secondary" />
+                          <span>追加配套 — 额外 RWA 和 LY 将累加到您的账户</span>
+                        </div>
+                      )}
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">{t("member.partnerJoin.package")}</span>
                         <span className="font-medium">

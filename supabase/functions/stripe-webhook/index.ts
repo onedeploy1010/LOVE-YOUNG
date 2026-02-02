@@ -81,10 +81,9 @@ serve(async (req) => {
           const lyPoints = parseInt(session.metadata?.lyPoints || "0");
           const rwaTokens = parseInt(session.metadata?.rwaTokens || "0");
           const referralCode = session.metadata?.referralCode;
+          const isUpgrade = session.metadata?.isUpgrade === "true";
 
           if (memberId && tier) {
-            console.log(`Creating partner for member ${memberId}, tier: ${tier}`);
-
             // Fetch the member record to get user_id and referral_code
             const { data: memberInfo } = await supabase
               .from("members")
@@ -95,90 +94,138 @@ serve(async (req) => {
             const memberUserId = memberInfo?.user_id || null;
             const memberReferralCode = memberInfo?.referral_code || generateReferralCode();
 
-            // Find referrer partner via members.referral_code → partners.member_id
-            let referrerId: string | null = null;
-            if (referralCode) {
-              const { data: referrerMember } = await supabase
-                .from("members")
-                .select("id")
-                .eq("referral_code", referralCode.toUpperCase())
-                .single();
-
-              if (referrerMember) {
-                const { data: referrerPartner } = await supabase
-                  .from("partners")
-                  .select("id")
-                  .eq("member_id", referrerMember.id)
-                  .eq("status", "active")
-                  .single();
-
-                if (referrerPartner) {
-                  referrerId = referrerPartner.id;
-                }
-              }
-            }
-
-            // Create partner record (reuse member's referral_code, set user_id)
-            const { data: partner, error: partnerError } = await supabase
+            // Check if partner already exists for this member
+            const { data: existingPartner } = await supabase
               .from("partners")
-              .insert({
-                member_id: memberId,
-                user_id: memberUserId,
-                referral_code: memberReferralCode,
-                tier: tier,
-                status: "active",
-                referrer_id: referrerId,
-                ly_balance: lyPoints,
-                cash_wallet_balance: 0,
-                rwa_tokens: rwaTokens,
-                total_sales: 0,
-                total_cashback: 0,
-                payment_amount: session.amount_total,
-                payment_date: new Date().toISOString(),
-                payment_reference: session.payment_intent as string,
-                stripe_session_id: session.id,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-              })
-              .select()
+              .select("id, ly_balance, rwa_tokens, tier")
+              .eq("member_id", memberId)
               .single();
 
-            if (partnerError) {
-              console.error("Error creating partner:", partnerError);
+            if (existingPartner) {
+              // --- Upgrade path: increment LY and RWA on existing partner ---
+              console.log(`Upgrading partner ${existingPartner.id} for member ${memberId}, adding ${tier} package`);
+
+              const { error: updateError } = await supabase
+                .from("partners")
+                .update({
+                  ly_balance: existingPartner.ly_balance + lyPoints,
+                  rwa_tokens: existingPartner.rwa_tokens + rwaTokens,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("id", existingPartner.id);
+
+              if (updateError) {
+                console.error("Error upgrading partner:", updateError);
+              } else {
+                console.log(`Partner ${existingPartner.id} upgraded: +${lyPoints} LY, +${rwaTokens} RWA`);
+
+                // Record LY points in ledger
+                await supabase.from("ly_points_ledger").insert({
+                  partner_id: existingPartner.id,
+                  type: "bonus",
+                  points: lyPoints,
+                  reference_type: "package",
+                  description: `Additional ${tier} package bonus`,
+                  created_at: new Date().toISOString(),
+                }).catch(() => {});
+
+                // Record RWA tokens in ledger
+                await supabase.from("rwa_token_ledger").insert({
+                  partner_id: existingPartner.id,
+                  tokens: rwaTokens,
+                  source: "package",
+                  created_at: new Date().toISOString(),
+                }).catch(() => {});
+              }
             } else {
-              console.log(`Partner created: ${partner.id}`);
+              // --- New partner path ---
+              console.log(`Creating partner for member ${memberId}, tier: ${tier}`);
 
-              // Update member role to partner
-              await supabase
-                .from("members")
-                .update({ role: "partner", updated_at: new Date().toISOString() })
-                .eq("id", memberId);
+              // Find referrer partner via members.referral_code → partners.member_id
+              let referrerId: string | null = null;
+              if (referralCode) {
+                const { data: referrerMember } = await supabase
+                  .from("members")
+                  .select("id")
+                  .eq("referral_code", referralCode.toUpperCase())
+                  .single();
 
-              // Also update users table role
-              if (memberUserId) {
-                await supabase
-                  .from("users")
-                  .update({ role: "partner" })
-                  .eq("id", memberUserId);
+                if (referrerMember) {
+                  const { data: referrerPartner } = await supabase
+                    .from("partners")
+                    .select("id")
+                    .eq("member_id", referrerMember.id)
+                    .eq("status", "active")
+                    .single();
+
+                  if (referrerPartner) {
+                    referrerId = referrerPartner.id;
+                  }
+                }
               }
 
-              // Record LY points in ledger
-              await supabase.from("ly_points_ledger").insert({
-                partner_id: partner.id,
-                type: "bonus",
-                points: lyPoints,
-                reference_type: "package",
-                description: `Initial ${tier} package bonus`,
-                created_at: new Date().toISOString(),
-              }).catch(() => {});
+              // Create partner record (reuse member's referral_code, set user_id)
+              const { data: partner, error: partnerError } = await supabase
+                .from("partners")
+                .insert({
+                  member_id: memberId,
+                  user_id: memberUserId,
+                  referral_code: memberReferralCode,
+                  tier: tier,
+                  status: "active",
+                  referrer_id: referrerId,
+                  ly_balance: lyPoints,
+                  cash_wallet_balance: 0,
+                  rwa_tokens: rwaTokens,
+                  total_sales: 0,
+                  total_cashback: 0,
+                  payment_amount: session.amount_total,
+                  payment_date: new Date().toISOString(),
+                  payment_reference: session.payment_intent as string,
+                  stripe_session_id: session.id,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                })
+                .select()
+                .single();
 
-              // Record RWA tokens in ledger
-              await supabase.from("rwa_token_ledger").insert({
-                partner_id: partner.id,
-                tokens: rwaTokens,
-                source: "package",
-                created_at: new Date().toISOString(),
-              }).catch(() => {});
+              if (partnerError) {
+                console.error("Error creating partner:", partnerError);
+              } else {
+                console.log(`Partner created: ${partner.id}`);
+
+                // Update member role to partner
+                await supabase
+                  .from("members")
+                  .update({ role: "partner", updated_at: new Date().toISOString() })
+                  .eq("id", memberId);
+
+                // Also update users table role
+                if (memberUserId) {
+                  await supabase
+                    .from("users")
+                    .update({ role: "partner" })
+                    .eq("id", memberUserId);
+                }
+
+                // Record LY points in ledger
+                await supabase.from("ly_points_ledger").insert({
+                  partner_id: partner.id,
+                  type: "bonus",
+                  points: lyPoints,
+                  reference_type: "package",
+                  description: `Initial ${tier} package bonus`,
+                  created_at: new Date().toISOString(),
+                }).catch(() => {});
+
+                // Record RWA tokens in ledger
+                await supabase.from("rwa_token_ledger").insert({
+                  partner_id: partner.id,
+                  tokens: rwaTokens,
+                  source: "package",
+                  created_at: new Date().toISOString(),
+                }).catch(() => {});
+              }
             }
           }
           break;

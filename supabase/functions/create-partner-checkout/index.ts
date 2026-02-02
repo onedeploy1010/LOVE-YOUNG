@@ -45,7 +45,7 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    const { memberId, tier, packageName, referralCode, successUrl, cancelUrl } = await req.json();
+    const { memberId, tier, packageName, referralCode, isUpgrade, successUrl, cancelUrl } = await req.json();
 
     if (!memberId || !tier) {
       throw new Error("Missing required fields: memberId and tier");
@@ -66,7 +66,9 @@ serve(async (req) => {
             currency: "myr",
             product_data: {
               name: `LOVEYOUNG ${tierConfig.name}`,
-              description: `联合经营人配套 - ${tierConfig.lyPoints} LY积分 + ${tierConfig.rwaTokens} RWA令牌`,
+              description: isUpgrade
+                ? `追加配套 - +${tierConfig.lyPoints} LY积分 + ${tierConfig.rwaTokens} RWA令牌`
+                : `联合经营人配套 - ${tierConfig.lyPoints} LY积分 + ${tierConfig.rwaTokens} RWA令牌`,
               images: ["https://loveyoung.my/images/partner-package.jpg"],
             },
             unit_amount: tierConfig.price,
@@ -81,6 +83,7 @@ serve(async (req) => {
         lyPoints: String(tierConfig.lyPoints),
         rwaTokens: String(tierConfig.rwaTokens),
         referralCode: referralCode || "",
+        isUpgrade: isUpgrade ? "true" : "false",
       },
       success_url: successUrl || `${req.headers.get("origin")}/member/partner?payment=success`,
       cancel_url: cancelUrl || `${req.headers.get("origin")}/partner/join?payment=cancelled`,
