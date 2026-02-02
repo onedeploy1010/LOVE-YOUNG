@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@13.10.0?target=deno";
+import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
 const corsHeaders = {
@@ -7,7 +6,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 
-serve(async (req) => {
+const cryptoProvider = Stripe.createSubtleCryptoProvider();
+
+Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -42,10 +43,10 @@ serve(async (req) => {
       throw new Error("No Stripe signature found");
     }
 
-    // Verify the webhook signature
+    // Verify the webhook signature (must use async version in Deno)
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(body, signature, stripeWebhookSecret);
+      event = await stripe.webhooks.constructEventAsync(body, signature, stripeWebhookSecret, undefined, cryptoProvider);
     } catch (err) {
       console.error("Webhook signature verification failed:", err.message);
       return new Response(
