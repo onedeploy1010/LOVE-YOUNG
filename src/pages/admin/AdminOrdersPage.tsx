@@ -126,7 +126,10 @@ export default function AdminOrdersPage() {
       order.orderNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.customerPhone?.includes(searchQuery);
-    const matchesTab = activeTab === "all" || order.status === activeTab;
+    const matchesTab = activeTab === "all" ||
+      (activeTab === "pending" && (order.status === "pending" || order.status === "pending_payment")) ||
+      (activeTab === "processing" && (order.status === "processing" || order.status === "confirmed")) ||
+      (activeTab !== "pending" && activeTab !== "processing" && order.status === activeTab);
     return matchesSearch && matchesTab;
   });
 
@@ -136,6 +139,7 @@ export default function AdminOrdersPage() {
     processing: orders.filter(o => o.status === "processing" || o.status === "confirmed").length,
     shipped: orders.filter(o => o.status === "shipped").length,
     delivered: orders.filter(o => o.status === "delivered").length,
+    cancelled: orders.filter(o => o.status === "cancelled").length,
   };
 
   const formatPrice = (amount: number) => {
@@ -185,7 +189,7 @@ export default function AdminOrdersPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold">{stats.total}</p>
@@ -216,6 +220,12 @@ export default function AdminOrdersPage() {
               <p className="text-sm text-muted-foreground">{t("admin.ordersPage.completed")}</p>
             </CardContent>
           </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-2xl font-bold text-muted-foreground">{stats.cancelled}</p>
+              <p className="text-sm text-muted-foreground">{t("admin.ordersPage.cancelled")}</p>
+            </CardContent>
+          </Card>
         </div>
 
         <Card>
@@ -240,12 +250,13 @@ export default function AdminOrdersPage() {
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <div className="overflow-x-auto -mx-1 px-1">
-                <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-5">
+                <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-6">
                   <TabsTrigger value="all" className="flex-1 md:flex-none" data-testid="tab-all">{t("admin.ordersPage.tabAll")}</TabsTrigger>
                   <TabsTrigger value="pending" className="flex-1 md:flex-none" data-testid="tab-pending">{t("admin.ordersPage.pendingPayment")}</TabsTrigger>
                   <TabsTrigger value="processing" className="flex-1 md:flex-none" data-testid="tab-processing">{t("admin.ordersPage.preparing")}</TabsTrigger>
                   <TabsTrigger value="shipped" className="flex-1 md:flex-none" data-testid="tab-shipped">{t("admin.ordersPage.shipping")}</TabsTrigger>
                   <TabsTrigger value="delivered" className="flex-1 md:flex-none" data-testid="tab-delivered">{t("admin.ordersPage.completed")}</TabsTrigger>
+                  <TabsTrigger value="cancelled" className="flex-1 md:flex-none" data-testid="tab-cancelled">{t("admin.ordersPage.cancelled")}</TabsTrigger>
                 </TabsList>
               </div>
 

@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +12,14 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Dialog,
   DialogContent,
@@ -40,9 +51,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Boxes, Search, Plus, AlertTriangle, Package,
-  ArrowUpRight, ArrowDownRight, Edit, Trash2, MoreHorizontal, Loader2
+  ArrowUpRight, ArrowDownRight, Edit, Trash2, MoreHorizontal, Loader2, RefreshCw
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
+
+const newItemSchema = z.object({
+  name: z.string().min(1, "请输入名称"),
+  sku: z.string().min(1, "请输入SKU"),
+  categoryId: z.string().optional(),
+  stock: z.coerce.number().min(0, "库存不能为负"),
+  minStock: z.coerce.number().min(0, "最低库存不能为负"),
+  unit: z.string().min(1, "请输入单位"),
+});
+
+type NewItemFormValues = z.infer<typeof newItemSchema>;
 
 interface InventoryCategory {
   id: string;
@@ -88,6 +110,48 @@ export default function AdminInventoryPage() {
   const [stockQty, setStockQty] = useState("");
   const [stockType, setStockType] = useState("");
   const [stockNote, setStockNote] = useState("");
+  const [showNewItemModal, setShowNewItemModal] = useState(false);
+
+  const newItemForm = useForm<NewItemFormValues>({
+    resolver: zodResolver(newItemSchema),
+    defaultValues: { name: "", sku: "", categoryId: undefined, stock: 0, minStock: 10, unit: "件" },
+  });
+
+  const generateSku = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let result = "INV-";
+    for (let i = 0; i < 6; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+    newItemForm.setValue("sku", result);
+  };
+
+  const createItemMutation = useMutation({
+    mutationFn: async (data: NewItemFormValues) => {
+      let status = "normal";
+      if (data.stock === 0) status = "out_of_stock";
+      else if (data.stock < data.minStock) status = "low";
+      else if (data.stock < data.minStock * 2) status = "critical";
+
+      const { error } = await supabase.from("inventory_items").insert({
+        name: data.name,
+        sku: data.sku,
+        category_id: data.categoryId || null,
+        stock: data.stock,
+        min_stock: data.minStock,
+        unit: data.unit,
+        status,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory-items"] });
+      setShowNewItemModal(false);
+      newItemForm.reset();
+      toast({ title: "库存项已创建" });
+    },
+    onError: (error) => {
+      toast({ title: "创建失败", description: String(error), variant: "destructive" });
+    },
+  });
 
   // Fetch categories
   const { data: categories = [] } = useQuery({
@@ -298,6 +362,10 @@ export default function AdminInventoryPage() {
               <DropdownMenuItem onClick={() => { setSelectedItem(null); setShowStockOutModal(true); }} data-testid="menu-stock-out">
                 <ArrowDownRight className="w-4 h-4 mr-2 text-red-500" />
                 {t("admin.inventoryPage.stockOut")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { newItemForm.reset(); generateSku(); setShowNewItemModal(true); }} data-testid="menu-new-item">
+                <Plus className="w-4 h-4 mr-2 text-primary" />
+                新增库存项
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -555,6 +623,92 @@ export default function AdminInventoryPage() {
               {t("admin.inventoryPage.confirmStockIn")}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Item Modal */}
+      <Dialog open={showNewItemModal} onOpenChange={setShowNewItemModal}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5 text-primary" />
+              新增库存项
+            </DialogTitle>
+            <DialogDescription>添加新的库存项到系统中</DialogDescription>
+          </DialogHeader>
+          <Form {...newItemForm}>
+            <form onSubmit={newItemForm.handleSubmit((data) => createItemMutation.mutate(data))} className="space-y-4 py-4">
+              <FormField control={newItemForm.control} name="name" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>名称</FormLabel>
+                  <FormControl><Input {...field} placeholder="输入库存项名称" data-testid="input-new-item-name" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={newItemForm.control} name="sku" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SKU</FormLabel>
+                  <FormControl>
+                    <div className="flex gap-2">
+                      <Input {...field} placeholder="INV-XXXXXX" data-testid="input-new-item-sku" />
+                      <Button type="button" variant="outline" size="sm" onClick={generateSku}>
+                        <RefreshCw className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={newItemForm.control} name="categoryId" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>分类</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-new-item-category">
+                        <SelectValue placeholder="选择分类（可选）" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField control={newItemForm.control} name="stock" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>初始库存</FormLabel>
+                    <FormControl><Input {...field} type="number" placeholder="0" data-testid="input-new-item-stock" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={newItemForm.control} name="minStock" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>最低库存</FormLabel>
+                    <FormControl><Input {...field} type="number" placeholder="10" data-testid="input-new-item-min-stock" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+              <FormField control={newItemForm.control} name="unit" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>单位</FormLabel>
+                  <FormControl><Input {...field} placeholder="件 / 箱 / kg" data-testid="input-new-item-unit" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setShowNewItemModal(false)}>取消</Button>
+                <Button type="submit" disabled={createItemMutation.isPending} data-testid="button-confirm-new-item">
+                  {createItemMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  创建
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 
