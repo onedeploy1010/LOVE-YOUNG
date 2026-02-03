@@ -280,14 +280,14 @@ export default function AdminMembersPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-serif text-primary" data-testid="text-members-title">{t("admin.membersPage.title")}</h1>
-            <p className="text-muted-foreground">{t("admin.membersPage.subtitle")}</p>
+        <div className="flex items-start sm:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-serif text-primary" data-testid="text-members-title">{t("admin.membersPage.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("admin.membersPage.subtitle")}</p>
           </div>
-          <Button variant="outline" onClick={() => refetch()} disabled={isLoading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
-            刷新
+          <Button variant="outline" size="sm" className="shrink-0" onClick={() => refetch()} disabled={isLoading}>
+            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline ml-1.5">刷新</span>
           </Button>
         </div>
 
@@ -350,17 +350,17 @@ export default function AdminMembersPage() {
         </div>
 
         <Card>
-          <CardHeader>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-primary" />
+          <CardHeader className="px-3 sm:px-6 py-3 sm:py-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
                 {t("admin.membersPage.memberList")}
               </CardTitle>
-              <div className="relative w-full md:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder={t("admin.membersPage.searchPlaceholder")}
-                  className="pl-9"
+                  className="pl-8 h-9 text-sm"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   data-testid="input-search"
@@ -368,15 +368,33 @@ export default function AdminMembersPage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3 sm:px-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <div className="overflow-x-auto -mx-1 px-1">
-                <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-5">
-                  <TabsTrigger value="all" className="flex-1 md:flex-none" data-testid="tab-all">{t("admin.membersPage.tabAll")} ({stats.total})</TabsTrigger>
-                  <TabsTrigger value="user" className="flex-1 md:flex-none" data-testid="tab-user">已注册 ({stats.registered})</TabsTrigger>
-                  <TabsTrigger value="member" className="flex-1 md:flex-none" data-testid="tab-member">{t("admin.membersPage.tabMember")} ({stats.members})</TabsTrigger>
-                  <TabsTrigger value="partner" className="flex-1 md:flex-none" data-testid="tab-partner">{t("admin.membersPage.tabPartner")} ({stats.partners})</TabsTrigger>
-                  <TabsTrigger value="admin" className="flex-1 md:flex-none" data-testid="tab-admin">{t("admin.membersPage.tabAdmin")} ({stats.admins})</TabsTrigger>
+              <div className="overflow-x-auto -mx-1 px-1 pb-1">
+                <TabsList className="inline-flex w-auto min-w-max md:grid md:w-full md:grid-cols-5 h-auto">
+                  <TabsTrigger value="all" className="text-xs sm:text-sm px-2 sm:px-3 py-1.5" data-testid="tab-all">
+                    <span className="sm:hidden">全部</span>
+                    <span className="hidden sm:inline">{t("admin.membersPage.tabAll")}</span>
+                    <span className="ml-1 text-muted-foreground">({stats.total})</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="user" className="text-xs sm:text-sm px-2 sm:px-3 py-1.5" data-testid="tab-user">
+                    已注册<span className="ml-1 text-muted-foreground">({stats.registered})</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="member" className="text-xs sm:text-sm px-2 sm:px-3 py-1.5" data-testid="tab-member">
+                    <span className="sm:hidden">会员</span>
+                    <span className="hidden sm:inline">{t("admin.membersPage.tabMember")}</span>
+                    <span className="ml-1 text-muted-foreground">({stats.members})</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="partner" className="text-xs sm:text-sm px-2 sm:px-3 py-1.5" data-testid="tab-partner">
+                    <span className="sm:hidden">合伙</span>
+                    <span className="hidden sm:inline">{t("admin.membersPage.tabPartner")}</span>
+                    <span className="ml-1 text-muted-foreground">({stats.partners})</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="admin" className="text-xs sm:text-sm px-2 sm:px-3 py-1.5" data-testid="tab-admin">
+                    <span className="sm:hidden">管理</span>
+                    <span className="hidden sm:inline">{t("admin.membersPage.tabAdmin")}</span>
+                    <span className="ml-1 text-muted-foreground">({stats.admins})</span>
+                  </TabsTrigger>
                 </TabsList>
               </div>
 
@@ -391,7 +409,7 @@ export default function AdminMembersPage() {
                     <p className="text-muted-foreground">{t("admin.membersPage.noMembers")}</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {filteredMembers.map((member) => {
                       const roleConfig = getRoleBadge(member.role);
                       const RoleIcon = roleConfig.icon;
@@ -400,25 +418,50 @@ export default function AdminMembersPage() {
                       return (
                         <div
                           key={member.id}
-                          className={`p-3 md:p-4 border rounded-lg hover:bg-muted/50 transition-colors ${isRegisteredOnly ? "border-dashed opacity-80" : ""}`}
+                          className={`p-2.5 sm:p-3 md:p-4 border rounded-lg hover:bg-muted/50 transition-colors ${isRegisteredOnly ? "border-dashed opacity-80" : ""}`}
                           data-testid={`member-${member.id}`}
                         >
-                          <div className="flex items-start gap-3 md:gap-4">
-                            <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${isRegisteredOnly ? "bg-blue-500/10" : "bg-primary/10"}`}>
-                              <RoleIcon className={`w-5 h-5 ${isRegisteredOnly ? "text-blue-500" : "text-primary"}`} />
+                          <div className="flex items-start gap-2.5 sm:gap-3 md:gap-4">
+                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0 flex items-center justify-center ${isRegisteredOnly ? "bg-blue-500/10" : "bg-primary/10"}`}>
+                              <RoleIcon className={`w-4 h-4 sm:w-5 sm:h-5 ${isRegisteredOnly ? "text-blue-500" : "text-primary"}`} />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="flex flex-wrap items-center gap-1.5">
-                                <span className="font-medium">{member.name}</span>
-                                {badges.map((b) => (
-                                  <Badge key={b.label} variant={b.variant} className="text-xs">{b.label}</Badge>
-                                ))}
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 min-w-0">
+                                  <span className="font-medium text-sm sm:text-base truncate max-w-[120px] sm:max-w-none">{member.name}</span>
+                                  {badges.map((b) => (
+                                    <Badge key={b.label} variant={b.variant} className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0">{b.label}</Badge>
+                                  ))}
+                                </div>
+                                {/* Action buttons — top-right on mobile */}
+                                <div className="flex items-center gap-1 sm:gap-2 shrink-0 sm:hidden">
+                                  {!isRegisteredOnly && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7"
+                                      onClick={() => handleViewNetwork(member)}
+                                      data-testid={`button-network-${member.id}`}
+                                    >
+                                      <Network className="w-3.5 h-3.5" />
+                                    </Button>
+                                  )}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() => handleViewDetails(member)}
+                                    data-testid={`button-view-${member.id}`}
+                                  >
+                                    <Eye className="w-3.5 h-3.5" />
+                                  </Button>
+                                </div>
                               </div>
-                              <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-muted-foreground mt-0.5">
+                              <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-0.5 text-xs sm:text-sm text-muted-foreground mt-0.5">
                                 {member.referral_code && (
-                                  <span className="font-mono text-xs">{member.referral_code}</span>
+                                  <span className="font-mono">{member.referral_code}</span>
                                 )}
-                                <span className="flex items-center gap-1 truncate">
+                                <span className="flex items-center gap-1 truncate max-w-[160px] sm:max-w-none">
                                   <Mail className="w-3 h-3 flex-shrink-0" />
                                   <span className="truncate">{member.email}</span>
                                 </span>
@@ -430,25 +473,26 @@ export default function AdminMembersPage() {
                                 )}
                               </div>
                               {member.referrer_name && (
-                                <p className="text-xs text-muted-foreground mt-1">
+                                <p className="text-xs text-muted-foreground mt-0.5">
                                   推荐人: {member.referrer_name}
                                 </p>
                               )}
                               {/* Stats shown inline on mobile — only for actual members */}
                               {!isRegisteredOnly && (
-                                <div className="flex items-center gap-3 mt-1.5 md:hidden text-xs text-muted-foreground">
+                                <div className="flex items-center gap-2 sm:gap-3 mt-1 sm:mt-1.5 md:hidden text-[11px] sm:text-xs text-muted-foreground">
                                   <span>{member.points_balance} {t("admin.membersPage.points")}</span>
                                   <span>{member.orders_count} 订单</span>
                                   <span>{member.downline_count} 下级</span>
                                 </div>
                               )}
                               {isRegisteredOnly && (
-                                <p className="text-xs text-muted-foreground mt-1.5 md:hidden">
+                                <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 sm:mt-1.5 md:hidden">
                                   注册于 {formatDate(member.created_at)}
                                 </p>
                               )}
                             </div>
-                            <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+                            {/* Desktop action buttons */}
+                            <div className="hidden sm:flex items-center gap-2 md:gap-4 flex-shrink-0">
                               {!isRegisteredOnly ? (
                                 <>
                                   <div className="text-right hidden md:block">
@@ -501,28 +545,28 @@ export default function AdminMembersPage() {
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="max-w-lg max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-base sm:text-lg truncate">
               {selectedMember?.is_registered_only ? "用户详情" : "会员详情"} - {selectedMember?.name}
             </DialogTitle>
           </DialogHeader>
           {selectedMember && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {selectedMember.referral_code ? (
                   <div>
-                    <p className="text-sm text-muted-foreground">推荐码</p>
-                    <p className="font-mono font-bold text-lg text-primary">{selectedMember.referral_code}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">推荐码</p>
+                    <p className="font-mono font-bold text-base sm:text-lg text-primary">{selectedMember.referral_code}</p>
                   </div>
                 ) : (
                   <div>
-                    <p className="text-sm text-muted-foreground">状态</p>
-                    <Badge variant="outline" className="mt-1">已注册 · 未成为会员</Badge>
+                    <p className="text-xs sm:text-sm text-muted-foreground">状态</p>
+                    <Badge variant="outline" className="mt-1 text-xs">已注册 · 未成为会员</Badge>
                   </div>
                 )}
                 <div>
-                  <p className="text-sm text-muted-foreground">角色</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">角色</p>
                   {selectedMember.is_registered_only ? (
-                    <Badge variant="outline" className="mt-1">已注册用户</Badge>
+                    <Badge variant="outline" className="mt-1 text-xs">已注册用户</Badge>
                   ) : (
                     <Select
                       value={selectedMember.role}
@@ -533,7 +577,7 @@ export default function AdminMembersPage() {
                         referralCode: selectedMember.referral_code,
                       })}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full h-9 text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -545,41 +589,41 @@ export default function AdminMembersPage() {
                   )}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">邮箱</p>
-                  <p className="break-all">{selectedMember.email}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">邮箱</p>
+                  <p className="text-sm break-all">{selectedMember.email}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">电话</p>
-                  <p>{selectedMember.phone || "-"}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">电话</p>
+                  <p className="text-sm">{selectedMember.phone || "-"}</p>
                 </div>
               </div>
               {!selectedMember.is_registered_only && (
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-3 sm:gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">积分</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">积分</p>
                     <p className="font-bold">{selectedMember.points_balance}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">订单数</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">订单数</p>
                     <p className="font-bold">{selectedMember.orders_count}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">下级数</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">下级数</p>
                     <p className="font-bold">{selectedMember.downline_count}</p>
                   </div>
                 </div>
               )}
               {selectedMember.referrer_name && (
                 <div>
-                  <p className="text-sm text-muted-foreground">推荐人</p>
-                  <p>{selectedMember.referrer_name}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">推荐人</p>
+                  <p className="text-sm">{selectedMember.referrer_name}</p>
                 </div>
               )}
               <div>
-                <p className="text-sm text-muted-foreground">注册时间</p>
-                <p>{formatDate(selectedMember.created_at)}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">注册时间</p>
+                <p className="text-sm">{formatDate(selectedMember.created_at)}</p>
               </div>
             </div>
           )}
@@ -588,11 +632,11 @@ export default function AdminMembersPage() {
 
       {/* Member Network Dialog */}
       <Dialog open={networkOpen} onOpenChange={setNetworkOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[85dvh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Network className="w-5 h-5" />
-              {selectedMember?.name} 的推荐网络
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Network className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+              <span className="truncate">{selectedMember?.name} 的推荐网络</span>
             </DialogTitle>
           </DialogHeader>
           {networkLoading ? (
@@ -614,21 +658,21 @@ export default function AdminMembersPage() {
                 return (
                   <div
                     key={member.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
-                    style={{ marginLeft: `${(member.level - 1) * 20}px` }}
+                    className="flex items-center justify-between gap-2 p-2 sm:p-3 border rounded-lg"
+                    style={{ marginLeft: `${Math.min((member.level - 1) * 12, 48)}px` }}
                   >
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline" className="text-xs">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <Badge variant="outline" className="text-[10px] sm:text-xs shrink-0 px-1.5">
                         L{member.level}
                       </Badge>
-                      <div>
-                        <span className="font-medium">{member.name}</span>
-                        <Badge variant={roleConfig.variant} className="ml-2 text-xs">
+                      <div className="min-w-0">
+                        <span className="font-medium text-sm sm:text-base truncate block">{member.name}</span>
+                        <Badge variant={roleConfig.variant} className="text-[10px] sm:text-xs mt-0.5">
                           {roleConfig.label}
                         </Badge>
                       </div>
                     </div>
-                    <span className="text-sm text-muted-foreground font-mono">
+                    <span className="text-xs sm:text-sm text-muted-foreground font-mono shrink-0">
                       {member.referral_code}
                     </span>
                   </div>
