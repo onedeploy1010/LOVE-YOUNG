@@ -163,9 +163,62 @@ export default function AdminMembersPage() {
     enabled: !!selectedMember?.id && networkOpen,
   });
 
-  // Update member role mutation — also ensures partner record exists for partner/admin roles
+  // Generate a referral code for new members
+  const generateReferralCode = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "";
+    for (let i = 0; i < 6; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  };
+
+  // Update member role mutation — handles both existing members and registered-only users
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ memberId, userId, role, referralCode }: { memberId: string; userId: string; role: string; referralCode: string | null }) => {
+    mutationFn: async ({ memberId, userId, role, referralCode, isRegisteredOnly, name, email, phone }: {
+      memberId: string;
+      userId: string;
+      role: string;
+      referralCode: string | null;
+      isRegisteredOnly?: boolean;
+      name?: string;
+      email?: string;
+      phone?: string;
+    }) => {
+      let actualMemberId = memberId;
+      let actualReferralCode = referralCode;
+
+      // If registered-only user, create a member record first
+      if (isRegisteredOnly) {
+        actualReferralCode = generateReferralCode();
+
+        const { data: newMember, error: createError } = await supabase
+          .from("members")
+          .insert({
+            user_id: userId,
+            name: name || email || "未命名",
+            email: email || "",
+            phone: phone || "",
+            role,
+            points_balance: 0,
+            referral_code: actualReferralCode,
+            created_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+
+        if (createError) throw createError;
+        actualMemberId = newMember.id;
+      } else {
+        // Update existing members table
+        const { error: memberError } = await supabase
+          .from("members")
+          .update({ role })
+          .eq("id", memberId);
+
+        if (memberError) throw memberError;
+      }
+
       // Update users table
       const { error: userError } = await supabase
         .from("users")
@@ -174,29 +227,21 @@ export default function AdminMembersPage() {
 
       if (userError) throw userError;
 
-      // Update members table
-      const { error: memberError } = await supabase
-        .from("members")
-        .update({ role })
-        .eq("id", memberId);
-
-      if (memberError) throw memberError;
-
       // If upgrading to partner or admin, ensure partner record exists
       if (role === "partner" || role === "admin") {
         const { data: existingPartner } = await supabase
           .from("partners")
           .select("id")
-          .eq("member_id", memberId)
+          .eq("member_id", actualMemberId)
           .maybeSingle();
 
         if (!existingPartner) {
           const { error: partnerError } = await supabase
             .from("partners")
             .insert({
-              member_id: memberId,
+              member_id: actualMemberId,
               user_id: userId,
-              referral_code: referralCode || null,
+              referral_code: actualReferralCode || null,
               tier: "phase1",
               status: "active",
               ly_balance: 0,
@@ -565,28 +610,32 @@ export default function AdminMembersPage() {
                 )}
                 <div>
                   <p className="text-xs sm:text-sm text-muted-foreground">角色</p>
-                  {selectedMember.is_registered_only ? (
-                    <Badge variant="outline" className="mt-1 text-xs">已注册用户</Badge>
-                  ) : (
-                    <Select
-                      value={selectedMember.role}
-                      onValueChange={(role) => updateRoleMutation.mutate({
-                        memberId: selectedMember.id,
-                        userId: selectedMember.user_id,
-                        role,
-                        referralCode: selectedMember.referral_code,
-                      })}
-                    >
-                      <SelectTrigger className="w-full h-9 text-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="member">普通会员</SelectItem>
-                        <SelectItem value="partner">合伙人</SelectItem>
-                        <SelectItem value="admin">管理员</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
+                  <Select
+                    value={selectedMember.role}
+                    onValueChange={(role) => updateRoleMutation.mutate({
+                      memberId: selectedMember.id,
+                      userId: selectedMember.user_id,
+                      role,
+                      referralCode: selectedMember.referral_code || null,
+                      isRegisteredOnly: selectedMember.is_registered_only,
+                      name: selectedMember.name,
+                      email: selectedMember.email,
+                      phone: selectedMember.phone,
+                    })}
+                    disabled={updateRoleMutation.isPending}
+                  >
+                    <SelectTrigger className="w-full h-9 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectedMember.is_registered_only && (
+                        <SelectItem value="user">已注册（未激活）</SelectItem>
+                      )}
+                      <SelectItem value="member">普通会员</SelectItem>
+                      <SelectItem value="partner">合伙人</SelectItem>
+                      <SelectItem value="admin">管理员</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
