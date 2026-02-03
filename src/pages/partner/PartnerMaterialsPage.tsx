@@ -118,42 +118,42 @@ export default function PartnerMaterialsPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1 md:flex-none"
+                className="flex-1 md:flex-none h-8 sm:h-9 px-2 sm:px-3"
                 onClick={() => copyToClipboard(referralCode, t("member.materials.referralCodeLabel"))}
                 data-testid="button-copy-code"
               >
-                <Copy className="w-3.5 h-3.5 mr-1.5" />
-                <span className="text-xs sm:text-sm">{t("member.materials.copyReferralCode")}</span>
+                <Copy className="w-3.5 h-3.5 mr-1 sm:mr-1.5 shrink-0" />
+                <span className="text-[10px] sm:text-sm truncate">{t("member.materials.copyReferralCode")}</span>
               </Button>
               <Button
                 size="sm"
-                className="flex-1 md:flex-none bg-green-500 hover:bg-green-600"
+                className="flex-1 md:flex-none h-8 sm:h-9 px-2 sm:px-3 bg-green-500 hover:bg-green-600"
                 onClick={shareToWhatsApp}
                 data-testid="button-share-whatsapp"
               >
-                <Share2 className="w-3.5 h-3.5 mr-1.5" />
-                <span className="text-xs sm:text-sm">{t("member.materials.shareWhatsApp")}</span>
+                <Share2 className="w-3.5 h-3.5 mr-1 sm:mr-1.5 shrink-0" />
+                <span className="text-[10px] sm:text-sm truncate">{t("member.materials.shareWhatsApp")}</span>
               </Button>
             </div>
           </div>
 
           <div>
-            <p className="text-xs sm:text-sm text-muted-foreground mb-1">{t("member.materials.referralLinkLabel")}</p>
-            <div className="flex items-center gap-2">
+            <p className="text-[10px] sm:text-sm text-muted-foreground mb-1">{t("member.materials.referralLinkLabel")}</p>
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <Input
                 value={referralLink}
                 readOnly
-                className="font-mono text-xs sm:text-sm bg-background h-9"
+                className="font-mono text-[10px] sm:text-sm bg-background h-8 sm:h-9"
                 data-testid="input-referral-link"
               />
               <Button
                 variant="outline"
                 size="icon"
-                className="h-9 w-9 shrink-0"
+                className="h-8 w-8 sm:h-9 sm:w-9 shrink-0"
                 onClick={() => copyToClipboard(referralLink, t("member.materials.referralLinkLabel"))}
                 data-testid="button-copy-link"
               >
-                <Copy className="w-4 h-4" />
+                <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Button>
             </div>
           </div>
@@ -212,39 +212,45 @@ export default function PartnerMaterialsPage() {
         </TabsContent>
 
         <TabsContent value="documents">
-          <Card>
-            <CardContent className="p-0">
-              <div className="divide-y">
-                {materials.documents.map((doc) => (
-                  <div
-                    key={doc.id}
-                    className="flex items-center justify-between p-2.5 sm:p-4 gap-2 hover-elevate"
-                    data-testid={`card-document-${doc.id}`}
-                  >
-                    <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                        <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm sm:text-base truncate">{doc.title}</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground">{doc.type} · {doc.size}</p>
-                      </div>
+          <div className="space-y-2 sm:space-y-0">
+            {materials.documents.map((doc) => (
+              <Card key={doc.id} data-testid={`card-document-${doc.id}`} className="sm:rounded-none sm:border-x-0 sm:border-t-0 sm:shadow-none sm:last:border-b-0">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center gap-2.5 sm:gap-4 mb-2 sm:mb-0">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     </div>
-                    <div className="flex gap-1.5 shrink-0">
-                      <Button variant="outline" size="sm" className="h-7 sm:h-9 px-2 sm:px-3">
-                        <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        <span className="hidden sm:inline ml-1">{t("member.materials.preview")}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-xs sm:text-base truncate">{doc.title}</p>
+                      <p className="text-[10px] sm:text-sm text-muted-foreground">{doc.type} · {doc.size}</p>
+                    </div>
+                    {/* Desktop: inline buttons */}
+                    <div className="hidden sm:flex gap-1.5 shrink-0">
+                      <Button variant="outline" size="sm" className="h-9 px-3">
+                        <ExternalLink className="w-4 h-4 mr-1" />
+                        {t("member.materials.preview")}
                       </Button>
-                      <Button variant="outline" size="sm" className="h-7 sm:h-9 px-2 sm:px-3">
-                        <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        <span className="hidden sm:inline ml-1">{t("member.materials.download")}</span>
+                      <Button variant="outline" size="sm" className="h-9 px-3">
+                        <Download className="w-4 h-4 mr-1" />
+                        {t("member.materials.download")}
                       </Button>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  {/* Mobile: full-width buttons */}
+                  <div className="flex gap-2 sm:hidden">
+                    <Button variant="outline" size="sm" className="flex-1 h-7 text-[10px]">
+                      <ExternalLink className="w-3 h-3 mr-1 shrink-0" />
+                      {t("member.materials.preview")}
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1 h-7 text-[10px]">
+                      <Download className="w-3 h-3 mr-1 shrink-0" />
+                      {t("member.materials.download")}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </TabsContent>
 
         <TabsContent value="videos">
