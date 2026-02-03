@@ -183,97 +183,25 @@ export default function AdminMembersPage() {
     enabled: !!selectedMember?.id && networkOpen,
   });
 
-  // Generate a referral code for new members
-  const generateReferralCode = () => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let code = "";
-    for (let i = 0; i < 6; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
-  };
-
-  // Update member role mutation — handles both existing members and registered-only users
+  // Update member role mutation — uses SECURITY DEFINER RPC to bypass RLS
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ memberId, userId, role, referralCode, isRegisteredOnly, name, email, phone }: {
-      memberId: string;
+    mutationFn: async ({ userId, role, name, email, phone }: {
       userId: string;
       role: string;
-      referralCode: string | null;
-      isRegisteredOnly?: boolean;
       name?: string;
       email?: string;
       phone?: string;
     }) => {
-      let actualMemberId = memberId;
-      let actualReferralCode = referralCode;
+      const { data, error } = await supabase.rpc("admin_set_user_role", {
+        p_user_id: userId,
+        p_new_role: role,
+        p_name: name || null,
+        p_email: email || null,
+        p_phone: phone || null,
+      });
 
-      // If registered-only user, create a member record first
-      if (isRegisteredOnly) {
-        actualReferralCode = generateReferralCode();
-
-        const { data: newMember, error: createError } = await supabase
-          .from("members")
-          .insert({
-            user_id: userId,
-            name: name || email || "未命名",
-            email: email || "",
-            phone: phone || "",
-            role,
-            points_balance: 0,
-            referral_code: actualReferralCode,
-            created_at: new Date().toISOString(),
-          })
-          .select("id")
-          .single();
-
-        if (createError) throw createError;
-        actualMemberId = newMember.id;
-      } else {
-        // Update existing members table
-        const { error: memberError } = await supabase
-          .from("members")
-          .update({ role })
-          .eq("id", memberId);
-
-        if (memberError) throw memberError;
-      }
-
-      // Update users table
-      const { error: userError } = await supabase
-        .from("users")
-        .update({ role })
-        .eq("id", userId);
-
-      if (userError) throw userError;
-
-      // If upgrading to partner or admin, ensure partner record exists
-      if (role === "partner" || role === "admin") {
-        const { data: existingPartner } = await supabase
-          .from("partners")
-          .select("id")
-          .eq("member_id", actualMemberId)
-          .maybeSingle();
-
-        if (!existingPartner) {
-          const { error: partnerError } = await supabase
-            .from("partners")
-            .insert({
-              member_id: actualMemberId,
-              user_id: userId,
-              referral_code: actualReferralCode || null,
-              tier: "phase1",
-              status: "active",
-              ly_balance: 0,
-              cash_wallet_balance: 0,
-              rwa_tokens: 0,
-              total_sales: 0,
-              total_cashback: 0,
-            });
-
-          if (partnerError) throw partnerError;
-        }
-      }
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-members"] });
@@ -721,11 +649,8 @@ export default function AdminMembersPage() {
                   <Select
                     value={selectedMember.role}
                     onValueChange={(role) => updateRoleMutation.mutate({
-                      memberId: selectedMember.id,
                       userId: selectedMember.user_id,
                       role,
-                      referralCode: selectedMember.referral_code || null,
-                      isRegisteredOnly: selectedMember.is_registered_only,
                       name: selectedMember.name,
                       email: selectedMember.email,
                       phone: selectedMember.phone,
