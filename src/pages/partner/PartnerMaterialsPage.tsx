@@ -95,21 +95,21 @@ export default function PartnerMaterialsPage() {
     <MemberLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-serif text-primary" data-testid="text-materials-title">{t("member.materials.title")}</h1>
-          <p className="text-muted-foreground">{t("member.materials.subtitle")}</p>
+          <h1 className="text-xl sm:text-2xl font-serif text-primary" data-testid="text-materials-title">{t("member.materials.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("member.materials.subtitle")}</p>
         </div>
 
       {/* Referral Link Card */}
       <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
-        <CardContent className="p-6 space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-xl bg-background flex items-center justify-center border-2 border-dashed border-primary/30">
-                <QrCode className="w-8 h-8 text-primary" />
+        <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-11 h-11 sm:w-16 sm:h-16 rounded-xl bg-background flex items-center justify-center border-2 border-dashed border-primary/30 shrink-0">
+                <QrCode className="w-5 h-5 sm:w-8 sm:h-8 text-primary" />
               </div>
               <div>
-                <h3 className="font-bold text-lg">{t("member.materials.myReferralLink")}</h3>
-                <p className="text-muted-foreground text-sm">
+                <h3 className="font-bold text-base sm:text-lg">{t("member.materials.myReferralLink")}</h3>
+                <p className="text-muted-foreground text-xs sm:text-sm">
                   {t("member.materials.referralCodeLabel")}: <span className="font-mono font-bold text-primary">{referralCode}</span>
                 </p>
               </div>
@@ -117,35 +117,39 @@ export default function PartnerMaterialsPage() {
             <div className="flex gap-2">
               <Button
                 variant="outline"
+                size="sm"
+                className="flex-1 md:flex-none"
                 onClick={() => copyToClipboard(referralCode, t("member.materials.referralCodeLabel"))}
                 data-testid="button-copy-code"
               >
-                <Copy className="w-4 h-4 mr-2" />
-                {t("member.materials.copyReferralCode")}
+                <Copy className="w-3.5 h-3.5 mr-1.5" />
+                <span className="text-xs sm:text-sm">{t("member.materials.copyReferralCode")}</span>
               </Button>
               <Button
+                size="sm"
+                className="flex-1 md:flex-none bg-green-500 hover:bg-green-600"
                 onClick={shareToWhatsApp}
-                className="bg-green-500 hover:bg-green-600"
                 data-testid="button-share-whatsapp"
               >
-                <Share2 className="w-4 h-4 mr-2" />
-                {t("member.materials.shareWhatsApp")}
+                <Share2 className="w-3.5 h-3.5 mr-1.5" />
+                <span className="text-xs sm:text-sm">{t("member.materials.shareWhatsApp")}</span>
               </Button>
             </div>
           </div>
 
           <div>
-            <p className="text-sm text-muted-foreground mb-1">{t("member.materials.referralLinkLabel")}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-1">{t("member.materials.referralLinkLabel")}</p>
             <div className="flex items-center gap-2">
               <Input
                 value={referralLink}
                 readOnly
-                className="font-mono text-sm bg-background"
+                className="font-mono text-xs sm:text-sm bg-background h-9"
                 data-testid="input-referral-link"
               />
               <Button
                 variant="outline"
                 size="icon"
+                className="h-9 w-9 shrink-0"
                 onClick={() => copyToClipboard(referralLink, t("member.materials.referralLinkLabel"))}
                 data-testid="button-copy-link"
               >
@@ -156,49 +160,49 @@ export default function PartnerMaterialsPage() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="images" className="space-y-6">
+      <Tabs defaultValue="images" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="images" className="gap-2" data-testid="tab-images">
-            <Image className="w-4 h-4" />
+          <TabsTrigger value="images" className="gap-1.5 text-xs sm:text-sm" data-testid="tab-images">
+            <Image className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             {t("member.materials.tabs.images")}
           </TabsTrigger>
-          <TabsTrigger value="documents" className="gap-2" data-testid="tab-documents">
-            <FileText className="w-4 h-4" />
+          <TabsTrigger value="documents" className="gap-1.5 text-xs sm:text-sm" data-testid="tab-documents">
+            <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             {t("member.materials.tabs.documents")}
           </TabsTrigger>
-          <TabsTrigger value="videos" className="gap-2" data-testid="tab-videos">
-            <Video className="w-4 h-4" />
+          <TabsTrigger value="videos" className="gap-1.5 text-xs sm:text-sm" data-testid="tab-videos">
+            <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             {t("member.materials.tabs.videos")}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="images">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
             {materials.images.map((item) => (
               <Card key={item.id} className="overflow-hidden" data-testid={`card-image-${item.id}`}>
-                <div className="aspect-[9/16] bg-muted overflow-hidden">
+                <div className="aspect-[3/4] sm:aspect-[9/16] bg-muted overflow-hidden">
                   <img
                     src={item.thumbnail}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <CardContent className="p-4">
-                  <h4 className="font-medium text-sm mb-1">{item.title}</h4>
-                  <p className="text-xs text-muted-foreground mb-3">{item.size}</p>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Download className="w-3 h-3 mr-1" />
-                      {t("member.materials.download")}
+                <CardContent className="p-2.5 sm:p-4">
+                  <h4 className="font-medium text-xs sm:text-sm mb-0.5 sm:mb-1 truncate">{item.title}</h4>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mb-2 sm:mb-3">{item.size}</p>
+                  <div className="flex gap-1.5 sm:gap-2">
+                    <Button variant="outline" size="sm" className="flex-1 h-7 sm:h-9 text-[10px] sm:text-xs px-1.5 sm:px-3">
+                      <Download className="w-3 h-3 mr-0.5 sm:mr-1 shrink-0" />
+                      <span className="truncate">{t("member.materials.download")}</span>
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1"
+                    <Button variant="outline" size="sm" className="flex-1 h-7 sm:h-9 text-[10px] sm:text-xs px-1.5 sm:px-3"
                       onClick={() => {
                         const text = `${t("member.materials.itemShareText").replace("{title}", item.title).replace("{code}", referralCode)}\n${referralLink}`;
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
                       }}
                     >
-                      <Share2 className="w-3 h-3 mr-1" />
-                      {t("member.materials.share")}
+                      <Share2 className="w-3 h-3 mr-0.5 sm:mr-1 shrink-0" />
+                      <span className="truncate">{t("member.materials.share")}</span>
                     </Button>
                   </div>
                 </CardContent>
@@ -214,26 +218,26 @@ export default function PartnerMaterialsPage() {
                 {materials.documents.map((doc) => (
                   <div
                     key={doc.id}
-                    className="flex items-center justify-between p-4 hover-elevate"
+                    className="flex items-center justify-between p-2.5 sm:p-4 gap-2 hover-elevate"
                     data-testid={`card-document-${doc.id}`}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <FileText className="w-5 h-5 text-primary" />
+                    <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                       </div>
-                      <div>
-                        <p className="font-medium">{doc.title}</p>
-                        <p className="text-sm text-muted-foreground">{doc.type} · {doc.size}</p>
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm sm:text-base truncate">{doc.title}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{doc.type} · {doc.size}</p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <ExternalLink className="w-4 h-4 mr-1" />
-                        {t("member.materials.preview")}
+                    <div className="flex gap-1.5 shrink-0">
+                      <Button variant="outline" size="sm" className="h-7 sm:h-9 px-2 sm:px-3">
+                        <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <span className="hidden sm:inline ml-1">{t("member.materials.preview")}</span>
                       </Button>
-                      <Button variant="outline" size="sm">
-                        <Download className="w-4 h-4 mr-1" />
-                        {t("member.materials.download")}
+                      <Button variant="outline" size="sm" className="h-7 sm:h-9 px-2 sm:px-3">
+                        <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <span className="hidden sm:inline ml-1">{t("member.materials.download")}</span>
                       </Button>
                     </div>
                   </div>
@@ -244,7 +248,7 @@ export default function PartnerMaterialsPage() {
         </TabsContent>
 
         <TabsContent value="videos">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4">
             {materials.videos.map((video) => (
               <Card key={video.id} className="overflow-hidden" data-testid={`card-video-${video.id}`}>
                 <div className="aspect-video bg-muted overflow-hidden relative">
@@ -254,27 +258,27 @@ export default function PartnerMaterialsPage() {
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
-                      <Video className="w-5 h-5 text-primary" />
+                    <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-white/90 flex items-center justify-center">
+                      <Video className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     </div>
                   </div>
-                  <Badge className="absolute bottom-2 right-2 bg-black/70">{video.duration}</Badge>
+                  <Badge className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 bg-black/70 text-[10px] sm:text-xs">{video.duration}</Badge>
                 </div>
-                <CardContent className="p-4">
-                  <h4 className="font-medium mb-3">{video.title}</h4>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <ExternalLink className="w-3 h-3 mr-1" />
-                      {t("member.materials.play")}
+                <CardContent className="p-2.5 sm:p-4">
+                  <h4 className="font-medium text-xs sm:text-sm mb-2 sm:mb-3 truncate">{video.title}</h4>
+                  <div className="flex gap-1.5 sm:gap-2">
+                    <Button variant="outline" size="sm" className="flex-1 h-7 sm:h-9 text-[10px] sm:text-xs px-1.5 sm:px-3">
+                      <ExternalLink className="w-3 h-3 mr-0.5 sm:mr-1 shrink-0" />
+                      <span className="truncate">{t("member.materials.play")}</span>
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1"
+                    <Button variant="outline" size="sm" className="flex-1 h-7 sm:h-9 text-[10px] sm:text-xs px-1.5 sm:px-3"
                       onClick={() => {
                         const text = `${t("member.materials.itemShareText").replace("{title}", video.title).replace("{code}", referralCode)}\n${referralLink}`;
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
                       }}
                     >
-                      <Share2 className="w-3 h-3 mr-1" />
-                      {t("member.materials.share")}
+                      <Share2 className="w-3 h-3 mr-0.5 sm:mr-1 shrink-0" />
+                      <span className="truncate">{t("member.materials.share")}</span>
                     </Button>
                   </div>
                 </CardContent>
@@ -285,54 +289,54 @@ export default function PartnerMaterialsPage() {
       </Tabs>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Smartphone className="w-5 h-5 text-primary" />
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Smartphone className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             {t("member.materials.socialShare")}
           </CardTitle>
-          <CardDescription>{t("member.materials.socialShareDesc")}</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">{t("member.materials.socialShareDesc")}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
             <Button
               variant="outline"
-              className="h-auto py-4 flex-col gap-2 bg-green-500/5 border-green-500/20 hover:bg-green-500/10"
+              className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 bg-green-500/5 border-green-500/20 hover:bg-green-500/10"
               onClick={shareToWhatsApp}
             >
-              <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                <span className="text-white text-lg">W</span>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-green-500 flex items-center justify-center">
+                <span className="text-white text-base sm:text-lg">W</span>
               </div>
-              <span>WhatsApp</span>
+              <span className="text-xs sm:text-sm">WhatsApp</span>
             </Button>
             <Button
               variant="outline"
-              className="h-auto py-4 flex-col gap-2 bg-blue-500/5 border-blue-500/20 hover:bg-blue-500/10"
+              className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 bg-blue-500/5 border-blue-500/20 hover:bg-blue-500/10"
               onClick={shareToFacebook}
             >
-              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-                <span className="text-white text-lg">F</span>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-500 flex items-center justify-center">
+                <span className="text-white text-base sm:text-lg">F</span>
               </div>
-              <span>Facebook</span>
+              <span className="text-xs sm:text-sm">Facebook</span>
             </Button>
             <Button
               variant="outline"
-              className="h-auto py-4 flex-col gap-2 bg-pink-500/5 border-pink-500/20 hover:bg-pink-500/10"
+              className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 bg-pink-500/5 border-pink-500/20 hover:bg-pink-500/10"
               onClick={() => copyToClipboard(referralLink, t("member.materials.referralLinkLabel"))}
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center">
-                <span className="text-white text-lg">I</span>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center">
+                <span className="text-white text-base sm:text-lg">I</span>
               </div>
-              <span>Instagram</span>
+              <span className="text-xs sm:text-sm">Instagram</span>
             </Button>
             <Button
               variant="outline"
-              className="h-auto py-4 flex-col gap-2 bg-red-500/5 border-red-500/20 hover:bg-red-500/10"
+              className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 bg-red-500/5 border-red-500/20 hover:bg-red-500/10"
               onClick={() => copyToClipboard(referralLink, t("member.materials.referralLinkLabel"))}
             >
-              <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
-                <span className="text-white text-lg">小</span>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-500 flex items-center justify-center">
+                <span className="text-white text-base sm:text-lg">小</span>
               </div>
-              <span>小红书</span>
+              <span className="text-xs sm:text-sm">小红书</span>
             </Button>
           </div>
         </CardContent>
