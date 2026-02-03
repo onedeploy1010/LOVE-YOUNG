@@ -17,8 +17,25 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Users, Search, Star, Crown, Shield, Eye, Mail, Phone,
-  Loader2, UserPlus, Network, RefreshCw
+  Loader2, UserPlus, Network, RefreshCw, Trash2, Download,
+  ArrowUpDown, MoreVertical
 } from "lucide-react";
 
 interface Member {
@@ -47,6 +64,9 @@ export default function AdminMembersPage() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [networkOpen, setNetworkOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<"date_desc" | "date_asc" | "name" | "points">("date_desc");
+  const [deleteTarget, setDeleteTarget] = useState<Member | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   // Fetch members from Supabase with users table join
   const { data: members = [], isLoading, refetch } = useQuery({
@@ -287,6 +307,58 @@ export default function AdminMembersPage() {
     return badges;
   };
 
+  // Delete member mutation
+  const deleteMemberMutation = useMutation({
+    mutationFn: async (member: Member) => {
+      if (!member.is_registered_only) {
+        // Delete partner record if exists
+        await supabase.from("partners").delete().eq("member_id", member.id);
+        // Delete member record
+        const { error } = await supabase.from("members").delete().eq("id", member.id);
+        if (error) throw error;
+      }
+      // Delete user record (cascades from auth via FK)
+      const { error: userError } = await supabase.from("users").delete().eq("id", member.user_id);
+      if (userError) throw userError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-members"] });
+      setDeleteConfirmOpen(false);
+      setDeleteTarget(null);
+      setDetailsOpen(false);
+      toast({ title: "已删除" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "删除失败", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Export filtered members as CSV
+  const handleExport = () => {
+    const headers = ["姓名", "邮箱", "电话", "角色", "推荐码", "积分", "订单数", "下级数", "注册时间"];
+    const roleLabels: Record<string, string> = { user: "已注册", member: "会员", partner: "合伙人", admin: "管理员" };
+    const rows = filteredMembers.map(m => [
+      m.name,
+      m.email,
+      m.phone || "",
+      roleLabels[m.role] || m.role,
+      m.referral_code || "",
+      String(m.points_balance),
+      String(m.orders_count || 0),
+      String(m.downline_count || 0),
+      formatDate(m.created_at),
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
+    const bom = "\uFEFF";
+    const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `会员列表_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const filteredMembers = members.filter(member => {
     const matchesSearch = searchQuery === "" ||
       member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -294,6 +366,13 @@ export default function AdminMembersPage() {
       member.referral_code.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTab = activeTab === "all" || member.role === activeTab;
     return matchesSearch && matchesTab;
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case "date_asc": return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      case "name": return a.name.localeCompare(b.name, "zh");
+      case "points": return (b.points_balance || 0) - (a.points_balance || 0);
+      default: return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    }
   });
 
   const stats = {
@@ -396,12 +475,32 @@ export default function AdminMembersPage() {
 
         <Card>
           <CardHeader className="px-3 sm:px-6 py-3 sm:py-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
-                {t("admin.membersPage.memberList")}
-              </CardTitle>
-              <div className="relative w-full sm:w-64">
+            <div className="flex flex-col gap-2 sm:gap-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+                  {t("admin.membersPage.memberList")}
+                </CardTitle>
+                <div className="flex items-center gap-1.5">
+                  <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                    <SelectTrigger className="h-8 w-8 sm:w-auto sm:h-9 p-0 sm:px-3 border-none shadow-none [&>svg:last-child]:hidden sm:[&>svg:last-child]:block">
+                      <ArrowUpDown className="w-4 h-4 sm:hidden" />
+                      <span className="hidden sm:inline"><SelectValue /></span>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="date_desc">最新注册</SelectItem>
+                      <SelectItem value="date_asc">最早注册</SelectItem>
+                      <SelectItem value="name">按姓名</SelectItem>
+                      <SelectItem value="points">按积分</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3" onClick={handleExport}>
+                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline ml-1.5">导出</span>
+                  </Button>
+                </div>
+              </div>
+              <div className="relative w-full">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder={t("admin.membersPage.searchPlaceholder")}
@@ -479,7 +578,7 @@ export default function AdminMembersPage() {
                                   ))}
                                 </div>
                                 {/* Action buttons — top-right on mobile */}
-                                <div className="flex items-center gap-1 sm:gap-2 shrink-0 sm:hidden">
+                                <div className="flex items-center gap-0.5 shrink-0 sm:hidden">
                                   {!isRegisteredOnly && (
                                     <Button
                                       variant="ghost"
@@ -491,15 +590,24 @@ export default function AdminMembersPage() {
                                       <Network className="w-3.5 h-3.5" />
                                     </Button>
                                   )}
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    onClick={() => handleViewDetails(member)}
-                                    data-testid={`button-view-${member.id}`}
-                                  >
-                                    <Eye className="w-3.5 h-3.5" />
-                                  </Button>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-7 w-7">
+                                        <MoreVertical className="w-3.5 h-3.5" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem onClick={() => handleViewDetails(member)}>
+                                        <Eye className="w-4 h-4 mr-2" />查看详情
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        className="text-red-500 focus:text-red-500"
+                                        onClick={() => { setDeleteTarget(member); setDeleteConfirmOpen(true); }}
+                                      >
+                                        <Trash2 className="w-4 h-4 mr-2" />删除
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                                 </div>
                               </div>
                               <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-0.5 text-xs sm:text-sm text-muted-foreground mt-0.5">
@@ -674,6 +782,17 @@ export default function AdminMembersPage() {
                 <p className="text-xs sm:text-sm text-muted-foreground">注册时间</p>
                 <p className="text-sm">{formatDate(selectedMember.created_at)}</p>
               </div>
+              <div className="pt-2 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600 w-full"
+                  onClick={() => { setDeleteTarget(selectedMember); setDeleteConfirmOpen(true); }}
+                >
+                  <Trash2 className="w-4 h-4 mr-1.5" />
+                  删除此用户
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
@@ -731,6 +850,28 @@ export default function AdminMembersPage() {
           )}
         </DialogContent>
       </Dialog>
+      {/* Delete Confirmation */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要删除用户 <span className="font-medium text-foreground">{deleteTarget?.name}</span>（{deleteTarget?.email}）吗？此操作不可撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMemberMutation.isPending}>取消</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 hover:bg-red-600"
+              disabled={deleteMemberMutation.isPending}
+              onClick={() => deleteTarget && deleteMemberMutation.mutate(deleteTarget)}
+            >
+              {deleteMemberMutation.isPending && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
+              确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }
