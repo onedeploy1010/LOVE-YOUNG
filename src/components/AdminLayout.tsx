@@ -21,6 +21,7 @@ import {
   DollarSign,
   FileText,
   PiggyBank,
+  Wallet,
   Menu,
   ArrowLeft,
   ChevronRight,
@@ -40,6 +41,7 @@ const getCoreItems = (t: (key: string) => string) => [
   { path: "/admin/products", label: t("admin.menu.products"), icon: Package },
   { path: "/admin/members", label: t("admin.menu.members"), icon: Users },
   { path: "/admin/bonus-pool", label: t("admin.menu.bonusPool"), icon: PiggyBank },
+  { path: "/admin/withdrawals", label: t("admin.menu.withdrawals"), icon: Wallet },
 ];
 
 const getErpItems = (t: (key: string) => string) => [

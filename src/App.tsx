@@ -67,6 +67,7 @@ import AdminLogisticsPage from "@/pages/admin/AdminLogisticsPage";
 import AdminBillsPage from "@/pages/admin/AdminBillsPage";
 import AdminFinancePage from "@/pages/admin/AdminFinancePage";
 import AdminProductionPage from "@/pages/admin/AdminProductionPage";
+import AdminWithdrawalsPage from "@/pages/admin/AdminWithdrawalsPage";
 
 function Router() {
   return (
@@ -179,6 +180,9 @@ function Router() {
         </Route>
         <Route path="/admin/finance">
           <AdminRoute><AdminFinancePage /></AdminRoute>
+        </Route>
+        <Route path="/admin/withdrawals">
+          <AdminRoute><AdminWithdrawalsPage /></AdminRoute>
         </Route>
 
         {/* 404 */}
