@@ -162,16 +162,9 @@ export default function LandingPage() {
     },
   });
 
-  // Handle CNY gift box order
+  // Handle CNY gift box order - opens the OrderModal for custom flavor selection
   const handleCnyOrder = () => {
-    if (cnyBundle) {
-      setSelectedBundle(cnyBundle);
-      setBundleModalOpen(true);
-    } else if (featuredBundles.length > 0) {
-      // Fallback to first featured bundle if no CNY bundle
-      setSelectedBundle(featuredBundles[0]);
-      setBundleModalOpen(true);
-    }
+    setOrderModalOpen(true);
   };
 
   const whatsappLink = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(t("landing.whatsappMessage"))}`;
