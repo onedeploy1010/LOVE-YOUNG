@@ -99,6 +99,8 @@ export default function AdminPurchasePage() {
   const [activeTab, setActiveTab] = useState("orders");
   const [showSupplierModal, setShowSupplierModal] = useState(false);
   const [showPoModal, setShowPoModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
 
   const supplierForm = useForm<SupplierFormValues>({
     resolver: zodResolver(supplierFormSchema),
@@ -182,6 +184,56 @@ export default function AdminPurchasePage() {
 
   const watchedPoItems = poForm.watch("items");
   const poTotal = (watchedPoItems || []).reduce((sum, item) => sum + (item.quantity || 0) * (item.unitPrice || 0), 0);
+
+  // Update PO status mutation
+  const updatePoStatusMutation = useMutation({
+    mutationFn: async ({ id, status, receivedDate }: { id: string; status: string; receivedDate?: string }) => {
+      const updateData: { status: string; received_date?: string } = { status };
+      if (receivedDate) {
+        updateData.received_date = receivedDate;
+      }
+      const { error } = await supabase
+        .from("purchase_orders")
+        .update(updateData)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-purchase-orders"] });
+      // Refresh selectedOrder from updated list
+      if (selectedOrder) {
+        const updated = orders.find(o => o.id === selectedOrder.id);
+        if (updated) setSelectedOrder(updated);
+      }
+      toast({ title: "状态已更新" });
+    },
+    onError: (error) => {
+      toast({ title: "更新失败", description: String(error), variant: "destructive" });
+    },
+  });
+
+  const handleViewDetails = (order: PurchaseOrder) => {
+    setSelectedOrder(order);
+    setShowDetailsModal(true);
+  };
+
+  const getNextStatus = (current: string): string | null => {
+    const flow: Record<string, string> = {
+      pending: "approved",
+      approved: "shipped",
+      shipped: "received",
+    };
+    return flow[current] || null;
+  };
+
+  const getNextStatusLabel = (current: string): string => {
+    const labels: Record<string, string> = {
+      pending: "批准",
+      approved: "标记已发货",
+      shipped: "确认收货",
+    };
+    return labels[current] || "";
+  };
 
   // Fetch purchase orders
   const { data: orders = [], isLoading: loadingOrders } = useQuery({
@@ -329,7 +381,13 @@ export default function AdminPurchasePage() {
                           </div>
                           <div className="flex items-center gap-4">
                             <span className="font-bold text-primary">RM {(order.total_amount / 100).toLocaleString()}</span>
-                            <Button variant="outline" size="sm" className="gap-1" data-testid={`button-view-${order.order_number}`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-1"
+                              onClick={() => handleViewDetails(order)}
+                              data-testid={`button-view-${order.order_number}`}
+                            >
                               <Eye className="w-4 h-4" />
                               {t("admin.purchasePage.viewDetails")}
                             </Button>
@@ -571,6 +629,125 @@ export default function AdminPurchasePage() {
               </DialogFooter>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Purchase Order Details Modal */}
+      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardCheck className="w-5 h-5 text-primary" />
+              采购单详情
+            </DialogTitle>
+            <DialogDescription>
+              {selectedOrder?.order_number}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedOrder && (
+            <div className="space-y-4 py-4">
+              {/* Status & Basic Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">供应商</p>
+                  <p className="font-medium">{selectedOrder.supplier_name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">状态</p>
+                  <Badge className={getStatusConfig(selectedOrder.status).bg}>
+                    {getStatusConfig(selectedOrder.status).label}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">创建日期</p>
+                  <p className="font-medium">{formatDate(selectedOrder.created_at)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">预计到货</p>
+                  <p className="font-medium">{selectedOrder.expected_date ? formatDate(selectedOrder.expected_date) : "-"}</p>
+                </div>
+                {selectedOrder.received_date && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">实际收货</p>
+                    <p className="font-medium">{formatDate(selectedOrder.received_date)}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Items List */}
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">物品清单</p>
+                <div className="border rounded-lg divide-y">
+                  {Array.isArray(selectedOrder.items) && (selectedOrder.items as Array<{ name: string; quantity: number; unit_price: number; total: number }>).map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3">
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          数量: {item.quantity} × RM {(item.unit_price / 100).toFixed(2)}
+                        </p>
+                      </div>
+                      <p className="font-bold">RM {(item.total / 100).toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between items-center mt-3 pt-3 border-t">
+                  <span className="font-medium">总计</span>
+                  <span className="text-xl font-bold text-primary">
+                    RM {(selectedOrder.total_amount / 100).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              {/* Notes */}
+              {selectedOrder.notes && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">备注</p>
+                  <p className="text-sm bg-muted p-3 rounded-lg">{selectedOrder.notes}</p>
+                </div>
+              )}
+
+              {/* Actions */}
+              {getNextStatus(selectedOrder.status) && (
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDetailsModal(false)}
+                  >
+                    关闭
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const nextStatus = getNextStatus(selectedOrder.status);
+                      if (nextStatus) {
+                        const receivedDate = nextStatus === "received" ? new Date().toISOString() : undefined;
+                        updatePoStatusMutation.mutate({
+                          id: selectedOrder.id,
+                          status: nextStatus,
+                          receivedDate,
+                        });
+                        // Update local state immediately for UI feedback
+                        setSelectedOrder({ ...selectedOrder, status: nextStatus, received_date: receivedDate || selectedOrder.received_date });
+                      }
+                    }}
+                    disabled={updatePoStatusMutation.isPending}
+                    data-testid="button-update-po-status"
+                  >
+                    {updatePoStatusMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    {getNextStatusLabel(selectedOrder.status)}
+                  </Button>
+                </div>
+              )}
+
+              {selectedOrder.status === "received" && (
+                <div className="flex justify-end pt-4 border-t">
+                  <Button variant="outline" onClick={() => setShowDetailsModal(false)}>
+                    关闭
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </AdminLayout>
