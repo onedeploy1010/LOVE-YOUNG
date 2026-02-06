@@ -357,84 +357,84 @@ export default function AdminPartnersPage() {
 
       {/* Partner Details Modal */}
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90dvh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               经营人详情
             </DialogTitle>
           </DialogHeader>
           {selectedPartner && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Basic Info */}
-              <Card className="p-4">
-                <h4 className="font-semibold mb-3">基本信息</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">姓名:</span>
-                    <span className="ml-2 font-medium">{selectedPartner.member_name || "-"}</span>
+              <Card className="p-3 sm:p-4">
+                <h4 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3">基本信息</h4>
+                <div className="space-y-2 text-xs sm:text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">姓名</span>
+                    <span className="font-medium">{selectedPartner.member_name || "-"}</span>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">邮箱:</span>
-                    <span className="ml-2 font-medium">{selectedPartner.member_email || "-"}</span>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">邮箱</span>
+                    <span className="font-medium truncate ml-2 max-w-[60%]">{selectedPartner.member_email || "-"}</span>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">手机:</span>
-                    <span className="ml-2 font-medium">{selectedPartner.member_phone || "-"}</span>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">手机</span>
+                    <span className="font-medium">{selectedPartner.member_phone || "-"}</span>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">推荐码:</span>
-                    <span className="ml-2 font-mono font-medium">{selectedPartner.referral_code}</span>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">推荐码</span>
+                    <span className="font-mono font-medium">{selectedPartner.referral_code}</span>
                   </div>
-                  <div className="col-span-2">
-                    <span className="text-muted-foreground">注册日期:</span>
-                    <span className="ml-2 font-medium">
-                      {new Date(selectedPartner.created_at).toLocaleDateString("zh-CN")}
-                    </span>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">注册日期</span>
+                    <span className="font-medium">{new Date(selectedPartner.created_at).toLocaleDateString("zh-CN")}</span>
                   </div>
                 </div>
               </Card>
 
               {/* Financial Overview */}
-              <Card className="p-4">
-                <h4 className="font-semibold mb-3">财务概览</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+              <Card className="p-3 sm:p-4">
+                <h4 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3">财务概览</h4>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 text-xs sm:text-sm">
                   <div className="p-2 bg-muted rounded text-center">
-                    <p className="text-muted-foreground text-xs">LY积分</p>
-                    <p className="text-lg font-bold">{selectedPartner.ly_balance}</p>
+                    <p className="text-muted-foreground text-[10px] sm:text-xs">LY积分</p>
+                    <p className="text-sm sm:text-lg font-bold">{selectedPartner.ly_balance}</p>
                   </div>
                   <div className="p-2 bg-muted rounded text-center">
-                    <p className="text-muted-foreground text-xs">现金钱包</p>
-                    <p className="text-lg font-bold">RM {(selectedPartner.cash_wallet_balance / 100).toFixed(2)}</p>
+                    <p className="text-muted-foreground text-[10px] sm:text-xs">现金钱包</p>
+                    <p className="text-sm sm:text-lg font-bold">RM {(selectedPartner.cash_wallet_balance / 100).toFixed(0)}</p>
                   </div>
                   <div className="p-2 bg-muted rounded text-center">
-                    <p className="text-muted-foreground text-xs">RWA令牌</p>
-                    <p className="text-lg font-bold">{selectedPartner.rwa_tokens}</p>
+                    <p className="text-muted-foreground text-[10px] sm:text-xs">RWA令牌</p>
+                    <p className="text-sm sm:text-lg font-bold">{selectedPartner.rwa_tokens}</p>
                   </div>
-                  <div className="p-2 bg-muted rounded text-center">
-                    <p className="text-muted-foreground text-xs">总销售额</p>
-                    <p className="text-lg font-bold text-primary">RM {(selectedPartner.total_sales / 100).toFixed(2)}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 mt-2 sm:mt-3 text-xs sm:text-sm">
+                  <div className="p-2 bg-primary/10 rounded text-center">
+                    <p className="text-muted-foreground text-[10px] sm:text-xs">总销售额</p>
+                    <p className="text-sm sm:text-lg font-bold text-primary">RM {(selectedPartner.total_sales / 100).toFixed(2)}</p>
                   </div>
-                  <div className="p-2 bg-muted rounded text-center">
-                    <p className="text-muted-foreground text-xs">总返佣</p>
-                    <p className="text-lg font-bold text-green-500">RM {(selectedPartner.total_commission / 100).toFixed(2)}</p>
+                  <div className="p-2 bg-green-500/10 rounded text-center">
+                    <p className="text-muted-foreground text-[10px] sm:text-xs">总返佣</p>
+                    <p className="text-sm sm:text-lg font-bold text-green-500">RM {(selectedPartner.total_commission / 100).toFixed(2)}</p>
                   </div>
                 </div>
               </Card>
 
               {/* Tier & Status */}
-              <Card className="p-4">
-                <h4 className="font-semibold mb-3">等级与状态</h4>
-                <div className="flex items-center gap-4">
+              <Card className="p-3 sm:p-4">
+                <h4 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3">等级与状态</h4>
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">等级:</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground shrink-0">等级:</span>
                     <Select
                       value={selectedPartner.tier}
                       onValueChange={(value) => {
                         updateTierMutation.mutate({ partnerId: selectedPartner.id, tier: value });
                       }}
                     >
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger className="w-24 sm:w-32 h-8 sm:h-9 text-xs sm:text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -444,14 +444,15 @@ export default function AdminPartnersPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">状态:</span>
-                    <Badge variant={selectedPartner.status === "active" ? "default" : "destructive"}>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs sm:text-sm text-muted-foreground shrink-0">状态:</span>
+                    <Badge variant={selectedPartner.status === "active" ? "default" : "destructive"} className="text-xs">
                       {selectedPartner.status === "active" ? "激活" : selectedPartner.status === "suspended" ? "暂停" : selectedPartner.status}
                     </Badge>
                     <Button
                       variant="outline"
                       size="sm"
+                      className="h-7 sm:h-8 text-xs sm:text-sm px-2 sm:px-3"
                       onClick={() => {
                         const newStatus = selectedPartner.status === "active" ? "suspended" : "active";
                         toggleStatusMutation.mutate({ partnerId: selectedPartner.id, status: newStatus });
@@ -459,9 +460,9 @@ export default function AdminPartnersPage() {
                       disabled={toggleStatusMutation.isPending}
                     >
                       {selectedPartner.status === "active" ? (
-                        <><Ban className="w-4 h-4 mr-1" /> 暂停</>
+                        <><Ban className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> 暂停</>
                       ) : (
-                        <><Play className="w-4 h-4 mr-1" /> 激活</>
+                        <><Play className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> 激活</>
                       )}
                     </Button>
                   </div>
@@ -469,19 +470,19 @@ export default function AdminPartnersPage() {
               </Card>
 
               {/* Direct Referrals */}
-              <Card className="p-4">
-                <h4 className="font-semibold mb-3">直接推荐 ({referrals.length})</h4>
+              <Card className="p-3 sm:p-4">
+                <h4 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3">直接推荐 ({referrals.length})</h4>
                 {referrals.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">暂无直接推荐</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">暂无直接推荐</p>
                 ) : (
                   <div className="space-y-2">
                     {referrals.map((r) => (
-                      <div key={r.id} className="flex items-center justify-between text-sm p-2 border rounded">
-                        <span className="font-medium">{r.member_name}</span>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">Phase {r.tier === "phase1" ? 1 : r.tier === "phase2" ? 2 : 3}</Badge>
-                          <Badge variant={r.status === "active" ? "default" : "outline"}>
-                            {r.status === "active" ? "激活" : "待审核"}
+                      <div key={r.id} className="flex items-center justify-between text-xs sm:text-sm p-2 border rounded gap-2">
+                        <span className="font-medium truncate">{r.member_name}</span>
+                        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                          <Badge variant="outline" className="text-[10px] sm:text-xs px-1 sm:px-2">P{r.tier === "phase1" ? 1 : r.tier === "phase2" ? 2 : 3}</Badge>
+                          <Badge variant={r.status === "active" ? "default" : "outline"} className="text-[10px] sm:text-xs px-1 sm:px-2">
+                            {r.status === "active" ? "激活" : "待审"}
                           </Badge>
                         </div>
                       </div>
@@ -491,18 +492,18 @@ export default function AdminPartnersPage() {
               </Card>
 
               {/* Network Orders */}
-              <Card className="p-4">
-                <h4 className="font-semibold mb-3">网络订单 (最近10单)</h4>
+              <Card className="p-3 sm:p-4">
+                <h4 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3">网络订单 (最近10单)</h4>
                 {networkOrders.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">暂无网络订单</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">暂无网络订单</p>
                 ) : (
                   <div className="space-y-2">
                     {networkOrders.map((o) => (
-                      <div key={o.id} className="flex items-center justify-between text-sm p-2 border rounded">
-                        <span className="font-mono">#{o.order_number}</span>
-                        <div className="flex items-center gap-3">
-                          <span className="font-bold text-primary">RM {(o.total_amount / 100).toFixed(2)}</span>
-                          <Badge variant="outline">{o.status}</Badge>
+                      <div key={o.id} className="flex items-center justify-between text-xs sm:text-sm p-2 border rounded gap-2">
+                        <span className="font-mono truncate">#{o.order_number}</span>
+                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                          <span className="font-bold text-primary">RM {(o.total_amount / 100).toFixed(0)}</span>
+                          <Badge variant="outline" className="text-[10px] sm:text-xs px-1 sm:px-2">{o.status}</Badge>
                         </div>
                       </div>
                     ))}
