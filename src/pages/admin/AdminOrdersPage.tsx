@@ -15,7 +15,7 @@ import { restoreInventoryForOrder } from "@/lib/inventory";
 import type { Order } from "@shared/types";
 import {
   ShoppingCart, Search, Package, Truck, CheckCircle,
-  Clock, XCircle, Eye, RefreshCw, Loader2
+  Clock, XCircle, Eye, RefreshCw, Loader2, Trash2
 } from "lucide-react";
 import {
   Dialog,
@@ -23,13 +23,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminOrdersPage() {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
 
   // Fetch orders from Supabase
   const { data: orders = [], isLoading, refetch } = useQuery<Order[]>({
@@ -107,6 +121,49 @@ export default function AdminOrdersPage() {
       setDetailsOpen(false);
     },
   });
+
+  // Delete order mutation
+  const deleteOrderMutation = useMutation({
+    mutationFn: async (order: Order) => {
+      // Restore inventory before deleting
+      if (order.status !== "cancelled") {
+        try {
+          const items = JSON.parse(order.items);
+          await restoreInventoryForOrder(order.id, items);
+        } catch (e) {
+          console.error("Error restoring inventory:", e);
+        }
+      }
+
+      const { error } = await supabase
+        .from("orders")
+        .delete()
+        .eq("id", order.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      setDetailsOpen(false);
+      setDeleteConfirmOpen(false);
+      setOrderToDelete(null);
+      toast({ title: "订单已删除" });
+    },
+    onError: (error) => {
+      toast({ title: "删除失败", description: String(error), variant: "destructive" });
+    },
+  });
+
+  const handleDeleteClick = (order: Order) => {
+    setOrderToDelete(order);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (orderToDelete) {
+      deleteOrderMutation.mutate(orderToDelete);
+    }
+  };
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -446,10 +503,55 @@ export default function AdminOrdersPage() {
                 <p>创建时间: {formatDate(selectedOrder.createdAt)}</p>
                 <p>更新时间: {formatDate(selectedOrder.updatedAt)}</p>
               </div>
+
+              {/* Delete Button */}
+              <div className="flex justify-end pt-2 border-t">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => handleDeleteClick(selectedOrder)}
+                  disabled={deleteOrderMutation.isPending}
+                >
+                  {deleteOrderMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                  删除订单
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent className="w-[95vw] max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除订单</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要删除订单 <span className="font-mono font-bold">#{orderToDelete?.orderNumber}</span> 吗？此操作不可撤销，库存将会被恢复。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto">取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteOrderMutation.isPending}
+            >
+              {deleteOrderMutation.isPending ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4 mr-2" />
+              )}
+              确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }

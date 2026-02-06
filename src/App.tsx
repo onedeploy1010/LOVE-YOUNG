@@ -70,6 +70,15 @@ import AdminProductionPage from "@/pages/admin/AdminProductionPage";
 import AdminWithdrawalsPage from "@/pages/admin/AdminWithdrawalsPage";
 import AdminBundlesPage from "@/pages/admin/AdminBundlesPage";
 import AdminSiteSettingsPage from "@/pages/admin/AdminSiteSettingsPage";
+import AdminMetaAdsPage from "@/pages/admin/AdminMetaAdsPage";
+import AdminXiaohongshuPage from "@/pages/admin/AdminXiaohongshuPage";
+import AdminMediaPlanPage from "@/pages/admin/AdminMediaPlanPage";
+import AdminAdPlacementPage from "@/pages/admin/AdminAdPlacementPage";
+import AdminPerformanceReportsPage from "@/pages/admin/AdminPerformanceReportsPage";
+import AdminWhatsappConfigPage from "@/pages/admin/AdminWhatsappConfigPage";
+import AdminWhatsappOrdersPage from "@/pages/admin/AdminWhatsappOrdersPage";
+import AdminWhatsappMembersPage from "@/pages/admin/AdminWhatsappMembersPage";
+import AdminAiCustomerServicePage from "@/pages/admin/AdminAiCustomerServicePage";
 
 function Router() {
   return (
@@ -191,6 +200,37 @@ function Router() {
         </Route>
         <Route path="/admin/site-settings">
           <AdminRoute><AdminSiteSettingsPage /></AdminRoute>
+        </Route>
+
+        {/* Marketing Management routes */}
+        <Route path="/admin/marketing/meta-ads">
+          <AdminRoute><AdminMetaAdsPage /></AdminRoute>
+        </Route>
+        <Route path="/admin/marketing/xiaohongshu">
+          <AdminRoute><AdminXiaohongshuPage /></AdminRoute>
+        </Route>
+        <Route path="/admin/marketing/media-plan">
+          <AdminRoute><AdminMediaPlanPage /></AdminRoute>
+        </Route>
+        <Route path="/admin/marketing/ad-placement">
+          <AdminRoute><AdminAdPlacementPage /></AdminRoute>
+        </Route>
+        <Route path="/admin/marketing/reports">
+          <AdminRoute><AdminPerformanceReportsPage /></AdminRoute>
+        </Route>
+
+        {/* WhatsApp Business routes */}
+        <Route path="/admin/whatsapp/config">
+          <AdminRoute><AdminWhatsappConfigPage /></AdminRoute>
+        </Route>
+        <Route path="/admin/whatsapp/orders">
+          <AdminRoute><AdminWhatsappOrdersPage /></AdminRoute>
+        </Route>
+        <Route path="/admin/whatsapp/members">
+          <AdminRoute><AdminWhatsappMembersPage /></AdminRoute>
+        </Route>
+        <Route path="/admin/whatsapp/ai-service">
+          <AdminRoute><AdminAiCustomerServicePage /></AdminRoute>
         </Route>
 
         {/* 404 */}

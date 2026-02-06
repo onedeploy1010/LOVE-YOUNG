@@ -189,6 +189,52 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             })}
           </div>
         </div>
+
+        <div>
+          <p className="text-xs text-muted-foreground mb-2 px-2">{t("admin.marketingSystem")}</p>
+          <div className="space-y-1">
+            {marketingItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+              return (
+                <Button
+                  key={item.path}
+                  variant={active ? "secondary" : "ghost"}
+                  className={`w-full justify-start gap-3 ${active ? "bg-primary/20 text-primary font-medium" : ""}`}
+                  onClick={() => { navigate(item.path); setOpen(false); }}
+                  data-testid={`nav-${item.path.split('/').pop()}`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                  {active && <ChevronRight className="w-4 h-4 ml-auto" />}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-xs text-muted-foreground mb-2 px-2">{t("admin.whatsappBusiness")}</p>
+          <div className="space-y-1">
+            {whatsappItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+              return (
+                <Button
+                  key={item.path}
+                  variant={active ? "secondary" : "ghost"}
+                  className={`w-full justify-start gap-3 ${active ? "bg-primary/20 text-primary font-medium" : ""}`}
+                  onClick={() => { navigate(item.path); setOpen(false); }}
+                  data-testid={`nav-${item.path.split('/').pop()}`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                  {active && <ChevronRight className="w-4 h-4 ml-auto" />}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
       </nav>
 
       <div className="p-4 border-t space-y-2">

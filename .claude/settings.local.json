@@ -48,7 +48,8 @@
       "Bash(then)",
       "Bash(else)",
       "Bash(fi)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(if [ -f \"src/pages/admin/$file.tsx\" ])"
     ]
   }
 }
