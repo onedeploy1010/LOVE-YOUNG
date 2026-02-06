@@ -15,7 +15,7 @@ import { restoreInventoryForOrder } from "@/lib/inventory";
 import type { Order } from "@shared/types";
 import {
   ShoppingCart, Search, Package, Truck, CheckCircle,
-  Clock, XCircle, Eye, RefreshCw, Loader2, Trash2
+  Clock, XCircle, Eye, RefreshCw, Loader2, Trash2, MessageSquare, Globe, Shield
 } from "lucide-react";
 import {
   Dialog,
@@ -62,6 +62,7 @@ export default function AdminOrdersPage() {
       return (data || []).map((row: Record<string, unknown>) => ({
         id: row.id as string,
         orderNumber: row.order_number as string,
+        userId: row.user_id as string | null,
         memberId: row.member_id as string | null,
         customerName: row.customer_name as string,
         customerPhone: row.customer_phone as string,
@@ -82,6 +83,8 @@ export default function AdminOrdersPage() {
         metaOrderId: row.meta_order_id as string | null,
         pointsEarned: row.points_earned as number | null,
         pointsRedeemed: row.points_redeemed as number | null,
+        sourceChannel: row.source_channel as string | null,
+        whatsappConversationId: row.whatsapp_conversation_id as string | null,
         createdAt: row.created_at as string | null,
         updatedAt: row.updated_at as string | null,
       }));
@@ -363,6 +366,24 @@ export default function AdminOrdersPage() {
                               <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                                 <span className="font-mono text-xs sm:text-sm font-medium">#{order.orderNumber}</span>
                                 <Badge variant="outline" className="text-[10px] sm:text-xs h-5 sm:h-6">{statusConfig.label}</Badge>
+                                {order.sourceChannel === "whatsapp" && (
+                                  <Badge className="text-[10px] sm:text-xs h-5 sm:h-6 bg-green-500/10 text-green-600 border-green-500/20 gap-0.5">
+                                    <MessageSquare className="w-3 h-3" />
+                                    WA
+                                  </Badge>
+                                )}
+                                {order.sourceChannel === "admin" && (
+                                  <Badge className="text-[10px] sm:text-xs h-5 sm:h-6 bg-purple-500/10 text-purple-600 border-purple-500/20 gap-0.5">
+                                    <Shield className="w-3 h-3" />
+                                    Admin
+                                  </Badge>
+                                )}
+                                {(!order.sourceChannel || order.sourceChannel === "website") && (
+                                  <Badge className="text-[10px] sm:text-xs h-5 sm:h-6 bg-blue-500/10 text-blue-600 border-blue-500/20 gap-0.5">
+                                    <Globe className="w-3 h-3" />
+                                    Web
+                                  </Badge>
+                                )}
                               </div>
                               <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-0.5 text-xs sm:text-sm text-muted-foreground mt-0.5">
                                 <span className="truncate max-w-[100px] sm:max-w-[150px] md:max-w-none">{order.customerName}</span>

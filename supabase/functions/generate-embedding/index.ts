@@ -22,7 +22,7 @@ serve(async (req) => {
     }
 
     // Validate table name to prevent injection
-    const allowedTables = ["product_memory", "customer_memory", "partner_memory"];
+    const allowedTables = ["product_memory", "customer_memory", "partner_memory", "ai_knowledge_base", "ai_training_data"];
     if (!allowedTables.includes(table)) {
       return new Response(
         JSON.stringify({ error: `Invalid table: ${table}. Allowed: ${allowedTables.join(", ")}` }),

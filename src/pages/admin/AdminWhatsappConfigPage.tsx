@@ -38,7 +38,6 @@ import {
   Clock,
   Bell,
   Loader2,
-  Users,
 } from "lucide-react";
 
 // --- Interfaces ---
@@ -118,6 +117,7 @@ export default function AdminWhatsappConfigPage() {
 
   // Tab state
   const [activeTab, setActiveTab] = useState<"api" | "profile" | "templates" | "push">("api");
+  type TabKey = typeof activeTab;
 
   // --- API Config state ---
   const [configForm, setConfigForm] = useState<Omit<WhatsappConfig, "created_at" | "updated_at">>(defaultConfig);
@@ -476,12 +476,11 @@ export default function AdminWhatsappConfigPage() {
   // TAB DEFINITIONS
   // ============================================================
 
-  const tabs = [
-    { key: "api" as const, label: t("admin.whatsappConfigPage.apiConfig"), icon: Settings },
-    { key: "profile" as const, label: t("admin.whatsappConfigPage.businessProfile"), icon: Globe },
-    { key: "templates" as const, label: t("admin.whatsappConfigPage.messageTemplates"), icon: MessageSquare },
-    { key: "push" as const, label: t("admin.whatsappConfigPage.adminPush"), icon: Bell },
-    { key: "admins" as const, label: t("admin.whatsappConfigPage.adminManagement") || "Admin Management", icon: Users },
+  const tabs: { key: TabKey; label: string; icon: typeof Settings }[] = [
+    { key: "api", label: t("admin.whatsappConfigPage.apiConfig"), icon: Settings },
+    { key: "profile", label: t("admin.whatsappConfigPage.businessProfile"), icon: Globe },
+    { key: "templates", label: t("admin.whatsappConfigPage.messageTemplates"), icon: MessageSquare },
+    { key: "push", label: t("admin.whatsappConfigPage.adminPush"), icon: Bell },
   ];
 
   return (
@@ -1101,25 +1100,6 @@ export default function AdminWhatsappConfigPage() {
           </div>
         )}
 
-        {/* ============================================================ */}
-        {/* TAB 5: Admin Management */}
-        {/* ============================================================ */}
-        {activeTab === "admins" && (
-          <Card>
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium">{t("admin.whatsappConfigPage.adminManagement") || "Admin Management"}</h3>
-                  <p className="text-sm text-muted-foreground">{t("admin.whatsappConfigPage.adminManagementDesc") || "Manage WhatsApp admin accounts and conversation assignments"}</p>
-                </div>
-                <Button onClick={() => window.location.href = "/admin/whatsapp/admins"} className="gap-2">
-                  <Users className="w-4 h-4" />
-                  {t("admin.whatsappConfigPage.goToAdminManagement") || "Manage Admins"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       {/* ============================================================ */}

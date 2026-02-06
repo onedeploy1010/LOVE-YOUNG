@@ -117,6 +117,8 @@ export async function createOrder(
       metaOrderId: null,
       pointsEarned: null,
       pointsRedeemed: null,
+      sourceChannel: null,
+      whatsappConversationId: null,
       createdAt: now,
       updatedAt: now,
     },
@@ -256,6 +258,8 @@ function mapOrderFromDb(row: Record<string, unknown>): Order {
     metaOrderId: row.meta_order_id as string | null,
     pointsEarned: row.points_earned as number | null,
     pointsRedeemed: row.points_redeemed as number | null,
+    sourceChannel: row.source_channel as string | null,
+    whatsappConversationId: row.whatsapp_conversation_id as string | null,
     createdAt: row.created_at as string | null,
     updatedAt: row.updated_at as string | null,
   };

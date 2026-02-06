@@ -76,11 +76,16 @@ export interface Order {
   metaOrderId: string | null;
   pointsEarned: number | null;
   pointsRedeemed: number | null;
+  sourceChannel: string | null;
+  whatsappConversationId: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 }
 
-export type InsertOrder = Omit<Order, "id" | "createdAt" | "updatedAt">;
+export type InsertOrder = Omit<Order, "id" | "createdAt" | "updatedAt" | "sourceChannel" | "whatsappConversationId"> & {
+  sourceChannel?: string | null;
+  whatsappConversationId?: string | null;
+};
 
 export const orderStatusEnum = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"] as const;
 export type OrderStatus = (typeof orderStatusEnum)[number];

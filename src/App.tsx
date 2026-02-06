@@ -69,10 +69,9 @@ import AdminFinancePage from "@/pages/admin/AdminFinancePage";
 import AdminProductionPage from "@/pages/admin/AdminProductionPage";
 import AdminWithdrawalsPage from "@/pages/admin/AdminWithdrawalsPage";
 import AdminSiteSettingsPage from "@/pages/admin/AdminSiteSettingsPage";
-import AdminMetaAdsPage from "@/pages/admin/AdminMetaAdsPage";
+import AdminAdManagementPage from "@/pages/admin/AdminAdManagementPage";
 import AdminXiaohongshuPage from "@/pages/admin/AdminXiaohongshuPage";
 import AdminMediaPlanPage from "@/pages/admin/AdminMediaPlanPage";
-import AdminAdPlacementPage from "@/pages/admin/AdminAdPlacementPage";
 import AdminPerformanceReportsPage from "@/pages/admin/AdminPerformanceReportsPage";
 import AdminWhatsappConfigPage from "@/pages/admin/AdminWhatsappConfigPage";
 import AdminWhatsappOrdersPage from "@/pages/admin/AdminWhatsappOrdersPage";
@@ -80,6 +79,9 @@ import AdminWhatsappMembersPage from "@/pages/admin/AdminWhatsappMembersPage";
 import AdminAiCustomerServicePage from "@/pages/admin/AdminAiCustomerServicePage";
 import AdminContentCreationPage from "@/pages/admin/AdminContentCreationPage";
 import AdminWhatsappAdminPage from "@/pages/admin/AdminWhatsappAdminPage";
+import AdminWhatsappFlowsPage from "@/pages/admin/AdminWhatsappFlowsPage";
+import AdminMemoryDatabasePage from "@/pages/admin/AdminMemoryDatabasePage";
+import AdminKnowledgeBasePage from "@/pages/admin/AdminKnowledgeBasePage";
 import AdminSystemHealthPage from "@/pages/admin/AdminSystemHealthPage";
 
 function Router() {
@@ -205,17 +207,14 @@ function Router() {
         <Route path="/admin/marketing/content">
           <AdminRoute><AdminContentCreationPage /></AdminRoute>
         </Route>
-        <Route path="/admin/marketing/meta-ads">
-          <AdminRoute><AdminMetaAdsPage /></AdminRoute>
+        <Route path="/admin/marketing/ads">
+          <AdminRoute><AdminAdManagementPage /></AdminRoute>
         </Route>
         <Route path="/admin/marketing/xiaohongshu">
           <AdminRoute><AdminXiaohongshuPage /></AdminRoute>
         </Route>
         <Route path="/admin/marketing/media-plan">
           <AdminRoute><AdminMediaPlanPage /></AdminRoute>
-        </Route>
-        <Route path="/admin/marketing/ad-placement">
-          <AdminRoute><AdminAdPlacementPage /></AdminRoute>
         </Route>
         <Route path="/admin/marketing/reports">
           <AdminRoute><AdminPerformanceReportsPage /></AdminRoute>
@@ -231,12 +230,24 @@ function Router() {
         <Route path="/admin/whatsapp/members">
           <AdminRoute><AdminWhatsappMembersPage /></AdminRoute>
         </Route>
-        <Route path="/admin/whatsapp/ai-service">
+        <Route path="/admin/whatsapp/chat">
           <AdminRoute><AdminAiCustomerServicePage /></AdminRoute>
         </Route>
         <Route path="/admin/whatsapp/admins">
           <AdminRoute><AdminWhatsappAdminPage /></AdminRoute>
         </Route>
+        <Route path="/admin/whatsapp/flows">
+          <AdminRoute><AdminWhatsappFlowsPage /></AdminRoute>
+        </Route>
+
+        {/* AI & Knowledge routes */}
+        <Route path="/admin/ai/memory">
+          <AdminRoute><AdminMemoryDatabasePage /></AdminRoute>
+        </Route>
+        <Route path="/admin/ai/knowledge">
+          <AdminRoute><AdminKnowledgeBasePage /></AdminRoute>
+        </Route>
+
         <Route path="/admin/system-health">
           <AdminRoute><AdminSystemHealthPage /></AdminRoute>
         </Route>

@@ -29,7 +29,9 @@ import {
   ShoppingCart,
   DollarSign,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface PerformanceRecord {
   id: string;
@@ -61,40 +63,30 @@ type PlatformFilter = "all" | "facebook" | "instagram" | "xiaohongshu";
 
 const COLORS = ["#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6"];
 
-const sampleDailyData = [
-  { date: "01/01", impressions: 1200, clicks: 45, conversions: 5 },
-  { date: "01/02", impressions: 1500, clicks: 60, conversions: 8 },
-  { date: "01/03", impressions: 1800, clicks: 72, conversions: 12 },
-  { date: "01/04", impressions: 1350, clicks: 54, conversions: 6 },
-  { date: "01/05", impressions: 2100, clicks: 88, conversions: 15 },
-  { date: "01/06", impressions: 1900, clicks: 76, conversions: 10 },
-  { date: "01/07", impressions: 2400, clicks: 102, conversions: 18 },
-];
-
-const samplePlatformData = [
-  { platform: "Facebook", spend: 1200, impressions: 8500, clicks: 320 },
-  { platform: "Instagram", spend: 950, impressions: 6200, clicks: 280 },
-  { platform: "Xiaohongshu", spend: 680, impressions: 4100, clicks: 195 },
-];
-
-const sampleBudgetData = [
-  { name: "Facebook", value: 1200 },
-  { name: "Instagram", value: 950 },
-  { name: "Xiaohongshu", value: 680 },
-];
-
-const sampleTopCampaigns = [
-  { name: "Spring Collection Launch", platform: "Facebook", spend: 580, impressions: 3200, clicks: 145, conversions: 12, roas: 3.2 },
-  { name: "New Arrivals Promo", platform: "Instagram", spend: 420, impressions: 2800, clicks: 120, conversions: 9, roas: 2.8 },
-  { name: "Brand Awareness", platform: "Xiaohongshu", spend: 350, impressions: 2100, clicks: 95, conversions: 7, roas: 2.5 },
-  { name: "Summer Sale Preview", platform: "Facebook", spend: 310, impressions: 1900, clicks: 82, conversions: 6, roas: 2.1 },
-  { name: "Product Showcase", platform: "Instagram", spend: 280, impressions: 1600, clicks: 68, conversions: 5, roas: 1.9 },
-];
 
 export default function AdminPerformanceReportsPage() {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [dateRange, setDateRange] = useState<DateRange>("7d");
   const [platformFilter, setPlatformFilter] = useState<PlatformFilter>("all");
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("meta-sync-performance");
+      if (error) throw error;
+      toast({ title: t("admin.performanceReportsPage.syncSuccess", "Performance data synced successfully") });
+    } catch (err) {
+      toast({
+        title: t("admin.performanceReportsPage.syncError", "Sync failed"),
+        description: String(err),
+        variant: "destructive",
+      });
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const getDaysFromRange = (range: DateRange): number => {
     switch (range) {
@@ -135,108 +127,91 @@ export default function AdminPerformanceReportsPage() {
 
   const hasRealData = performanceData.length > 0;
 
-  // Aggregate stats from real data or use sample fallbacks
-  const stats = hasRealData
-    ? {
-        totalSpend: performanceData.reduce((sum, r) => sum + (r.spend || 0), 0),
-        totalImpressions: performanceData.reduce((sum, r) => sum + (r.impressions || 0), 0),
-        totalClicks: performanceData.reduce((sum, r) => sum + (r.clicks || 0), 0),
-        totalConversions: performanceData.reduce((sum, r) => sum + (r.conversions || 0), 0),
-        avgCtr: performanceData.length > 0
-          ? performanceData.reduce((sum, r) => sum + (r.ctr || 0), 0) / performanceData.length
-          : 0,
-        avgRoas: performanceData.length > 0
-          ? performanceData.reduce((sum, r) => sum + (r.roas || 0), 0) / performanceData.length
-          : 0,
+  // Aggregate stats from real data
+  const stats = {
+    totalSpend: performanceData.reduce((sum, r) => sum + (r.spend || 0), 0),
+    totalImpressions: performanceData.reduce((sum, r) => sum + (r.impressions || 0), 0),
+    totalClicks: performanceData.reduce((sum, r) => sum + (r.clicks || 0), 0),
+    totalConversions: performanceData.reduce((sum, r) => sum + (r.conversions || 0), 0),
+    avgCtr: performanceData.length > 0
+      ? performanceData.reduce((sum, r) => sum + (r.ctr || 0), 0) / performanceData.length
+      : 0,
+    avgRoas: performanceData.length > 0
+      ? performanceData.reduce((sum, r) => sum + (r.roas || 0), 0) / performanceData.length
+      : 0,
+  };
+
+  // Build daily trend data from real data
+  const dailyTrendData = (() => {
+    const grouped: Record<string, { date: string; impressions: number; clicks: number; conversions: number }> = {};
+    performanceData.forEach((r) => {
+      const dateKey = r.date.slice(5).replace("-", "/");
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = { date: dateKey, impressions: 0, clicks: 0, conversions: 0 };
       }
-    : {
-        totalSpend: 2830,
-        totalImpressions: 12270,
-        totalClicks: 497,
-        totalConversions: 74,
-        avgCtr: 4.05,
-        avgRoas: 2.5,
-      };
+      grouped[dateKey].impressions += r.impressions || 0;
+      grouped[dateKey].clicks += r.clicks || 0;
+      grouped[dateKey].conversions += r.conversions || 0;
+    });
+    return Object.values(grouped);
+  })();
 
-  // Build daily trend data from real data or use samples
-  const dailyTrendData = hasRealData
-    ? (() => {
-        const grouped: Record<string, { date: string; impressions: number; clicks: number; conversions: number }> = {};
-        performanceData.forEach((r) => {
-          const dateKey = r.date.slice(5).replace("-", "/");
-          if (!grouped[dateKey]) {
-            grouped[dateKey] = { date: dateKey, impressions: 0, clicks: 0, conversions: 0 };
-          }
-          grouped[dateKey].impressions += r.impressions || 0;
-          grouped[dateKey].clicks += r.clicks || 0;
-          grouped[dateKey].conversions += r.conversions || 0;
-        });
-        return Object.values(grouped);
-      })()
-    : sampleDailyData;
+  // Build platform comparison data from real data
+  const platformComparisonData = (() => {
+    const grouped: Record<string, { platform: string; spend: number; impressions: number; clicks: number }> = {};
+    performanceData.forEach((r) => {
+      const p = r.platform || "Unknown";
+      if (!grouped[p]) {
+        grouped[p] = { platform: p, spend: 0, impressions: 0, clicks: 0 };
+      }
+      grouped[p].spend += r.spend || 0;
+      grouped[p].impressions += r.impressions || 0;
+      grouped[p].clicks += r.clicks || 0;
+    });
+    return Object.values(grouped);
+  })();
 
-  // Build platform comparison data from real data or use samples
-  const platformComparisonData = hasRealData
-    ? (() => {
-        const grouped: Record<string, { platform: string; spend: number; impressions: number; clicks: number }> = {};
-        performanceData.forEach((r) => {
-          const p = r.platform || "Unknown";
-          if (!grouped[p]) {
-            grouped[p] = { platform: p, spend: 0, impressions: 0, clicks: 0 };
-          }
-          grouped[p].spend += r.spend || 0;
-          grouped[p].impressions += r.impressions || 0;
-          grouped[p].clicks += r.clicks || 0;
-        });
-        return Object.values(grouped);
-      })()
-    : samplePlatformData;
+  // Build budget allocation data from real data
+  const budgetAllocationData = (() => {
+    const grouped: Record<string, number> = {};
+    performanceData.forEach((r) => {
+      const p = r.platform || "Unknown";
+      grouped[p] = (grouped[p] || 0) + (r.spend || 0);
+    });
+    return Object.entries(grouped).map(([name, value]) => ({ name, value }));
+  })();
 
-  // Build budget allocation data from real data or use samples
-  const budgetAllocationData = hasRealData
-    ? (() => {
-        const grouped: Record<string, number> = {};
-        performanceData.forEach((r) => {
-          const p = r.platform || "Unknown";
-          grouped[p] = (grouped[p] || 0) + (r.spend || 0);
-        });
-        return Object.entries(grouped).map(([name, value]) => ({ name, value }));
-      })()
-    : sampleBudgetData;
-
-  // Build top campaigns data from real data or use samples
-  const topCampaignsData = hasRealData
-    ? (() => {
-        const grouped: Record<string, {
-          name: string;
-          platform: string;
-          spend: number;
-          impressions: number;
-          clicks: number;
-          conversions: number;
-          roas: number;
-          count: number;
-        }> = {};
-        performanceData.forEach((r) => {
-          const cId = r.campaign_id;
-          const cName = r.marketing_campaigns?.name || cId;
-          const cPlatform = r.marketing_campaigns?.platform || r.platform || "Unknown";
-          if (!grouped[cId]) {
-            grouped[cId] = { name: cName, platform: cPlatform, spend: 0, impressions: 0, clicks: 0, conversions: 0, roas: 0, count: 0 };
-          }
-          grouped[cId].spend += r.spend || 0;
-          grouped[cId].impressions += r.impressions || 0;
-          grouped[cId].clicks += r.clicks || 0;
-          grouped[cId].conversions += r.conversions || 0;
-          grouped[cId].roas += r.roas || 0;
-          grouped[cId].count += 1;
-        });
-        return Object.values(grouped)
-          .map((c) => ({ ...c, roas: c.count > 0 ? c.roas / c.count : 0 }))
-          .sort((a, b) => b.spend - a.spend)
-          .slice(0, 10);
-      })()
-    : sampleTopCampaigns;
+  // Build top campaigns data from real data
+  const topCampaignsData = (() => {
+    const grouped: Record<string, {
+      name: string;
+      platform: string;
+      spend: number;
+      impressions: number;
+      clicks: number;
+      conversions: number;
+      roas: number;
+      count: number;
+    }> = {};
+    performanceData.forEach((r) => {
+      const cId = r.campaign_id;
+      const cName = r.marketing_campaigns?.name || cId;
+      const cPlatform = r.marketing_campaigns?.platform || r.platform || "Unknown";
+      if (!grouped[cId]) {
+        grouped[cId] = { name: cName, platform: cPlatform, spend: 0, impressions: 0, clicks: 0, conversions: 0, roas: 0, count: 0 };
+      }
+      grouped[cId].spend += r.spend || 0;
+      grouped[cId].impressions += r.impressions || 0;
+      grouped[cId].clicks += r.clicks || 0;
+      grouped[cId].conversions += r.conversions || 0;
+      grouped[cId].roas += r.roas || 0;
+      grouped[cId].count += 1;
+    });
+    return Object.values(grouped)
+      .map((c) => ({ ...c, roas: c.count > 0 ? c.roas / c.count : 0 }))
+      .sort((a, b) => b.spend - a.spend)
+      .slice(0, 10);
+  })();
 
   const getPlatformColor = (platform: string) => {
     switch (platform.toLowerCase()) {
@@ -261,13 +236,19 @@ export default function AdminPerformanceReportsPage() {
     <AdminLayout>
       <div className="space-y-4 sm:space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-xl sm:text-2xl font-serif text-primary" data-testid="text-performance-title">
-            {t("admin.performanceReportsPage.title", "Ad Performance Reports")}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t("admin.performanceReportsPage.subtitle", "Monitor KPIs across all advertising platforms")}
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-serif text-primary" data-testid="text-performance-title">
+              {t("admin.performanceReportsPage.title", "Ad Performance Reports")}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {t("admin.performanceReportsPage.subtitle", "Monitor KPIs across all advertising platforms")}
+            </p>
+          </div>
+          <Button onClick={handleSync} disabled={syncing} variant="outline" className="gap-2 w-full sm:w-auto">
+            {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            {t("admin.performanceReportsPage.syncNow", "Sync Now")}
+          </Button>
         </div>
 
         {/* Filter Bar */}
@@ -328,10 +309,17 @@ export default function AdminPerformanceReportsPage() {
           </CardContent>
         </Card>
 
-        {/* Sample data notice */}
+        {/* No data notice with sync CTA */}
         {!hasRealData && (
-          <div className="text-xs sm:text-sm text-muted-foreground bg-muted/50 border border-dashed rounded-lg p-2.5 sm:p-3 text-center">
-            {t("admin.performanceReportsPage.sampleDataNotice", "Showing sample data. Connect your marketing campaigns to see real performance metrics.")}
+          <div className="text-center py-8 bg-muted/50 border border-dashed rounded-lg">
+            <BarChart3 className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+            <p className="text-sm text-muted-foreground mb-3">
+              {t("admin.performanceReportsPage.noDataNotice", "No performance data available. Sync your campaign data to see metrics.")}
+            </p>
+            <Button onClick={handleSync} disabled={syncing} className="gap-2">
+              {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+              {t("admin.performanceReportsPage.syncNow", "Sync Now")}
+            </Button>
           </div>
         )}
 

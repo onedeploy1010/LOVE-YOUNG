@@ -32,15 +32,16 @@ import {
   Megaphone,
   BookOpen,
   Calendar,
-  Target,
   BarChart3,
   MessageSquare,
   ShoppingBag,
   UserPlus,
   Bot,
-  Send,
   Activity,
   PenSquare,
+  Database,
+  Brain,
+  GitBranch,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -69,11 +70,10 @@ const getErpItems = (t: (key: string) => string) => [
 ];
 
 const getMarketingItems = (t: (key: string) => string) => [
-  { path: "/admin/marketing/meta-ads", label: t("admin.menu.metaAds"), icon: Megaphone },
+  { path: "/admin/marketing/ads", label: t("admin.menu.adManagement"), icon: Megaphone },
   { path: "/admin/marketing/xiaohongshu", label: t("admin.menu.xiaohongshu"), icon: BookOpen },
   { path: "/admin/marketing/content", label: t("admin.menu.contentCreation"), icon: PenSquare },
   { path: "/admin/marketing/media-plan", label: t("admin.menu.mediaPlan"), icon: Calendar },
-  { path: "/admin/marketing/ad-placement", label: t("admin.menu.adPlacement"), icon: Target },
   { path: "/admin/marketing/reports", label: t("admin.menu.performanceReports"), icon: BarChart3 },
 ];
 
@@ -81,8 +81,14 @@ const getWhatsappItems = (t: (key: string) => string) => [
   { path: "/admin/whatsapp/config", label: t("admin.menu.whatsappConfig"), icon: MessageSquare },
   { path: "/admin/whatsapp/orders", label: t("admin.menu.whatsappOrders"), icon: ShoppingBag },
   { path: "/admin/whatsapp/members", label: t("admin.menu.whatsappMembers"), icon: UserPlus },
-  { path: "/admin/whatsapp/ai-service", label: t("admin.menu.aiCustomerService"), icon: Bot },
+  { path: "/admin/whatsapp/chat", label: t("admin.menu.whatsappChat"), icon: Bot },
   { path: "/admin/whatsapp/admins", label: t("admin.menu.whatsappAdmins"), icon: Users },
+  { path: "/admin/whatsapp/flows", label: t("admin.menu.whatsappFlows"), icon: GitBranch },
+];
+
+const getAiKnowledgeItems = (t: (key: string) => string) => [
+  { path: "/admin/ai/memory", label: t("admin.menu.memoryDatabase"), icon: Database },
+  { path: "/admin/ai/knowledge", label: t("admin.menu.knowledgeBase"), icon: Brain },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
@@ -95,7 +101,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const erpItems = useMemo(() => getErpItems(t), [t]);
   const marketingItems = useMemo(() => getMarketingItems(t), [t]);
   const whatsappItems = useMemo(() => getWhatsappItems(t), [t]);
-  const allItems = useMemo(() => [...coreItems, ...erpItems, ...marketingItems, ...whatsappItems], [coreItems, erpItems, marketingItems, whatsappItems]);
+  const aiKnowledgeItems = useMemo(() => getAiKnowledgeItems(t), [t]);
+  const allItems = useMemo(() => [...coreItems, ...erpItems, ...marketingItems, ...whatsappItems, ...aiKnowledgeItems], [coreItems, erpItems, marketingItems, whatsappItems, aiKnowledgeItems]);
 
   const isActive = (path: string) => location === path;
 
@@ -220,6 +227,29 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <p className="text-xs text-muted-foreground mb-2 px-2">{t("admin.whatsappBusiness")}</p>
           <div className="space-y-1">
             {whatsappItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+              return (
+                <Button
+                  key={item.path}
+                  variant={active ? "secondary" : "ghost"}
+                  className={`w-full justify-start gap-3 ${active ? "bg-primary/20 text-primary font-medium" : ""}`}
+                  onClick={() => { navigate(item.path); setOpen(false); }}
+                  data-testid={`nav-${item.path.split('/').pop()}`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                  {active && <ChevronRight className="w-4 h-4 ml-auto" />}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-xs text-muted-foreground mb-2 px-2">{t("admin.aiKnowledge")}</p>
+          <div className="space-y-1">
+            {aiKnowledgeItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
               return (

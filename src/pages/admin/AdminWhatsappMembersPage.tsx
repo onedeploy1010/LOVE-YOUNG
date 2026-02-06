@@ -17,13 +17,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   UserPlus,
   Search,
   Plus,
@@ -34,19 +27,25 @@ import {
   Users,
   CheckCircle,
   Loader2,
+  ShoppingCart,
+  ExternalLink,
 } from "lucide-react";
 
-interface WhatsappRegistration {
+interface WhatsappMember {
   id: string;
-  customer_phone: string;
-  customer_name: string | null;
+  name: string;
+  phone: string;
   email: string | null;
-  member_id: string | null;
-  conversation_id: string | null;
-  registration_source: string;
-  status: string;
-  metadata: unknown;
-  created_at: string;
+  role: string;
+  points_balance: number | null;
+  preferred_flavor: string | null;
+  preferred_package: string | null;
+  referral_code: string | null;
+  referrer_id: string | null;
+  whatsapp_phone: string | null;
+  registration_source: string | null;
+  whatsapp_conversation_id: string | null;
+  created_at: string | null;
 }
 
 export default function AdminWhatsappMembersPage() {
@@ -57,51 +56,91 @@ export default function AdminWhatsappMembersPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [selectedRegistration, setSelectedRegistration] = useState<WhatsappRegistration | null>(null);
+  const [selectedMember, setSelectedMember] = useState<WhatsappMember | null>(null);
 
   // Manual registration form state
   const [formPhone, setFormPhone] = useState("");
   const [formName, setFormName] = useState("");
   const [formEmail, setFormEmail] = useState("");
-  const [formSource, setFormSource] = useState("manual");
 
-  // Fetch registrations
-  const { data: registrations = [], isLoading } = useQuery({
-    queryKey: ["admin-whatsapp-registrations"],
+  // Fetch members from main members table filtered by WhatsApp source
+  const { data: members = [], isLoading } = useQuery({
+    queryKey: ["admin-whatsapp-members"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("whatsapp_registrations")
+        .from("members")
         .select("*")
+        .or("registration_source.eq.whatsapp,whatsapp_phone.not.is.null")
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetching whatsapp registrations:", error);
+        console.error("Error fetching whatsapp members:", error);
         return [];
       }
 
-      return (data || []) as WhatsappRegistration[];
+      return (data || []) as WhatsappMember[];
     },
   });
 
-  // Create registration mutation
-  const createRegistrationMutation = useMutation({
+  // Fetch order counts per member phone
+  const { data: orderCounts = {} } = useQuery({
+    queryKey: ["admin-whatsapp-members-orders"],
+    queryFn: async () => {
+      const phones = members.map((m) => m.phone).filter(Boolean);
+      if (phones.length === 0) return {};
+      const { data, error } = await supabase
+        .from("orders")
+        .select("customer_phone")
+        .in("customer_phone", phones);
+      if (error) return {};
+      const counts: Record<string, number> = {};
+      (data || []).forEach((o: { customer_phone: string }) => {
+        counts[o.customer_phone] = (counts[o.customer_phone] || 0) + 1;
+      });
+      return counts;
+    },
+    enabled: members.length > 0,
+  });
+
+  // Fetch partner status per member
+  const { data: partnerMap = {} } = useQuery({
+    queryKey: ["admin-whatsapp-members-partners"],
+    queryFn: async () => {
+      const memberIds = members.map((m) => m.id);
+      if (memberIds.length === 0) return {};
+      const { data, error } = await supabase
+        .from("partners")
+        .select("member_id, status, tier")
+        .in("member_id", memberIds);
+      if (error) return {};
+      const map: Record<string, { status: string; tier: string }> = {};
+      (data || []).forEach((p: { member_id: string; status: string; tier: string }) => {
+        map[p.member_id] = { status: p.status, tier: p.tier };
+      });
+      return map;
+    },
+    enabled: members.length > 0,
+  });
+
+  // Create member mutation
+  const createMemberMutation = useMutation({
     mutationFn: async (data: {
-      customer_phone: string;
-      customer_name: string;
+      phone: string;
+      name: string;
       email: string;
-      registration_source: string;
     }) => {
-      const { error } = await supabase.from("whatsapp_registrations").insert({
-        customer_phone: data.customer_phone,
-        customer_name: data.customer_name || null,
+      const { error } = await supabase.from("members").insert({
+        phone: data.phone,
+        name: data.name || data.phone,
         email: data.email || null,
-        registration_source: data.registration_source,
-        status: "pending",
+        role: "member",
+        registration_source: "whatsapp",
+        whatsapp_phone: data.phone,
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-whatsapp-registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-whatsapp-members"] });
       setShowAddDialog(false);
       resetForm();
       toast({ title: t("admin.whatsappMembersPage.createSuccess") });
@@ -115,19 +154,19 @@ export default function AdminWhatsappMembersPage() {
     },
   });
 
-  // Delete registration mutation
-  const deleteRegistrationMutation = useMutation({
+  // Delete member mutation
+  const deleteMemberMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from("whatsapp_registrations")
+        .from("members")
         .delete()
         .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-whatsapp-registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-whatsapp-members"] });
       setShowDetailDialog(false);
-      setSelectedRegistration(null);
+      setSelectedMember(null);
       toast({ title: t("admin.whatsappMembersPage.deleteSuccess") });
     },
     onError: (error) => {
@@ -143,7 +182,6 @@ export default function AdminWhatsappMembersPage() {
     setFormPhone("");
     setFormName("");
     setFormEmail("");
-    setFormSource("manual");
   };
 
   const handleOpenAdd = () => {
@@ -159,66 +197,59 @@ export default function AdminWhatsappMembersPage() {
       });
       return;
     }
-    createRegistrationMutation.mutate({
-      customer_phone: formPhone.trim(),
-      customer_name: formName.trim(),
+    createMemberMutation.mutate({
+      phone: formPhone.trim(),
+      name: formName.trim(),
       email: formEmail.trim(),
-      registration_source: formSource,
     });
   };
 
-  const handleViewDetail = (registration: WhatsappRegistration) => {
-    setSelectedRegistration(registration);
+  const handleViewDetail = (member: WhatsappMember) => {
+    setSelectedMember(member);
     setShowDetailDialog(true);
   };
 
   const handleDelete = (id: string) => {
-    deleteRegistrationMutation.mutate(id);
+    deleteMemberMutation.mutate(id);
   };
 
   // Filter logic
-  const filteredRegistrations = registrations.filter((reg) => {
+  const filteredMembers = members.filter((m) => {
     const matchesSearch =
       searchQuery === "" ||
-      reg.customer_phone.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (reg.customer_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (reg.email || "").toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesTab = activeTab === "all" || reg.status === activeTab;
-    return matchesSearch && matchesTab;
+      m.phone.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (m.email || "").toLowerCase().includes(searchQuery.toLowerCase());
+    if (activeTab === "all") return matchesSearch;
+    if (activeTab === "partner") return matchesSearch && !!partnerMap[m.id];
+    if (activeTab === "with_orders") return matchesSearch && (orderCounts[m.phone] || 0) > 0;
+    if (activeTab === "new") return matchesSearch && !partnerMap[m.id] && (orderCounts[m.phone] || 0) === 0;
+    return matchesSearch;
   });
 
   // Stats
-  const totalCount = registrations.length;
-  const completedCount = registrations.filter((r) => r.status === "completed").length;
-  const pendingCount = registrations.filter((r) => r.status === "pending").length;
-  const conversionRate = totalCount > 0 ? ((completedCount / totalCount) * 100).toFixed(1) : "0.0";
+  const totalCount = members.length;
+  const withOrdersCount = members.filter((m) => (orderCounts[m.phone] || 0) > 0).length;
+  const partnerCount = members.filter((m) => !!partnerMap[m.id]).length;
+  const conversionRate = totalCount > 0 ? ((withOrdersCount / totalCount) * 100).toFixed(1) : "0.0";
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "pending":
-        return (
-          <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
-            {t("admin.whatsappMembersPage.statusPending")}
-          </Badge>
-        );
-      case "completed":
-        return (
-          <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
-            {t("admin.whatsappMembersPage.statusCompleted")}
-          </Badge>
-        );
-      case "failed":
-        return (
-          <Badge className="bg-red-500/10 text-red-600 border-red-500/20">
-            {t("admin.whatsappMembersPage.statusFailed")}
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+  const getRoleBadge = (member: WhatsappMember) => {
+    const partner = partnerMap[member.id];
+    if (partner) {
+      return (
+        <Badge className="bg-purple-500/10 text-purple-600 border-purple-500/20">
+          Partner ({partner.tier})
+        </Badge>
+      );
     }
+    return (
+      <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">
+        {t("admin.whatsappMembersPage.statusCompleted")}
+      </Badge>
+    );
   };
 
-  const getSourceBadge = (source: string) => {
+  const getSourceBadge = (source: string | null) => {
     switch (source) {
       case "whatsapp":
         return <Badge variant="secondary">WhatsApp</Badge>;
@@ -231,7 +262,7 @@ export default function AdminWhatsappMembersPage() {
           </Badge>
         );
       default:
-        return <Badge variant="outline">{source}</Badge>;
+        return <Badge variant="outline">{source || "WhatsApp"}</Badge>;
     }
   };
 
@@ -257,9 +288,9 @@ export default function AdminWhatsappMembersPage() {
 
   const tabs = [
     { value: "all", label: t("admin.whatsappMembersPage.tabAll") },
-    { value: "pending", label: t("admin.whatsappMembersPage.statusPending") },
-    { value: "completed", label: t("admin.whatsappMembersPage.statusCompleted") },
-    { value: "failed", label: t("admin.whatsappMembersPage.statusFailed") },
+    { value: "with_orders", label: t("admin.whatsappMembersPage.withOrders") || "With Orders" },
+    { value: "partner", label: t("admin.whatsappMembersPage.partners") || "Partners" },
+    { value: "new", label: t("admin.whatsappMembersPage.newMembers") || "New" },
   ];
 
   if (isLoading) {
@@ -312,25 +343,25 @@ export default function AdminWhatsappMembersPage() {
           <Card>
             <CardContent className="p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
-                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
+                <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
               </div>
               <div className="min-w-0">
-                <p className="text-lg sm:text-2xl font-bold text-green-500">{completedCount}</p>
+                <p className="text-lg sm:text-2xl font-bold text-green-500">{withOrdersCount}</p>
                 <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                  {t("admin.whatsappMembersPage.completedCount")}
+                  {t("admin.whatsappMembersPage.withOrders") || "With Orders"}
                 </p>
               </div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-yellow-500/10 flex items-center justify-center shrink-0">
-                <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" />
               </div>
               <div className="min-w-0">
-                <p className="text-lg sm:text-2xl font-bold text-yellow-500">{pendingCount}</p>
+                <p className="text-lg sm:text-2xl font-bold text-purple-500">{partnerCount}</p>
                 <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                  {t("admin.whatsappMembersPage.pendingCount")}
+                  {t("admin.whatsappMembersPage.partners") || "Partners"}
                 </p>
               </div>
             </CardContent>
@@ -386,8 +417,8 @@ export default function AdminWhatsappMembersPage() {
               ))}
             </div>
 
-            {/* Registration List */}
-            {filteredRegistrations.length === 0 ? (
+            {/* Member List */}
+            {filteredMembers.length === 0 ? (
               <div className="text-center py-12">
                 <UserPlus className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
                 <p className="text-muted-foreground">
@@ -396,9 +427,9 @@ export default function AdminWhatsappMembersPage() {
               </div>
             ) : (
               <div className="space-y-2 sm:space-y-3">
-                {filteredRegistrations.map((reg) => (
+                {filteredMembers.map((member) => (
                   <div
-                    key={reg.id}
+                    key={member.id}
                     className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-3"
                   >
                     <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
@@ -408,25 +439,29 @@ export default function AdminWhatsappMembersPage() {
                       <div className="min-w-0 space-y-1">
                         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                           <span className="font-medium text-sm sm:text-base truncate">
-                            {reg.customer_phone}
+                            {member.name}
                           </span>
-                          {getSourceBadge(reg.registration_source)}
-                          {getStatusBadge(reg.status)}
+                          {getSourceBadge(member.registration_source)}
+                          {getRoleBadge(member)}
                         </div>
                         <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground flex-wrap">
-                          {reg.customer_name && (
-                            <span className="flex items-center gap-1 truncate">
-                              <Users className="w-3 h-3" />
-                              {reg.customer_name}
-                            </span>
-                          )}
-                          {reg.email && (
+                          <span className="flex items-center gap-1">
+                            <Phone className="w-3 h-3" />
+                            {member.phone}
+                          </span>
+                          {member.email && (
                             <span className="flex items-center gap-1 truncate">
                               <Mail className="w-3 h-3" />
-                              {reg.email}
+                              {member.email}
                             </span>
                           )}
-                          <span className="shrink-0">{formatDate(reg.created_at)}</span>
+                          {(orderCounts[member.phone] || 0) > 0 && (
+                            <span className="flex items-center gap-1">
+                              <ShoppingCart className="w-3 h-3" />
+                              {orderCounts[member.phone]} orders
+                            </span>
+                          )}
+                          <span className="shrink-0">{formatDate(member.created_at)}</span>
                         </div>
                       </div>
                     </div>
@@ -435,7 +470,7 @@ export default function AdminWhatsappMembersPage() {
                         variant="outline"
                         size="sm"
                         className="gap-1 h-8"
-                        onClick={() => handleViewDetail(reg)}
+                        onClick={() => handleViewDetail(member)}
                       >
                         <Eye className="w-4 h-4" />
                         <span className="hidden sm:inline">
@@ -446,7 +481,7 @@ export default function AdminWhatsappMembersPage() {
                         variant="outline"
                         size="sm"
                         className="gap-1 h-8 text-destructive hover:text-destructive"
-                        onClick={() => handleDelete(reg.id)}
+                        onClick={() => handleDelete(member.id)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -472,25 +507,25 @@ export default function AdminWhatsappMembersPage() {
             </DialogDescription>
           </DialogHeader>
 
-          {selectedRegistration && (
+          {selectedMember && (
             <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <div className="space-y-0.5 sm:space-y-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
-                    <Phone className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                    {t("admin.whatsappMembersPage.phone")}
-                  </p>
-                  <p className="font-medium text-sm sm:text-base">
-                    {selectedRegistration.customer_phone}
-                  </p>
-                </div>
                 <div className="space-y-0.5 sm:space-y-1">
                   <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
                     <Users className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     {t("admin.whatsappMembersPage.name")}
                   </p>
                   <p className="font-medium text-sm sm:text-base truncate">
-                    {selectedRegistration.customer_name || "-"}
+                    {selectedMember.name}
+                  </p>
+                </div>
+                <div className="space-y-0.5 sm:space-y-1">
+                  <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
+                    <Phone className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    {t("admin.whatsappMembersPage.phone")}
+                  </p>
+                  <p className="font-medium text-sm sm:text-base">
+                    {selectedMember.phone}
                   </p>
                 </div>
                 <div className="space-y-0.5 sm:space-y-1">
@@ -499,76 +534,83 @@ export default function AdminWhatsappMembersPage() {
                     {t("admin.whatsappMembersPage.email")}
                   </p>
                   <p className="font-medium text-sm sm:text-base truncate">
-                    {selectedRegistration.email || "-"}
+                    {selectedMember.email || "-"}
                   </p>
                 </div>
                 <div className="space-y-0.5 sm:space-y-1">
                   <p className="text-xs sm:text-sm text-muted-foreground">
                     {t("admin.whatsappMembersPage.status")}
                   </p>
-                  {getStatusBadge(selectedRegistration.status)}
+                  {getRoleBadge(selectedMember)}
                 </div>
                 <div className="space-y-0.5 sm:space-y-1">
                   <p className="text-xs sm:text-sm text-muted-foreground">
                     {t("admin.whatsappMembersPage.source")}
                   </p>
-                  {getSourceBadge(selectedRegistration.registration_source)}
+                  {getSourceBadge(selectedMember.registration_source)}
                 </div>
                 <div className="space-y-0.5 sm:space-y-1">
                   <p className="text-xs sm:text-sm text-muted-foreground">
                     {t("admin.whatsappMembersPage.createdAt")}
                   </p>
                   <p className="font-medium text-sm sm:text-base">
-                    {formatDateTime(selectedRegistration.created_at)}
+                    {formatDateTime(selectedMember.created_at)}
                   </p>
                 </div>
               </div>
 
-              {selectedRegistration.conversation_id && (
+              {/* Order count info */}
+              {(orderCounts[selectedMember.phone] || 0) > 0 && (
+                <div className="p-3 sm:p-4 border rounded-lg bg-blue-500/5 border-blue-500/20">
+                  <div className="flex items-center gap-2">
+                    <ShoppingCart className="w-5 h-5 text-blue-500 shrink-0" />
+                    <div>
+                      <p className="font-medium text-sm sm:text-base">
+                        {orderCounts[selectedMember.phone]} {t("admin.whatsappMembersPage.totalOrders") || "Total Orders"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Partner info */}
+              {partnerMap[selectedMember.id] && (
+                <div className="p-3 sm:p-4 border rounded-lg bg-purple-500/5 border-purple-500/20">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-purple-500 shrink-0" />
+                      <div>
+                        <p className="font-medium text-sm sm:text-base">
+                          {t("admin.whatsappMembersPage.memberLinked")}
+                        </p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          Tier: {partnerMap[selectedMember.id].tier} | Status: {partnerMap[selectedMember.id].status}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* WhatsApp conversation link */}
+              {selectedMember.whatsapp_conversation_id && (
                 <div className="space-y-0.5 sm:space-y-1">
                   <p className="text-xs sm:text-sm text-muted-foreground">
                     {t("admin.whatsappMembersPage.conversationId")}
                   </p>
                   <p className="font-mono text-xs sm:text-sm bg-muted p-2.5 sm:p-3 rounded-lg break-all">
-                    {selectedRegistration.conversation_id}
+                    {selectedMember.whatsapp_conversation_id}
                   </p>
                 </div>
               )}
 
-              {selectedRegistration.member_id && (
-                <div className="p-3 sm:p-4 border rounded-lg bg-green-500/5 border-green-500/20">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                      <div>
-                        <p className="font-medium text-sm sm:text-base">
-                          {t("admin.whatsappMembersPage.memberLinked")}
-                        </p>
-                        <p className="text-xs sm:text-sm text-muted-foreground font-mono break-all">
-                          {selectedRegistration.member_id}
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="h-8 w-full sm:w-auto" asChild>
-                      <a href={`/admin/members/${selectedRegistration.member_id}`}>
-                        <Eye className="w-4 h-4 mr-1" />
-                        {t("admin.whatsappMembersPage.viewMemberProfile")}
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {selectedRegistration.metadata && (
-                <div className="space-y-0.5 sm:space-y-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {t("admin.whatsappMembersPage.metadata")}
-                  </p>
-                  <pre className="text-xs bg-muted p-2.5 sm:p-3 rounded-lg overflow-x-auto">
-                    {JSON.stringify(selectedRegistration.metadata, null, 2)}
-                  </pre>
-                </div>
-              )}
+              {/* View Full Profile link */}
+              <Button variant="outline" className="w-full gap-2" asChild>
+                <a href="/admin/members">
+                  <ExternalLink className="w-4 h-4" />
+                  {t("admin.whatsappMembersPage.viewMemberProfile")}
+                </a>
+              </Button>
             </div>
           )}
 
@@ -637,26 +679,6 @@ export default function AdminWhatsappMembersPage() {
                 className="h-9 sm:h-10"
               />
             </div>
-
-            <div className="space-y-1.5 sm:space-y-2">
-              <label className="text-sm font-medium">
-                {t("admin.whatsappMembersPage.source")}
-              </label>
-              <Select value={formSource} onValueChange={setFormSource}>
-                <SelectTrigger className="h-9 sm:h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                  <SelectItem value="manual">
-                    {t("admin.whatsappMembersPage.sourceManual")}
-                  </SelectItem>
-                  <SelectItem value="referral">
-                    {t("admin.whatsappMembersPage.sourceReferral")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 pt-2">
@@ -670,10 +692,10 @@ export default function AdminWhatsappMembersPage() {
             </Button>
             <Button
               onClick={handleSubmitAdd}
-              disabled={createRegistrationMutation.isPending}
+              disabled={createMemberMutation.isPending}
               className="w-full sm:w-auto"
             >
-              {createRegistrationMutation.isPending && (
+              {createMemberMutation.isPending && (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               )}
               {t("admin.whatsappMembersPage.confirm")}
