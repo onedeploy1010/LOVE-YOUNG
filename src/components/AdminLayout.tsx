@@ -29,7 +29,17 @@ import {
   ChevronRight,
   LogOut,
   Shield,
-  Loader2
+  Loader2,
+  Megaphone,
+  BookOpen,
+  Calendar,
+  Target,
+  BarChart3,
+  MessageSquare,
+  ShoppingBag,
+  UserPlus,
+  Bot,
+  Send
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -57,6 +67,21 @@ const getErpItems = (t: (key: string) => string) => [
   { path: "/admin/finance", label: t("admin.menu.finance"), icon: DollarSign },
 ];
 
+const getMarketingItems = (t: (key: string) => string) => [
+  { path: "/admin/marketing/meta-ads", label: t("admin.menu.metaAds"), icon: Megaphone },
+  { path: "/admin/marketing/xiaohongshu", label: t("admin.menu.xiaohongshu"), icon: BookOpen },
+  { path: "/admin/marketing/media-plan", label: t("admin.menu.mediaPlan"), icon: Calendar },
+  { path: "/admin/marketing/ad-placement", label: t("admin.menu.adPlacement"), icon: Target },
+  { path: "/admin/marketing/reports", label: t("admin.menu.performanceReports"), icon: BarChart3 },
+];
+
+const getWhatsappItems = (t: (key: string) => string) => [
+  { path: "/admin/whatsapp/config", label: t("admin.menu.whatsappConfig"), icon: MessageSquare },
+  { path: "/admin/whatsapp/orders", label: t("admin.menu.whatsappOrders"), icon: ShoppingBag },
+  { path: "/admin/whatsapp/members", label: t("admin.menu.whatsappMembers"), icon: UserPlus },
+  { path: "/admin/whatsapp/ai-service", label: t("admin.menu.aiCustomerService"), icon: Bot },
+];
+
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [location, navigate] = useLocation();
   const [open, setOpen] = useState(false);
@@ -65,7 +90,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const coreItems = useMemo(() => getCoreItems(t), [t]);
   const erpItems = useMemo(() => getErpItems(t), [t]);
-  const allItems = useMemo(() => [...coreItems, ...erpItems], [coreItems, erpItems]);
+  const marketingItems = useMemo(() => getMarketingItems(t), [t]);
+  const whatsappItems = useMemo(() => getWhatsappItems(t), [t]);
+  const allItems = useMemo(() => [...coreItems, ...erpItems, ...marketingItems, ...whatsappItems], [coreItems, erpItems, marketingItems, whatsappItems]);
 
   const isActive = (path: string) => location === path;
 

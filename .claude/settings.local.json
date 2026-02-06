@@ -41,7 +41,14 @@
       "Bash(SUPABASE_ACCESS_TOKEN=sbp_c1a99ecf071a9c81900fcd69a7c6591af6b94a51 npx supabase db push:*)",
       "Bash(SUPABASE_ACCESS_TOKEN=sbp_c1a99ecf071a9c81900fcd69a7c6591af6b94a51 npx supabase:*)",
       "Bash(DATABASE_URL=\"postgresql://postgres:loveyoung520888@db.vpzmhglfwomgrashheol.supabase.co:5432/postgres\" psql \"$DATABASE_URL\" -c \"\\\\d purchase_orders\")",
-      "Bash(DATABASE_URL=\"postgresql://postgres:loveyoung520888@db.vpzmhglfwomgrashheol.supabase.co:5432/postgres\" psql \"$DATABASE_URL\" -f /home/tgtgdeploy/work/LOVE-YOUNG/supabase/migrations/016_purchase_workflow.sql)"
+      "Bash(DATABASE_URL=\"postgresql://postgres:loveyoung520888@db.vpzmhglfwomgrashheol.supabase.co:5432/postgres\" psql \"$DATABASE_URL\" -f /home/tgtgdeploy/work/LOVE-YOUNG/supabase/migrations/016_purchase_workflow.sql)",
+      "Bash(for:*)",
+      "Bash(do)",
+      "Bash(if [ -f \"$f\" ])",
+      "Bash(then)",
+      "Bash(else)",
+      "Bash(fi)",
+      "Bash(wc:*)"
     ]
   }
 }

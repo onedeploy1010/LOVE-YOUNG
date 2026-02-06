@@ -189,57 +189,57 @@ export default function AdminOrdersPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-4">
           <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold">{stats.total}</p>
-              <p className="text-sm text-muted-foreground">{t("admin.ordersPage.totalOrders")}</p>
+            <CardContent className="p-2 sm:p-4 text-center">
+              <p className="text-lg sm:text-2xl font-bold">{stats.total}</p>
+              <p className="text-[10px] sm:text-sm text-muted-foreground truncate">{t("admin.ordersPage.totalOrders")}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-yellow-500">{stats.pending}</p>
-              <p className="text-sm text-muted-foreground">{t("admin.ordersPage.pendingPayment")}</p>
+            <CardContent className="p-2 sm:p-4 text-center">
+              <p className="text-lg sm:text-2xl font-bold text-yellow-500">{stats.pending}</p>
+              <p className="text-[10px] sm:text-sm text-muted-foreground truncate">{t("admin.ordersPage.pendingPayment")}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-blue-500">{stats.processing}</p>
-              <p className="text-sm text-muted-foreground">{t("admin.ordersPage.preparing")}</p>
+            <CardContent className="p-2 sm:p-4 text-center">
+              <p className="text-lg sm:text-2xl font-bold text-blue-500">{stats.processing}</p>
+              <p className="text-[10px] sm:text-sm text-muted-foreground truncate">{t("admin.ordersPage.preparing")}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-primary">{stats.shipped}</p>
-              <p className="text-sm text-muted-foreground">{t("admin.ordersPage.shipping")}</p>
+            <CardContent className="p-2 sm:p-4 text-center">
+              <p className="text-lg sm:text-2xl font-bold text-primary">{stats.shipped}</p>
+              <p className="text-[10px] sm:text-sm text-muted-foreground truncate">{t("admin.ordersPage.shipping")}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-green-500">{stats.delivered}</p>
-              <p className="text-sm text-muted-foreground">{t("admin.ordersPage.completed")}</p>
+            <CardContent className="p-2 sm:p-4 text-center">
+              <p className="text-lg sm:text-2xl font-bold text-green-500">{stats.delivered}</p>
+              <p className="text-[10px] sm:text-sm text-muted-foreground truncate">{t("admin.ordersPage.completed")}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-muted-foreground">{stats.cancelled}</p>
-              <p className="text-sm text-muted-foreground">{t("admin.ordersPage.cancelled")}</p>
+            <CardContent className="p-2 sm:p-4 text-center">
+              <p className="text-lg sm:text-2xl font-bold text-muted-foreground">{stats.cancelled}</p>
+              <p className="text-[10px] sm:text-sm text-muted-foreground truncate">{t("admin.ordersPage.cancelled")}</p>
             </CardContent>
           </Card>
         </div>
 
         <Card>
-          <CardHeader>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingCart className="w-5 h-5 text-primary" />
+          <CardHeader className="p-4 sm:p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 {t("admin.ordersPage.orderList")}
               </CardTitle>
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder={t("admin.ordersPage.searchPlaceholder")}
-                  className="pl-9"
+                  className="pl-9 h-9 sm:h-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   data-testid="input-search"
@@ -247,20 +247,35 @@ export default function AdminOrdersPage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <div className="overflow-x-auto -mx-1 px-1">
-                <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-6">
-                  <TabsTrigger value="all" className="flex-1 md:flex-none" data-testid="tab-all">{t("admin.ordersPage.tabAll")}</TabsTrigger>
-                  <TabsTrigger value="pending" className="flex-1 md:flex-none" data-testid="tab-pending">{t("admin.ordersPage.pendingPayment")}</TabsTrigger>
-                  <TabsTrigger value="processing" className="flex-1 md:flex-none" data-testid="tab-processing">{t("admin.ordersPage.preparing")}</TabsTrigger>
-                  <TabsTrigger value="shipped" className="flex-1 md:flex-none" data-testid="tab-shipped">{t("admin.ordersPage.shipping")}</TabsTrigger>
-                  <TabsTrigger value="delivered" className="flex-1 md:flex-none" data-testid="tab-delivered">{t("admin.ordersPage.completed")}</TabsTrigger>
-                  <TabsTrigger value="cancelled" className="flex-1 md:flex-none" data-testid="tab-cancelled">{t("admin.ordersPage.cancelled")}</TabsTrigger>
+              <div className="overflow-x-auto -mx-1 px-1 pb-1">
+                <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-6 h-auto p-1">
+                  <TabsTrigger value="all" className="flex-1 md:flex-none text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3" data-testid="tab-all">{t("admin.ordersPage.tabAll")}</TabsTrigger>
+                  <TabsTrigger value="pending" className="flex-1 md:flex-none text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3 whitespace-nowrap" data-testid="tab-pending">
+                    <span className="hidden sm:inline">{t("admin.ordersPage.pendingPayment")}</span>
+                    <span className="sm:hidden">待付</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="processing" className="flex-1 md:flex-none text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3 whitespace-nowrap" data-testid="tab-processing">
+                    <span className="hidden sm:inline">{t("admin.ordersPage.preparing")}</span>
+                    <span className="sm:hidden">处理</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="shipped" className="flex-1 md:flex-none text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3 whitespace-nowrap" data-testid="tab-shipped">
+                    <span className="hidden sm:inline">{t("admin.ordersPage.shipping")}</span>
+                    <span className="sm:hidden">发货</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="delivered" className="flex-1 md:flex-none text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3 whitespace-nowrap" data-testid="tab-delivered">
+                    <span className="hidden sm:inline">{t("admin.ordersPage.completed")}</span>
+                    <span className="sm:hidden">完成</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="cancelled" className="flex-1 md:flex-none text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3 whitespace-nowrap" data-testid="tab-cancelled">
+                    <span className="hidden sm:inline">{t("admin.ordersPage.cancelled")}</span>
+                    <span className="sm:hidden">取消</span>
+                  </TabsTrigger>
                 </TabsList>
               </div>
 
-              <TabsContent value={activeTab} className="mt-4">
+              <TabsContent value={activeTab} className="mt-3 sm:mt-4">
                 {isLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -271,7 +286,7 @@ export default function AdminOrdersPage() {
                     <p className="text-muted-foreground">{t("admin.ordersPage.noOrders")}</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {filteredOrders.map((order) => {
                       const statusConfig = getStatusConfig(order.status);
                       const StatusIcon = statusConfig.icon;
@@ -279,37 +294,53 @@ export default function AdminOrdersPage() {
                       return (
                         <div
                           key={order.id}
-                          className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                          className="p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                           data-testid={`order-${order.orderNumber}`}
                         >
-                          <div className="flex items-center gap-3 md:gap-4">
-                            <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${statusConfig.bg}`}>
-                              <StatusIcon className={`w-5 h-5 ${statusConfig.color}`} />
+                          {/* Mobile: 2-row layout, Desktop: single row */}
+                          <div className="flex items-start sm:items-center gap-2.5 sm:gap-4">
+                            <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full shrink-0 flex items-center justify-center ${statusConfig.bg}`}>
+                              <StatusIcon className={`w-4 h-4 sm:w-5 sm:h-5 ${statusConfig.color}`} />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-                                <span className="font-mono text-sm font-medium">#{order.orderNumber}</span>
-                                <Badge variant="outline">{statusConfig.label}</Badge>
+                              <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+                                <span className="font-mono text-xs sm:text-sm font-medium">#{order.orderNumber}</span>
+                                <Badge variant="outline" className="text-[10px] sm:text-xs h-5 sm:h-6">{statusConfig.label}</Badge>
                               </div>
-                              <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-muted-foreground mt-0.5">
-                                <span className="truncate max-w-[120px] md:max-w-none">{order.customerName}</span>
+                              <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-0.5 text-xs sm:text-sm text-muted-foreground mt-0.5">
+                                <span className="truncate max-w-[100px] sm:max-w-[150px] md:max-w-none">{order.customerName}</span>
                                 <span>{items.length} {t("admin.ordersPage.items")}</span>
-                                <span className="hidden sm:inline">{formatDate(order.createdAt)}</span>
+                                <span className="hidden md:inline">{formatDate(order.createdAt)}</span>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-                              <span className="font-bold text-primary text-sm md:text-base">{formatPrice(order.totalAmount)}</span>
+                            {/* Desktop: price and button inline */}
+                            <div className="hidden sm:flex items-center gap-3 sm:gap-4 shrink-0">
+                              <span className="font-bold text-primary text-sm sm:text-base">{formatPrice(order.totalAmount)}</span>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="gap-1"
+                                className="gap-1 h-8"
                                 onClick={() => handleViewDetails(order)}
                                 data-testid={`button-view-${order.orderNumber}`}
                               >
                                 <Eye className="w-4 h-4" />
-                                <span className="hidden sm:inline">{t("admin.ordersPage.viewDetails")}</span>
+                                <span className="hidden md:inline">{t("admin.ordersPage.viewDetails")}</span>
                               </Button>
                             </div>
+                          </div>
+                          {/* Mobile: second row with price and button */}
+                          <div className="flex sm:hidden items-center justify-between mt-2 pl-[46px]">
+                            <span className="font-bold text-primary text-sm">{formatPrice(order.totalAmount)}</span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-1 h-7 text-xs"
+                              onClick={() => handleViewDetails(order)}
+                              data-testid={`button-view-mobile-${order.orderNumber}`}
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              详情
+                            </Button>
                           </div>
                         </div>
                       );
@@ -324,94 +355,96 @@ export default function AdminOrdersPage() {
 
       {/* Order Details Dialog */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle>Order Details - #{selectedOrder?.orderNumber}</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">订单详情 - #{selectedOrder?.orderNumber}</DialogTitle>
           </DialogHeader>
           {selectedOrder && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Status Update */}
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground">Status:</span>
-                <Select
-                  value={selectedOrder.status}
-                  onValueChange={(value) => handleStatusChange(selectedOrder.id, value, selectedOrder)}
-                >
-                  <SelectTrigger className="w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending_payment">Pending Payment</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="confirmed">Confirmed</SelectItem>
-                    <SelectItem value="processing">Processing</SelectItem>
-                    <SelectItem value="shipped">Shipped</SelectItem>
-                    <SelectItem value="delivered">Delivered</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-                {updateStatusMutation.isPending && (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                )}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                <span className="text-sm text-muted-foreground">状态:</span>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={selectedOrder.status}
+                    onValueChange={(value) => handleStatusChange(selectedOrder.id, value, selectedOrder)}
+                  >
+                    <SelectTrigger className="w-full sm:w-48 h-9 sm:h-10">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending_payment">待付款</SelectItem>
+                      <SelectItem value="pending">待处理</SelectItem>
+                      <SelectItem value="confirmed">已确认</SelectItem>
+                      <SelectItem value="processing">处理中</SelectItem>
+                      <SelectItem value="shipped">已发货</SelectItem>
+                      <SelectItem value="delivered">已完成</SelectItem>
+                      <SelectItem value="cancelled">已取消</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {updateStatusMutation.isPending && (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  )}
+                </div>
               </div>
 
               {/* Customer Info */}
-              <Card className="p-4">
-                <h4 className="font-semibold mb-3">Customer Information</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+              <Card className="p-3 sm:p-4">
+                <h4 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">客户信息</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
                   <div>
-                    <span className="text-muted-foreground">Name:</span>
+                    <span className="text-muted-foreground">姓名:</span>
                     <span className="ml-2 font-medium">{selectedOrder.customerName}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Phone:</span>
+                    <span className="text-muted-foreground">电话:</span>
                     <span className="ml-2 font-medium">{selectedOrder.customerPhone}</span>
                   </div>
                   {selectedOrder.customerEmail && (
-                    <div className="col-span-2">
-                      <span className="text-muted-foreground">Email:</span>
-                      <span className="ml-2 font-medium">{selectedOrder.customerEmail}</span>
+                    <div className="col-span-1 sm:col-span-2">
+                      <span className="text-muted-foreground">邮箱:</span>
+                      <span className="ml-2 font-medium break-all">{selectedOrder.customerEmail}</span>
                     </div>
                   )}
                 </div>
               </Card>
 
               {/* Shipping Address */}
-              <Card className="p-4">
-                <h4 className="font-semibold mb-3">Shipping Address</h4>
-                <p className="text-sm">
+              <Card className="p-3 sm:p-4">
+                <h4 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">收货地址</h4>
+                <p className="text-xs sm:text-sm">
                   {selectedOrder.shippingAddress}<br />
                   {selectedOrder.shippingPostcode} {selectedOrder.shippingCity}<br />
                   {selectedOrder.shippingState}
                 </p>
                 {selectedOrder.preferredDeliveryDate && (
-                  <p className="text-sm mt-2 text-muted-foreground">
-                    Preferred delivery: {selectedOrder.preferredDeliveryDate}
+                  <p className="text-xs sm:text-sm mt-2 text-muted-foreground">
+                    期望送达: {selectedOrder.preferredDeliveryDate}
                   </p>
                 )}
               </Card>
 
               {/* Order Items */}
-              <Card className="p-4">
-                <h4 className="font-semibold mb-3">Order Items</h4>
+              <Card className="p-3 sm:p-4">
+                <h4 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">订单商品</h4>
                 <div className="space-y-2">
                   {parseItems(selectedOrder.items).map((item: { flavorName: string; quantity: number; category: string }, index: number) => (
-                    <div key={index} className="flex justify-between text-sm">
-                      <span>{item.flavorName}</span>
-                      <span className="text-muted-foreground">x {item.quantity}</span>
+                    <div key={index} className="flex justify-between text-xs sm:text-sm gap-2">
+                      <span className="truncate">{item.flavorName}</span>
+                      <span className="text-muted-foreground shrink-0">x {item.quantity}</span>
                     </div>
                   ))}
                 </div>
-                <div className="border-t mt-4 pt-4 flex justify-between font-semibold">
-                  <span>Total</span>
+                <div className="border-t mt-3 sm:mt-4 pt-3 sm:pt-4 flex justify-between font-semibold text-sm sm:text-base">
+                  <span>总计</span>
                   <span className="text-primary">{formatPrice(selectedOrder.totalAmount)}</span>
                 </div>
               </Card>
 
               {/* Timestamps */}
-              <div className="text-xs text-muted-foreground">
-                <p>Created: {formatDate(selectedOrder.createdAt)}</p>
-                <p>Updated: {formatDate(selectedOrder.updatedAt)}</p>
+              <div className="text-[10px] sm:text-xs text-muted-foreground">
+                <p>创建时间: {formatDate(selectedOrder.createdAt)}</p>
+                <p>更新时间: {formatDate(selectedOrder.updatedAt)}</p>
               </div>
             </div>
           )}

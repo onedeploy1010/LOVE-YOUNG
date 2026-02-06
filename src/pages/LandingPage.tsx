@@ -212,14 +212,14 @@ export default function LandingPage() {
           >
             <Button
               size="lg"
-              className="bg-secondary text-secondary-foreground rounded-full px-6 sm:px-8 lg:px-10 text-base sm:text-lg whitespace-nowrap"
+              className="bg-gradient-to-r from-red-600 via-red-500 to-amber-500 hover:from-red-500 hover:via-red-400 hover:to-amber-400 text-white font-bold rounded-full px-8 sm:px-10 lg:px-12 py-4 text-lg sm:text-xl shadow-lg shadow-red-500/30 hover:shadow-red-500/50 hover:scale-105 transition-all duration-300 whitespace-nowrap border-2 border-amber-300/50 animate-pulse"
               onClick={() => {
                 const el = document.getElementById("products");
                 if (el) el.scrollIntoView({ behavior: "smooth" });
               }}
               data-testid="button-hero-order"
             >
-              {heroButtonText}
+              🧧 {t("landing.cnyGiftBox")}
             </Button>
             <Link href="/partner">
               <Button
