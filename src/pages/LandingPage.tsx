@@ -730,7 +730,7 @@ export default function LandingPage() {
                 <div className="bg-gray-50 rounded-xl p-4">
                   <div className="flex justify-between items-center mb-4">
                     <span className="font-bold text-gray-700">{t("landing.currentPoolCycle")}</span>
-                    <span className="text-xs text-gray-500">{t("landing.daysRemaining", { days: 6 })}</span>
+                    <span className="text-xs text-gray-500">{t("landing.daysRemaining").replace("{days}", "6")}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div className="bg-gradient-to-r from-emerald-500 to-amber-500 h-3 rounded-full" style={{ width: "40%" }} />
