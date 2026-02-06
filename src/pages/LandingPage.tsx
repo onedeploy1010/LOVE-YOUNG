@@ -134,6 +134,46 @@ export default function LandingPage() {
     },
   });
 
+  // Fetch CNY gift box bundle (first hot bundle or first featured bundle)
+  const { data: cnyBundle } = useQuery({
+    queryKey: ["cny-bundle"],
+    queryFn: async () => {
+      // Try to find a hot bundle first (likely CNY special)
+      const { data: hotBundle } = await supabase
+        .from("product_bundles")
+        .select("*")
+        .eq("is_active", true)
+        .eq("is_hot", true)
+        .order("sort_order", { ascending: true })
+        .limit(1)
+        .single();
+      if (hotBundle) return hotBundle as Bundle;
+
+      // Fallback to first featured bundle
+      const { data: featuredBundle } = await supabase
+        .from("product_bundles")
+        .select("*")
+        .eq("is_active", true)
+        .eq("is_featured", true)
+        .order("sort_order", { ascending: true })
+        .limit(1)
+        .single();
+      return featuredBundle as Bundle | null;
+    },
+  });
+
+  // Handle CNY gift box order
+  const handleCnyOrder = () => {
+    if (cnyBundle) {
+      setSelectedBundle(cnyBundle);
+      setBundleModalOpen(true);
+    } else if (featuredBundles.length > 0) {
+      // Fallback to first featured bundle if no CNY bundle
+      setSelectedBundle(featuredBundles[0]);
+      setBundleModalOpen(true);
+    }
+  };
+
   const whatsappLink = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(t("landing.whatsappMessage"))}`;
 
   // Helper to get localized text
@@ -212,14 +252,11 @@ export default function LandingPage() {
           >
             <Button
               size="lg"
-              className="bg-gradient-to-r from-red-600 via-red-500 to-amber-500 hover:from-red-500 hover:via-red-400 hover:to-amber-400 text-white font-bold rounded-full px-8 sm:px-10 lg:px-12 py-4 text-lg sm:text-xl shadow-lg shadow-red-500/30 hover:shadow-red-500/50 hover:scale-105 transition-all duration-300 whitespace-nowrap border-2 border-amber-300/50 animate-pulse"
-              onClick={() => {
-                const el = document.getElementById("products");
-                if (el) el.scrollIntoView({ behavior: "smooth" });
-              }}
+              className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold rounded-full px-8 sm:px-10 py-3 text-base sm:text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 whitespace-nowrap"
+              onClick={handleCnyOrder}
               data-testid="button-hero-order"
             >
-              🧧 {t("landing.cnyGiftBox")}
+              {t("landing.cnyGiftBox")}
             </Button>
             <Link href="/partner">
               <Button

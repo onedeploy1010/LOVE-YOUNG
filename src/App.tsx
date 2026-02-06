@@ -79,6 +79,7 @@ import AdminWhatsappConfigPage from "@/pages/admin/AdminWhatsappConfigPage";
 import AdminWhatsappOrdersPage from "@/pages/admin/AdminWhatsappOrdersPage";
 import AdminWhatsappMembersPage from "@/pages/admin/AdminWhatsappMembersPage";
 import AdminAiCustomerServicePage from "@/pages/admin/AdminAiCustomerServicePage";
+import AdminSystemHealthPage from "@/pages/admin/AdminSystemHealthPage";
 
 function Router() {
   return (
@@ -231,6 +232,9 @@ function Router() {
         </Route>
         <Route path="/admin/whatsapp/ai-service">
           <AdminRoute><AdminAiCustomerServicePage /></AdminRoute>
+        </Route>
+        <Route path="/admin/system-health">
+          <AdminRoute><AdminSystemHealthPage /></AdminRoute>
         </Route>
 
         {/* 404 */}

@@ -39,7 +39,8 @@ import {
   ShoppingBag,
   UserPlus,
   Bot,
-  Send
+  Send,
+  Activity
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -56,6 +57,7 @@ const getCoreItems = (t: (key: string) => string) => [
   { path: "/admin/bonus-pool", label: t("admin.menu.bonusPool"), icon: PiggyBank },
   { path: "/admin/withdrawals", label: t("admin.menu.withdrawals"), icon: Wallet },
   { path: "/admin/site-settings", label: t("admin.menu.siteSettings"), icon: Settings },
+  { path: "/admin/system-health", label: t("admin.menu.systemHealth"), icon: Activity },
 ];
 
 const getErpItems = (t: (key: string) => string) => [

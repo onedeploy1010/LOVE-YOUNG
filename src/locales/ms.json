@@ -655,7 +655,8 @@
       "whatsappOrders": "Pesanan WhatsApp",
       "whatsappMembers": "Pendaftaran Ahli",
       "aiCustomerService": "Perkhidmatan AI",
-      "whatsappPush": "Pemberitahuan Tolak"
+      "whatsappPush": "Pemberitahuan Tolak",
+      "systemHealth": "Kesihatan Sistem"
     },
     "marketingSystem": "Pemasaran",
     "whatsappBusiness": "WhatsApp Business",
@@ -1438,6 +1439,15 @@
       "satisfaction": "Kepuasan",
       "escalated": "Dinaik Taraf",
       "testBot": "Uji Bot"
+    },
+    "systemHealthPage": {
+      "title": "Kesihatan Sistem",
+      "subtitle": "Ujian sambungan API dan konfigurasi sistem",
+      "testAll": "Uji Semua",
+      "totalConfigs": "Jumlah Konfigurasi",
+      "connected": "Disambungkan",
+      "failed": "Gagal",
+      "untested": "Belum Diuji"
     }
   },
   "member": {
