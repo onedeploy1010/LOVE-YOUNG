@@ -1442,7 +1442,8 @@
       "submitShort": "Hantar",
       "attachContent": "Lampir Kandungan",
       "browseContent": "Semak Kandungan",
-      "attachContentHint": "Pautkan kandungan pemasaran dari halaman Penciptaan Kandungan"
+      "attachContentHint": "Pautkan kandungan pemasaran dari halaman Penciptaan Kandungan",
+      "planList": "Senarai Pelan"
     },
     "performanceReportsPage": {
       "title": "Laporan Prestasi",
@@ -1789,6 +1790,11 @@
       "generate": "Jana",
       "aiGenerateSuccess": "Kandungan AI dijana",
       "aiGenerateError": "Penjanaan gagal",
+      "aiGenerateImageLabel": "Jana Imej AI",
+      "aiGenerateImageDesc": "Gunakan DALL-E 3 untuk jana imej muka depan",
+      "generatingWithImage": "Menjana (dengan imej)...",
+      "uploadSuccess": "Imej dimuat naik",
+      "uploadError": "Muat naik gagal",
       "occasion_normal": "Biasa",
       "occasion_chinese_new_year": "Tahun Baru Cina",
       "occasion_hari_raya": "Hari Raya",

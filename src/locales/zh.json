@@ -1442,7 +1442,8 @@
       "submitShort": "提交",
       "attachContent": "关联内容",
       "browseContent": "浏览内容",
-      "attachContentHint": "从内容创作页面关联营销内容"
+      "attachContentHint": "从内容创作页面关联营销内容",
+      "planList": "投放计划列表"
     },
     "performanceReportsPage": {
       "title": "投放效果报告",
@@ -1789,6 +1790,11 @@
       "generate": "生成内容",
       "aiGenerateSuccess": "AI内容已生成",
       "aiGenerateError": "生成失败",
+      "aiGenerateImageLabel": "同时生成AI图片",
+      "aiGenerateImageDesc": "使用DALL-E 3生成封面图片",
+      "generatingWithImage": "生成中(含图片)...",
+      "uploadSuccess": "图片上传成功",
+      "uploadError": "上传失败",
       "occasion_normal": "日常",
       "occasion_chinese_new_year": "农历新年",
       "occasion_hari_raya": "开斋节",

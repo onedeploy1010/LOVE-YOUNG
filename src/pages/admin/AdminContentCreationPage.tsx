@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { AdminLayout } from "@/components/AdminLayout";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
@@ -27,7 +28,7 @@ import {
 import {
   PenSquare, Search, Plus, Edit, Trash2, Loader2,
   Sparkles, Eye, Calendar, Target, Image, Hash,
-  FileText, Copy, ExternalLink,
+  FileText, Copy, ExternalLink, Upload, ImagePlus, X,
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
@@ -109,6 +110,34 @@ export default function AdminContentCreationPage() {
   const [form, setForm] = useState<ContentFormData>(emptyForm);
   const [aiForm, setAiForm] = useState<AiGenerateFormData>(emptyAiForm);
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiGenerateImage, setAiGenerateImage] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Upload image to Supabase Storage
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `uploads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage
+        .from("marketing-content")
+        .upload(fileName, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      const { data: publicUrl } = supabase.storage
+        .from("marketing-content")
+        .getPublicUrl(fileName);
+      setForm({ ...form, cover_image: publicUrl.publicUrl });
+      toast({ title: t("admin.contentCreationPage.uploadSuccess") || "图片上传成功" });
+    } catch {
+      toast({ title: t("admin.contentCreationPage.uploadError") || "上传失败", variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   // Fetch content
   const { data: contents = [], isLoading } = useQuery({
@@ -248,7 +277,7 @@ export default function AdminContentCreationPage() {
     setAiLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("ai-generate-content", {
-        body: aiForm,
+        body: { ...aiForm, generate_image: aiGenerateImage },
       });
       if (error) throw error;
       if (data) {
@@ -259,6 +288,7 @@ export default function AdminContentCreationPage() {
           hashtags: (data.hashtags || []).join(", "),
           content_type: aiForm.platform === "xiaohongshu" ? "post" : "post",
           platform: [aiForm.platform],
+          cover_image: data.generated_image_url || "",
         });
         setAiOpen(false);
         setCreateOpen(true);
@@ -377,11 +407,43 @@ export default function AdminContentCreationPage() {
       </div>
       <div>
         <label className="text-sm font-medium">{t("admin.contentCreationPage.fieldCoverImage")}</label>
-        <Input
-          value={form.cover_image}
-          onChange={(e) => setForm({ ...form, cover_image: e.target.value })}
-          placeholder={t("admin.contentCreationPage.fieldCoverImagePlaceholder")}
-        />
+        {form.cover_image && (
+          <div className="relative mb-2 w-full max-w-[200px]">
+            <img src={form.cover_image} alt="" className="w-full rounded-lg border" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+            <Button
+              variant="destructive"
+              size="icon"
+              className="absolute top-1 right-1 h-6 w-6"
+              onClick={() => setForm({ ...form, cover_image: "" })}
+            >
+              <X className="w-3 h-3" />
+            </Button>
+          </div>
+        )}
+        <div className="flex gap-2">
+          <Input
+            value={form.cover_image}
+            onChange={(e) => setForm({ ...form, cover_image: e.target.value })}
+            placeholder={t("admin.contentCreationPage.fieldCoverImagePlaceholder")}
+            className="flex-1"
+          />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageUpload}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+          >
+            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+          </Button>
+        </div>
       </div>
       <div>
         <label className="text-sm font-medium">{t("admin.contentCreationPage.fieldTags")}</label>
@@ -784,6 +846,16 @@ export default function AdminContentCreationPage() {
                 </Select>
               </div>
             </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
+              <div className="flex items-center gap-2">
+                <ImagePlus className="w-4 h-4 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">{t("admin.contentCreationPage.aiGenerateImageLabel") || "同时生成AI图片"}</p>
+                  <p className="text-xs text-muted-foreground">{t("admin.contentCreationPage.aiGenerateImageDesc") || "使用DALL-E 3生成封面图片"}</p>
+                </div>
+              </div>
+              <Switch checked={aiGenerateImage} onCheckedChange={setAiGenerateImage} />
+            </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setAiOpen(false)}>
                 {t("admin.contentCreationPage.cancel")}
@@ -794,7 +866,7 @@ export default function AdminContentCreationPage() {
                 ) : (
                   <Sparkles className="w-4 h-4 mr-2" />
                 )}
-                {t("admin.contentCreationPage.generate")}
+                {aiLoading && aiGenerateImage ? (t("admin.contentCreationPage.generatingWithImage") || "生成中(含图片)...") : t("admin.contentCreationPage.generate")}
               </Button>
             </DialogFooter>
           </DialogContent>

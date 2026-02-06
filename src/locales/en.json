@@ -1442,7 +1442,8 @@
       "submitShort": "Submit",
       "attachContent": "Attach Content",
       "browseContent": "Browse Content",
-      "attachContentHint": "Link marketing content from the Content Creation page"
+      "attachContentHint": "Link marketing content from the Content Creation page",
+      "planList": "Plan List"
     },
     "performanceReportsPage": {
       "title": "Performance Reports",
@@ -1789,6 +1790,11 @@
       "generate": "Generate",
       "aiGenerateSuccess": "AI content generated",
       "aiGenerateError": "Generation failed",
+      "aiGenerateImageLabel": "Generate AI Image",
+      "aiGenerateImageDesc": "Use DALL-E 3 to generate a cover image",
+      "generatingWithImage": "Generating (with image)...",
+      "uploadSuccess": "Image uploaded",
+      "uploadError": "Upload failed",
       "occasion_normal": "Normal",
       "occasion_chinese_new_year": "Chinese New Year",
       "occasion_hari_raya": "Hari Raya",
