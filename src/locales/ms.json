@@ -643,7 +643,9 @@
       "logistics": "Logistik",
       "bills": "Bil",
       "finance": "Kewangan",
-      "withdrawals": "Pengeluaran"
+      "withdrawals": "Pengeluaran",
+      "bundles": "Pakej",
+      "siteSettings": "Tetapan Laman"
     },
     "productionPage": {
       "title": "Pengurusan Barisan Pengeluaran",

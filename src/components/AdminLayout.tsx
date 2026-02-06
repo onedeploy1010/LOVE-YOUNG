@@ -22,6 +22,8 @@ import {
   FileText,
   PiggyBank,
   Wallet,
+  Gift,
+  Settings,
   Menu,
   ArrowLeft,
   ChevronRight,
@@ -39,9 +41,11 @@ const getCoreItems = (t: (key: string) => string) => [
   { path: "/admin/partners", label: t("admin.menu.partners"), icon: Users },
   { path: "/admin/orders", label: t("admin.menu.orders"), icon: ShoppingCart },
   { path: "/admin/products", label: t("admin.menu.products"), icon: Package },
+  { path: "/admin/bundles", label: t("admin.menu.bundles"), icon: Gift },
   { path: "/admin/members", label: t("admin.menu.members"), icon: Users },
   { path: "/admin/bonus-pool", label: t("admin.menu.bonusPool"), icon: PiggyBank },
   { path: "/admin/withdrawals", label: t("admin.menu.withdrawals"), icon: Wallet },
+  { path: "/admin/site-settings", label: t("admin.menu.siteSettings"), icon: Settings },
 ];
 
 const getErpItems = (t: (key: string) => string) => [

@@ -643,7 +643,9 @@
       "logistics": "物流追踪",
       "bills": "账单管理",
       "finance": "财务报表",
-      "withdrawals": "提现管理"
+      "withdrawals": "提现管理",
+      "bundles": "套装管理",
+      "siteSettings": "首页设置"
     },
     "productionPage": {
       "title": "生产线管理",

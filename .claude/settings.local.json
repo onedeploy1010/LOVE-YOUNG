@@ -19,7 +19,27 @@
       "Bash(while read f)",
       "Bash(do sed -i 's/60124017174/60178228658/g' \"$f\")",
       "Bash(echo:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(psql:*)",
+      "Bash(dpkg:*)",
+      "Bash(apt list:*)",
+      "Bash(npm ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(curl:*)",
+      "Bash(env)",
+      "Bash(psql \"postgresql://postgres:loveyoung52017888@db.vpzmhglfwomgrashheol.supabase.co:5432/postgres\" -t -A -c \"SELECT id::text as auth_id FROM auth.users WHERE email = ''one_deploy@hotmail.com'';\")",
+      "Bash(python3:*)",
+      "Bash(git rm:*)",
+      "Bash(netlify status:*)",
+      "Bash(PGPASSWORD=loveyoung520888 psql \"postgresql://postgres:loveyoung520888@db.vpzmhglfwomgrashheol.supabase.co:5432/postgres\" -c \"SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check FROM pg_policies WHERE tablename = ''orders'';\")",
+      "Bash(PGPASSWORD=loveyoung520888 psql:*)",
+      "Bash(xargs:*)",
+      "Bash(export SUPABASE_ACCESS_TOKEN=sbp_c1a99ecf071a9c81900fcd69a7c6591af6b94a51)",
+      "Bash(git status:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_c1a99ecf071a9c81900fcd69a7c6591af6b94a51 npx supabase db push:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_c1a99ecf071a9c81900fcd69a7c6591af6b94a51 npx supabase:*)"
     ]
   }
 }

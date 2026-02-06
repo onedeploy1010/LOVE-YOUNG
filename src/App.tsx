@@ -68,6 +68,8 @@ import AdminBillsPage from "@/pages/admin/AdminBillsPage";
 import AdminFinancePage from "@/pages/admin/AdminFinancePage";
 import AdminProductionPage from "@/pages/admin/AdminProductionPage";
 import AdminWithdrawalsPage from "@/pages/admin/AdminWithdrawalsPage";
+import AdminBundlesPage from "@/pages/admin/AdminBundlesPage";
+import AdminSiteSettingsPage from "@/pages/admin/AdminSiteSettingsPage";
 
 function Router() {
   return (
@@ -183,6 +185,12 @@ function Router() {
         </Route>
         <Route path="/admin/withdrawals">
           <AdminRoute><AdminWithdrawalsPage /></AdminRoute>
+        </Route>
+        <Route path="/admin/bundles">
+          <AdminRoute><AdminBundlesPage /></AdminRoute>
+        </Route>
+        <Route path="/admin/site-settings">
+          <AdminRoute><AdminSiteSettingsPage /></AdminRoute>
         </Route>
 
         {/* 404 */}

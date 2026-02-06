@@ -643,7 +643,9 @@
       "logistics": "Logistics",
       "bills": "Bills",
       "finance": "Finance",
-      "withdrawals": "Withdrawals"
+      "withdrawals": "Withdrawals",
+      "bundles": "Bundles",
+      "siteSettings": "Site Settings"
     },
     "productionPage": {
       "title": "Production Line Management",
