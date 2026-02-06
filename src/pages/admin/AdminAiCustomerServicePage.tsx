@@ -823,10 +823,46 @@ export default function AdminAiCustomerServicePage() {
             </div>
           )}
 
-          <DialogFooter className="mt-3 sm:mt-4">
+          <DialogFooter className="mt-3 sm:mt-4 flex-col sm:flex-row gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setShowConversationDialog(false)} className="w-full sm:w-auto">
               {t("admin.aiCustomerServicePage.close")}
             </Button>
+            {selectedConversation && selectedConversation.status !== "escalated" && (
+              <Button
+                variant="destructive"
+                className="w-full sm:w-auto gap-2"
+                onClick={async () => {
+                  try {
+                    // Update conversation status to escalated
+                    await supabase
+                      .from("ai_conversations")
+                      .update({ status: "escalated" })
+                      .eq("id", selectedConversation.id);
+                    // Create assignment if WhatsApp conversation exists
+                    if (selectedConversation.whatsapp_conversation_id) {
+                      await supabase.from("whatsapp_assignments").insert({
+                        conversation_id: selectedConversation.whatsapp_conversation_id,
+                        status: "assigned",
+                        notes: "Escalated from AI customer service",
+                        timeout_seconds: 300,
+                      });
+                      await supabase
+                        .from("whatsapp_conversations")
+                        .update({ assignment_status: "escalated" })
+                        .eq("id", selectedConversation.whatsapp_conversation_id);
+                    }
+                    queryClient.invalidateQueries({ queryKey: ["ai-conversations"] });
+                    toast({ title: t("admin.aiCustomerServicePage.escalateSuccess") || "Escalated to admin" });
+                    setShowConversationDialog(false);
+                  } catch {
+                    toast({ title: t("admin.aiCustomerServicePage.escalateError") || "Escalation failed", variant: "destructive" });
+                  }
+                }}
+              >
+                <AlertTriangle className="w-4 h-4" />
+                {t("admin.aiCustomerServicePage.escalateToAdmin") || "Escalate to Admin"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

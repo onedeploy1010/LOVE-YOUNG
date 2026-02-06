@@ -731,6 +731,23 @@ export default function AdminAdPlacementPage() {
               />
             </div>
 
+            {/* Attach Content */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">{t("admin.adPlacementPage.attachContent") || "Attach Content"}</label>
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="h-auto p-0 text-xs"
+                  onClick={() => window.open("/admin/marketing/content", "_blank")}
+                >
+                  {t("admin.adPlacementPage.browseContent") || "Browse Content"}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">{t("admin.adPlacementPage.attachContentHint") || "Link marketing content from the Content Creation page"}</p>
+            </div>
+
             {/* Notes */}
             <div className="space-y-1.5">
               <label className="text-sm font-medium">{t("admin.adPlacementPage.notes")}</label>

@@ -746,9 +746,20 @@ export default function AdminMediaPlanPage() {
               />
             </div>
 
-            {/* Content URL */}
+            {/* Content URL + Select Content */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t("admin.mediaPlanPage.fieldContentUrl")}</label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">{t("admin.mediaPlanPage.fieldContentUrl")}</label>
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="h-auto p-0 text-xs"
+                  onClick={() => window.open("/admin/marketing/content", "_blank")}
+                >
+                  {t("admin.mediaPlanPage.selectContent") || "Select Content"}
+                </Button>
+              </div>
               <Input
                 value={formData.content_url}
                 onChange={(e) => setFormData({ ...formData, content_url: e.target.value })}

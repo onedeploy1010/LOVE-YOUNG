@@ -38,6 +38,7 @@ import {
   Clock,
   Bell,
   Loader2,
+  Users,
 } from "lucide-react";
 
 // --- Interfaces ---
@@ -480,6 +481,7 @@ export default function AdminWhatsappConfigPage() {
     { key: "profile" as const, label: t("admin.whatsappConfigPage.businessProfile"), icon: Globe },
     { key: "templates" as const, label: t("admin.whatsappConfigPage.messageTemplates"), icon: MessageSquare },
     { key: "push" as const, label: t("admin.whatsappConfigPage.adminPush"), icon: Bell },
+    { key: "admins" as const, label: t("admin.whatsappConfigPage.adminManagement") || "Admin Management", icon: Users },
   ];
 
   return (
@@ -1097,6 +1099,26 @@ export default function AdminWhatsappConfigPage() {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* ============================================================ */}
+        {/* TAB 5: Admin Management */}
+        {/* ============================================================ */}
+        {activeTab === "admins" && (
+          <Card>
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">{t("admin.whatsappConfigPage.adminManagement") || "Admin Management"}</h3>
+                  <p className="text-sm text-muted-foreground">{t("admin.whatsappConfigPage.adminManagementDesc") || "Manage WhatsApp admin accounts and conversation assignments"}</p>
+                </div>
+                <Button onClick={() => window.location.href = "/admin/whatsapp/admins"} className="gap-2">
+                  <Users className="w-4 h-4" />
+                  {t("admin.whatsappConfigPage.goToAdminManagement") || "Manage Admins"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
 

@@ -622,11 +622,16 @@ export default function AdminWhatsappOrdersPage() {
                                 {getPaymentStatusBadge(order.payment_status)}
                                 {getOrderStatusBadge(order.status)}
                               </div>
-                              <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+                              <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground flex-wrap">
                                 <span className="flex items-center gap-1">
                                   <Phone className="w-3 h-3" />
                                   {order.customer_phone}
                                 </span>
+                                {(order as any).assigned_admin_name && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {(order as any).assigned_admin_name}
+                                  </Badge>
+                                )}
                                 <span className="shrink-0">
                                   {formatDate(order.created_at)}
                                 </span>

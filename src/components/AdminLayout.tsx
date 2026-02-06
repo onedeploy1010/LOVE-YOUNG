@@ -40,7 +40,8 @@ import {
   UserPlus,
   Bot,
   Send,
-  Activity
+  Activity,
+  PenSquare,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -72,6 +73,7 @@ const getErpItems = (t: (key: string) => string) => [
 const getMarketingItems = (t: (key: string) => string) => [
   { path: "/admin/marketing/meta-ads", label: t("admin.menu.metaAds"), icon: Megaphone },
   { path: "/admin/marketing/xiaohongshu", label: t("admin.menu.xiaohongshu"), icon: BookOpen },
+  { path: "/admin/marketing/content", label: t("admin.menu.contentCreation"), icon: PenSquare },
   { path: "/admin/marketing/media-plan", label: t("admin.menu.mediaPlan"), icon: Calendar },
   { path: "/admin/marketing/ad-placement", label: t("admin.menu.adPlacement"), icon: Target },
   { path: "/admin/marketing/reports", label: t("admin.menu.performanceReports"), icon: BarChart3 },
@@ -82,6 +84,7 @@ const getWhatsappItems = (t: (key: string) => string) => [
   { path: "/admin/whatsapp/orders", label: t("admin.menu.whatsappOrders"), icon: ShoppingBag },
   { path: "/admin/whatsapp/members", label: t("admin.menu.whatsappMembers"), icon: UserPlus },
   { path: "/admin/whatsapp/ai-service", label: t("admin.menu.aiCustomerService"), icon: Bot },
+  { path: "/admin/whatsapp/admins", label: t("admin.menu.whatsappAdmins"), icon: Users },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {

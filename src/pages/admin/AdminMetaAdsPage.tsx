@@ -354,14 +354,33 @@ export default function AdminMetaAdsPage() {
             </h1>
             <p className="text-sm text-muted-foreground">{t("admin.metaAdsPage.subtitle")}</p>
           </div>
-          <Button
-            className="gap-2 bg-secondary text-secondary-foreground w-full sm:w-auto"
-            onClick={handleOpenCreate}
-            data-testid="button-new-campaign"
-          >
-            <Plus className="w-4 h-4" />
-            {t("admin.metaAdsPage.newCampaign")}
-          </Button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={async () => {
+                try {
+                  const { data, error } = await supabase.functions.invoke("meta-sync-performance");
+                  if (error) throw error;
+                  toast({ title: t("admin.metaAdsPage.syncSuccess") || "Performance data synced" });
+                  queryClient.invalidateQueries({ queryKey: ["admin-marketing-campaigns"] });
+                } catch {
+                  toast({ title: t("admin.metaAdsPage.syncFailed") || "Sync failed", variant: "destructive" });
+                }
+              }}
+            >
+              <TrendingUp className="w-4 h-4" />
+              {t("admin.metaAdsPage.syncPerformance") || "Sync Performance"}
+            </Button>
+            <Button
+              className="gap-2 bg-secondary text-secondary-foreground flex-1 sm:flex-none"
+              onClick={handleOpenCreate}
+              data-testid="button-new-campaign"
+            >
+              <Plus className="w-4 h-4" />
+              {t("admin.metaAdsPage.newCampaign")}
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}

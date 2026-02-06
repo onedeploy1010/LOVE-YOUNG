@@ -79,6 +79,8 @@ import AdminWhatsappConfigPage from "@/pages/admin/AdminWhatsappConfigPage";
 import AdminWhatsappOrdersPage from "@/pages/admin/AdminWhatsappOrdersPage";
 import AdminWhatsappMembersPage from "@/pages/admin/AdminWhatsappMembersPage";
 import AdminAiCustomerServicePage from "@/pages/admin/AdminAiCustomerServicePage";
+import AdminContentCreationPage from "@/pages/admin/AdminContentCreationPage";
+import AdminWhatsappAdminPage from "@/pages/admin/AdminWhatsappAdminPage";
 import AdminSystemHealthPage from "@/pages/admin/AdminSystemHealthPage";
 
 function Router() {
@@ -204,6 +206,9 @@ function Router() {
         </Route>
 
         {/* Marketing Management routes */}
+        <Route path="/admin/marketing/content">
+          <AdminRoute><AdminContentCreationPage /></AdminRoute>
+        </Route>
         <Route path="/admin/marketing/meta-ads">
           <AdminRoute><AdminMetaAdsPage /></AdminRoute>
         </Route>
@@ -232,6 +237,9 @@ function Router() {
         </Route>
         <Route path="/admin/whatsapp/ai-service">
           <AdminRoute><AdminAiCustomerServicePage /></AdminRoute>
+        </Route>
+        <Route path="/admin/whatsapp/admins">
+          <AdminRoute><AdminWhatsappAdminPage /></AdminRoute>
         </Route>
         <Route path="/admin/system-health">
           <AdminRoute><AdminSystemHealthPage /></AdminRoute>
