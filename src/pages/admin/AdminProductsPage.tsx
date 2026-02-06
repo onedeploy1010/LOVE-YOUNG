@@ -138,6 +138,16 @@ export default function AdminProductsPage() {
   // Bundle states
   const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(null);
   const [bundleEditOpen, setBundleEditOpen] = useState(false);
+  const [bundleCreateOpen, setBundleCreateOpen] = useState(false);
+  const [bundleDeleteOpen, setBundleDeleteOpen] = useState(false);
+  const [newBundle, setNewBundle] = useState({
+    name: "", name_en: "", name_ms: "",
+    description: "", target_audience: "", target_audience_en: "", target_audience_ms: "",
+    keywords: "", keywords_en: "", keywords_ms: "",
+    price: 0, original_price: null as number | null,
+    image: "", items: [{ flavor: "原味", quantity: 1 }] as BundleItem[],
+    sort_order: 0, is_active: true, is_featured: false, is_hot: false, is_new: true,
+  });
 
   const [editingCategory, setEditingCategory] = useState<ProductCategory | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -186,6 +196,71 @@ export default function AdminProductsPage() {
   const toggleBundleField = (bundle: Bundle, field: "is_active" | "is_featured" | "is_hot" | "is_new") => {
     bundleUpdateMutation.mutate({ id: bundle.id, [field]: !bundle[field] });
   };
+
+  const bundleCreateMutation = useMutation({
+    mutationFn: async (bundle: typeof newBundle) => {
+      const { error } = await supabase
+        .from("product_bundles")
+        .insert({
+          name: bundle.name,
+          name_en: bundle.name_en || null,
+          name_ms: bundle.name_ms || null,
+          description: bundle.description || null,
+          target_audience: bundle.target_audience || null,
+          target_audience_en: bundle.target_audience_en || null,
+          target_audience_ms: bundle.target_audience_ms || null,
+          keywords: bundle.keywords || null,
+          keywords_en: bundle.keywords_en || null,
+          keywords_ms: bundle.keywords_ms || null,
+          price: bundle.price,
+          original_price: bundle.original_price,
+          image: bundle.image || null,
+          items: bundle.items,
+          sort_order: bundle.sort_order,
+          is_active: bundle.is_active,
+          is_featured: bundle.is_featured,
+          is_hot: bundle.is_hot,
+          is_new: bundle.is_new,
+        });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-bundles"] });
+      toast({ title: "配套创建成功" });
+      setBundleCreateOpen(false);
+      setNewBundle({
+        name: "", name_en: "", name_ms: "",
+        description: "", target_audience: "", target_audience_en: "", target_audience_ms: "",
+        keywords: "", keywords_en: "", keywords_ms: "",
+        price: 0, original_price: null,
+        image: "", items: [{ flavor: "原味", quantity: 1 }],
+        sort_order: 0, is_active: true, is_featured: false, is_hot: false, is_new: true,
+      });
+    },
+    onError: (e: Error) => {
+      toast({ title: "创建失败", description: e.message, variant: "destructive" });
+    },
+  });
+
+  const bundleDeleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("product_bundles")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-bundles"] });
+      toast({ title: "配套已删除" });
+      setBundleDeleteOpen(false);
+      setBundleEditOpen(false);
+      setSelectedBundle(null);
+    },
+    onError: (e: Error) => {
+      toast({ title: "删除失败", description: e.message, variant: "destructive" });
+    },
+  });
 
   const bundleStats = {
     total: bundles.length,
@@ -526,6 +601,12 @@ export default function AdminProductsPage() {
 
           {/* Bundles Tab */}
           <TabsContent value="bundles" className="space-y-4">
+            <div className="flex justify-end">
+              <Button className="gap-2 bg-secondary text-secondary-foreground" onClick={() => setBundleCreateOpen(true)}>
+                <Plus className="w-4 h-4" />
+                新增配套
+              </Button>
+            </div>
             {/* Bundle Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
               <Card>
@@ -1065,6 +1146,10 @@ export default function AdminProductsPage() {
                 </label>
               </div>
               <DialogFooter className="flex-col sm:flex-row gap-2">
+                <Button variant="destructive" onClick={() => setBundleDeleteOpen(true)} className="sm:mr-auto">
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  删除
+                </Button>
                 <Button variant="outline" onClick={() => setBundleEditOpen(false)}>取消</Button>
                 <Button
                   onClick={() => bundleUpdateMutation.mutate(selectedBundle)}
@@ -1076,6 +1161,162 @@ export default function AdminProductsPage() {
               </DialogFooter>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Bundle Create Dialog */}
+      <Dialog open={bundleCreateOpen} onOpenChange={setBundleCreateOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base sm:text-lg">新增配套</DialogTitle>
+            <DialogDescription>创建新的套装配套</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">套装名称 (中文) *</label>
+              <Input
+                value={newBundle.name}
+                onChange={(e) => setNewBundle({ ...newBundle, name: e.target.value })}
+                placeholder="例如：孕妈专属滋补礼盒"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium">英文名称</label>
+                <Input
+                  value={newBundle.name_en}
+                  onChange={(e) => setNewBundle({ ...newBundle, name_en: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">马来文名称</label>
+                <Input
+                  value={newBundle.name_ms}
+                  onChange={(e) => setNewBundle({ ...newBundle, name_ms: e.target.value })}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">适用人群</label>
+              <Input
+                value={newBundle.target_audience}
+                onChange={(e) => setNewBundle({ ...newBundle, target_audience: e.target.value })}
+                placeholder="例如：孕期补养、产后恢复"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">关键词</label>
+              <Input
+                value={newBundle.keywords}
+                onChange={(e) => setNewBundle({ ...newBundle, keywords: e.target.value })}
+                placeholder="稳胎｜补血｜温和不刺激"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium">售价 (分) *</label>
+                <Input
+                  type="number"
+                  value={newBundle.price}
+                  onChange={(e) => setNewBundle({ ...newBundle, price: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">原价 (分，可选)</label>
+                <Input
+                  type="number"
+                  value={newBundle.original_price || ""}
+                  onChange={(e) => setNewBundle({ ...newBundle, original_price: parseInt(e.target.value) || null })}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">封面图片URL</label>
+              <Input
+                value={newBundle.image}
+                onChange={(e) => setNewBundle({ ...newBundle, image: e.target.value })}
+                placeholder="/pics/bundle-image.jpg"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">口味组合 (JSON)</label>
+              <Textarea
+                rows={4}
+                value={JSON.stringify(newBundle.items, null, 2)}
+                onChange={(e) => {
+                  try {
+                    const items = JSON.parse(e.target.value);
+                    setNewBundle({ ...newBundle, items });
+                  } catch {}
+                }}
+                className="font-mono text-xs"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">排序</label>
+              <Input
+                type="number"
+                value={newBundle.sort_order}
+                onChange={(e) => setNewBundle({ ...newBundle, sort_order: parseInt(e.target.value) || 0 })}
+              />
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center gap-2">
+                <Switch
+                  checked={newBundle.is_active}
+                  onCheckedChange={(v) => setNewBundle({ ...newBundle, is_active: v })}
+                />
+                <span className="text-sm">上架</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <Switch
+                  checked={newBundle.is_featured}
+                  onCheckedChange={(v) => setNewBundle({ ...newBundle, is_featured: v })}
+                />
+                <span className="text-sm">首页优选</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <Switch
+                  checked={newBundle.is_new}
+                  onCheckedChange={(v) => setNewBundle({ ...newBundle, is_new: v })}
+                />
+                <span className="text-sm">新品</span>
+              </label>
+            </div>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setBundleCreateOpen(false)}>取消</Button>
+              <Button
+                onClick={() => bundleCreateMutation.mutate(newBundle)}
+                disabled={!newBundle.name || !newBundle.price || bundleCreateMutation.isPending}
+              >
+                {bundleCreateMutation.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : null}
+                创建
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bundle Delete Confirm Dialog */}
+      <Dialog open={bundleDeleteOpen} onOpenChange={setBundleDeleteOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>确认删除</DialogTitle>
+            <DialogDescription>
+              确定要删除配套「{selectedBundle?.name}」吗？此操作不可撤销。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setBundleDeleteOpen(false)}>取消</Button>
+            <Button
+              variant="destructive"
+              onClick={() => selectedBundle && bundleDeleteMutation.mutate(selectedBundle.id)}
+              disabled={bundleDeleteMutation.isPending}
+            >
+              {bundleDeleteMutation.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : null}
+              确认删除
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
