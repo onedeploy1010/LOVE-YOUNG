@@ -124,7 +124,9 @@ export default function AdminProductsPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bundleFileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [bundleUploading, setBundleUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
@@ -145,7 +147,7 @@ export default function AdminProductsPage() {
     description: "", target_audience: "", target_audience_en: "", target_audience_ms: "",
     keywords: "", keywords_en: "", keywords_ms: "",
     price: 0, original_price: null as number | null,
-    image: "", items: [{ flavor: "原味", quantity: 1 }] as BundleItem[],
+    image: "", items: [] as BundleItem[],
     sort_order: 0, is_active: true, is_featured: false, is_hot: false, is_new: true,
   });
 
@@ -233,7 +235,7 @@ export default function AdminProductsPage() {
         description: "", target_audience: "", target_audience_en: "", target_audience_ms: "",
         keywords: "", keywords_en: "", keywords_ms: "",
         price: 0, original_price: null,
-        image: "", items: [{ flavor: "原味", quantity: 1 }],
+        image: "", items: [],
         sort_order: 0, is_active: true, is_featured: false, is_hot: false, is_new: true,
       });
     },
@@ -477,6 +479,92 @@ export default function AdminProductsPage() {
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleBundleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEdit: boolean) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast({ title: "文件类型不支持", description: "请上传 JPG, PNG 或 WebP 格式的图片", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "文件过大", description: "图片大小不能超过 5MB", variant: "destructive" });
+      return;
+    }
+
+    setBundleUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const filePath = `bundles/${crypto.randomUUID()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("product-images").upload(filePath, file);
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(filePath);
+      if (isEdit && selectedBundle) {
+        setSelectedBundle({ ...selectedBundle, image: urlData.publicUrl });
+      } else {
+        setNewBundle({ ...newBundle, image: urlData.publicUrl });
+      }
+      toast({ title: "图片上传成功" });
+    } catch (err) {
+      toast({ title: "上传失败", description: String(err), variant: "destructive" });
+    } finally {
+      setBundleUploading(false);
+      if (bundleFileInputRef.current) bundleFileInputRef.current.value = "";
+    }
+  };
+
+  // Toggle product in bundle items
+  const toggleProductInBundle = (product: Product, isEdit: boolean) => {
+    if (isEdit && selectedBundle) {
+      const exists = selectedBundle.items.find(item => item.flavor === product.name);
+      if (exists) {
+        setSelectedBundle({
+          ...selectedBundle,
+          items: selectedBundle.items.filter(item => item.flavor !== product.name)
+        });
+      } else {
+        setSelectedBundle({
+          ...selectedBundle,
+          items: [...selectedBundle.items, { flavor: product.name, quantity: 1 }]
+        });
+      }
+    } else {
+      const exists = newBundle.items.find(item => item.flavor === product.name);
+      if (exists) {
+        setNewBundle({
+          ...newBundle,
+          items: newBundle.items.filter(item => item.flavor !== product.name)
+        });
+      } else {
+        setNewBundle({
+          ...newBundle,
+          items: [...newBundle.items, { flavor: product.name, quantity: 1 }]
+        });
+      }
+    }
+  };
+
+  // Update product quantity in bundle
+  const updateProductQuantity = (productName: string, quantity: number, isEdit: boolean) => {
+    if (isEdit && selectedBundle) {
+      setSelectedBundle({
+        ...selectedBundle,
+        items: selectedBundle.items.map(item =>
+          item.flavor === productName ? { ...item, quantity: Math.max(1, quantity) } : item
+        )
+      });
+    } else {
+      setNewBundle({
+        ...newBundle,
+        items: newBundle.items.map(item =>
+          item.flavor === productName ? { ...item, quantity: Math.max(1, quantity) } : item
+        )
+      });
     }
   };
 
@@ -1094,26 +1182,85 @@ export default function AdminProductsPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">封面图片URL</label>
-                <Input
-                  value={selectedBundle.image || ""}
-                  onChange={(e) => setSelectedBundle({ ...selectedBundle, image: e.target.value })}
-                  placeholder="/pics/bundle-image.jpg"
-                />
+                <label className="text-sm font-medium">封面图片</label>
+                <div className="mt-1 border-2 border-dashed rounded-lg p-4 text-center">
+                  {selectedBundle.image ? (
+                    <img src={selectedBundle.image} alt="" className="w-24 h-24 object-cover mx-auto rounded-lg mb-2" />
+                  ) : (
+                    <ImageIcon className="w-10 h-10 mx-auto text-muted-foreground/50 mb-2" />
+                  )}
+                  <input
+                    type="file"
+                    ref={bundleFileInputRef}
+                    className="hidden"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={(e) => handleBundleImageUpload(e, true)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={bundleUploading}
+                    onClick={() => bundleFileInputRef.current?.click()}
+                  >
+                    {bundleUploading ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-1" />}
+                    {bundleUploading ? "上传中..." : "上传图片"}
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">口味组合 (JSON)</label>
-                <Textarea
-                  rows={4}
-                  value={JSON.stringify(selectedBundle.items, null, 2)}
-                  onChange={(e) => {
-                    try {
-                      const items = JSON.parse(e.target.value);
-                      setSelectedBundle({ ...selectedBundle, items });
-                    } catch {}
-                  }}
-                  className="font-mono text-xs"
-                />
+                <label className="text-sm font-medium">选择产品组合</label>
+                <div className="border rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
+                  {products?.map((product) => {
+                    const isSelected = selectedBundle.items.some(item => item.flavor === product.name);
+                    const item = selectedBundle.items.find(item => item.flavor === product.name);
+                    return (
+                      <div key={product.id} className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => toggleProductInBundle(product, true)}
+                          className={`flex-1 flex items-center gap-2 p-2 rounded border text-left transition-colors ${
+                            isSelected ? "bg-primary/10 border-primary" : "hover:bg-muted"
+                          }`}
+                        >
+                          {isSelected ? <Check className="w-4 h-4 text-primary" /> : <div className="w-4 h-4" />}
+                          <span className="text-sm truncate">{product.name}</span>
+                        </button>
+                        {isSelected && (
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => updateProductQuantity(product.name, (item?.quantity || 1) - 1, true)}
+                            >
+                              -
+                            </Button>
+                            <span className="w-6 text-center text-sm">{item?.quantity || 1}</span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => updateProductQuantity(product.name, (item?.quantity || 1) + 1, true)}
+                            >
+                              +
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {(!products || products.length === 0) && (
+                    <p className="text-sm text-muted-foreground text-center py-2">暂无产品</p>
+                  )}
+                </div>
+                {selectedBundle.items.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    已选: {selectedBundle.items.map(i => `${i.flavor}×${i.quantity}`).join(", ")}
+                  </p>
+                )}
               </div>
               <div className="flex flex-wrap gap-4">
                 <label className="flex items-center gap-2">
@@ -1231,26 +1378,85 @@ export default function AdminProductsPage() {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">封面图片URL</label>
-              <Input
-                value={newBundle.image}
-                onChange={(e) => setNewBundle({ ...newBundle, image: e.target.value })}
-                placeholder="/pics/bundle-image.jpg"
-              />
+              <label className="text-sm font-medium">封面图片</label>
+              <div className="mt-1 border-2 border-dashed rounded-lg p-4 text-center">
+                {newBundle.image ? (
+                  <img src={newBundle.image} alt="" className="w-24 h-24 object-cover mx-auto rounded-lg mb-2" />
+                ) : (
+                  <ImageIcon className="w-10 h-10 mx-auto text-muted-foreground/50 mb-2" />
+                )}
+                <input
+                  type="file"
+                  ref={bundleFileInputRef}
+                  className="hidden"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => handleBundleImageUpload(e, false)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={bundleUploading}
+                  onClick={() => bundleFileInputRef.current?.click()}
+                >
+                  {bundleUploading ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-1" />}
+                  {bundleUploading ? "上传中..." : "上传图片"}
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">口味组合 (JSON)</label>
-              <Textarea
-                rows={4}
-                value={JSON.stringify(newBundle.items, null, 2)}
-                onChange={(e) => {
-                  try {
-                    const items = JSON.parse(e.target.value);
-                    setNewBundle({ ...newBundle, items });
-                  } catch {}
-                }}
-                className="font-mono text-xs"
-              />
+              <label className="text-sm font-medium">选择产品组合 *</label>
+              <div className="border rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
+                {products?.map((product) => {
+                  const isSelected = newBundle.items.some(item => item.flavor === product.name);
+                  const item = newBundle.items.find(item => item.flavor === product.name);
+                  return (
+                    <div key={product.id} className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleProductInBundle(product, false)}
+                        className={`flex-1 flex items-center gap-2 p-2 rounded border text-left transition-colors ${
+                          isSelected ? "bg-primary/10 border-primary" : "hover:bg-muted"
+                        }`}
+                      >
+                        {isSelected ? <Check className="w-4 h-4 text-primary" /> : <div className="w-4 h-4" />}
+                        <span className="text-sm truncate">{product.name}</span>
+                      </button>
+                      {isSelected && (
+                        <div className="flex items-center gap-1">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => updateProductQuantity(product.name, (item?.quantity || 1) - 1, false)}
+                          >
+                            -
+                          </Button>
+                          <span className="w-6 text-center text-sm">{item?.quantity || 1}</span>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => updateProductQuantity(product.name, (item?.quantity || 1) + 1, false)}
+                          >
+                            +
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {(!products || products.length === 0) && (
+                  <p className="text-sm text-muted-foreground text-center py-2">暂无产品</p>
+                )}
+              </div>
+              {newBundle.items.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  已选: {newBundle.items.map(i => `${i.flavor}×${i.quantity}`).join(", ")}
+                </p>
+              )}
             </div>
             <div>
               <label className="text-sm font-medium">排序</label>
@@ -1287,7 +1493,7 @@ export default function AdminProductsPage() {
               <Button variant="outline" onClick={() => setBundleCreateOpen(false)}>取消</Button>
               <Button
                 onClick={() => bundleCreateMutation.mutate(newBundle)}
-                disabled={!newBundle.name || !newBundle.price || bundleCreateMutation.isPending}
+                disabled={!newBundle.name || !newBundle.price || newBundle.items.length === 0 || bundleCreateMutation.isPending}
               >
                 {bundleCreateMutation.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : null}
                 创建
