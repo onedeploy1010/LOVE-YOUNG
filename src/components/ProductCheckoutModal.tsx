@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ShoppingBag, Check, CheckCircle, Loader2, User, MapPin, CreditCard, Gift } from "lucide-react";
+import { ShoppingBag, Check, CheckCircle, Loader2, User, MapPin, CreditCard } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -59,8 +59,6 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
   const [saveNewAddress, setSaveNewAddress] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [referralCode, setReferralCode] = useState<string>("");
-  const [referrerId, setReferrerId] = useState<string | null>(null);
   const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>({
     customerName: "",
     phone: "",
@@ -245,7 +243,7 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
         currentPrice,
         saveNewAddress,
         selectedAddressId,
-        referrerId,
+        referrerId: null,
       });
 
       window.location.href = data.url;
@@ -254,23 +252,6 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
       setPaymentError(err instanceof Error ? err.message : "Payment failed. Please try again.");
     } finally {
       setIsProcessingPayment(false);
-    }
-  };
-
-  const validateReferralCode = async (code: string) => {
-    if (!code.trim()) {
-      setReferrerId(null);
-      return;
-    }
-    const { data, error } = await supabase
-      .from("members")
-      .select("id")
-      .eq("referral_code", code.toUpperCase())
-      .single();
-    if (data && !error) {
-      setReferrerId(data.id);
-    } else {
-      setReferrerId(null);
     }
   };
 
@@ -291,13 +272,6 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
 
       if (newMember) {
         resolvedMemberId = newMember.id;
-      }
-
-      if (newMember && created && referrerId) {
-        await supabase
-          .from("members")
-          .update({ referrer_id: referrerId })
-          .eq("id", newMember.id);
       }
 
       if (newMember && (saveNewAddress || !selectedAddressId)) {
@@ -374,8 +348,6 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
     setSelectedAddressId(null);
     setSaveNewAddress(false);
     setPaymentError(null);
-    setReferralCode("");
-    setReferrerId(null);
   };
 
   const handleSelectSavedAddress = (address: MemberAddress) => {
@@ -632,31 +604,6 @@ export function ProductCheckoutModal({ open, onOpenChange, product }: ProductChe
                       onChange={(e) => handleDeliveryInfoChange("deliveryDate", e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
                     />
-                  </div>
-
-                  {/* Referral Code */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="pc-referralCode" className="text-sm text-muted-foreground flex items-center gap-2">
-                      <Gift className="w-4 h-4" />
-                      {t("order.referralCode") || "Referral Code (Optional)"}
-                    </Label>
-                    <Input
-                      id="pc-referralCode"
-                      value={referralCode}
-                      onChange={(e) => {
-                        setReferralCode(e.target.value.toUpperCase());
-                        validateReferralCode(e.target.value);
-                      }}
-                      placeholder="ABC123"
-                      maxLength={8}
-                    />
-                    {referralCode && (
-                      <p className={`text-xs ${referrerId ? "text-green-600" : "text-muted-foreground"}`}>
-                        {referrerId
-                          ? (t("order.referralCodeValid") || "Valid referral code")
-                          : (t("order.referralCodeInvalid") || "Enter a valid referral code")}
-                      </p>
-                    )}
                   </div>
 
                   {isAuthenticated && !selectedAddressId && (

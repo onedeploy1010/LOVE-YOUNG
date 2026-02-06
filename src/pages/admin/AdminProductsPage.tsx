@@ -191,7 +191,32 @@ export default function AdminProductsPage() {
     total: bundles.length,
     active: bundles.filter(b => b.is_active).length,
     featured: bundles.filter(b => b.is_featured).length,
+    heroBundle: bundles.find(b => b.is_hot),
   };
+
+  // Set bundle as Hero (exclusive - only one can be hero)
+  const setAsHeroMutation = useMutation({
+    mutationFn: async (bundleId: string) => {
+      // First, unset all is_hot
+      await supabase
+        .from("product_bundles")
+        .update({ is_hot: false, updated_at: new Date().toISOString() })
+        .eq("is_hot", true);
+      // Then set the selected one as hot
+      const { error } = await supabase
+        .from("product_bundles")
+        .update({ is_hot: true, updated_at: new Date().toISOString() })
+        .eq("id", bundleId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-bundles"] });
+      toast({ title: "已设为首页主推", description: "该套装将显示在首页Hero位置" });
+    },
+    onError: (e: Error) => {
+      toast({ title: "设置失败", description: e.message, variant: "destructive" });
+    },
+  });
 
   const { data: categories = [] } = useQuery<ProductCategory[]>({
     queryKey: ["product-categories"],
@@ -502,7 +527,7 @@ export default function AdminProductsPage() {
           {/* Bundles Tab */}
           <TabsContent value="bundles" className="space-y-4">
             {/* Bundle Stats */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
               <Card>
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex items-center gap-2 mb-1">
@@ -528,6 +553,17 @@ export default function AdminProductsPage() {
                     <span className="text-[10px] sm:text-xs text-muted-foreground">首页优选</span>
                   </div>
                   <p className="text-lg sm:text-2xl font-bold text-amber-500">{bundleStats.featured}</p>
+                </CardContent>
+              </Card>
+              <Card className="border-red-200 bg-red-50/50">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Flame className="w-4 h-4 text-red-500" />
+                    <span className="text-[10px] sm:text-xs text-muted-foreground">Hero主推</span>
+                  </div>
+                  <p className="text-xs sm:text-sm font-medium text-red-600 truncate">
+                    {bundleStats.heroBundle?.name || "未设置"}
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -602,6 +638,16 @@ export default function AdminProductsPage() {
                           >
                             <Edit className="w-3 h-3 sm:mr-1" />
                             <span className="hidden sm:inline">编辑</span>
+                          </Button>
+                          <Button
+                            variant={bundle.is_hot ? "default" : "outline"}
+                            size="sm"
+                            className={`h-7 sm:h-8 px-2 text-xs ${bundle.is_hot ? "bg-red-500 hover:bg-red-600" : ""}`}
+                            onClick={() => setAsHeroMutation.mutate(bundle.id)}
+                            disabled={bundle.is_hot || setAsHeroMutation.isPending}
+                          >
+                            <Flame className="w-3 h-3 sm:mr-1" />
+                            <span className="hidden sm:inline">{bundle.is_hot ? "主推中" : "设为Hero"}</span>
                           </Button>
                           <Button
                             variant={bundle.is_featured ? "default" : "outline"}

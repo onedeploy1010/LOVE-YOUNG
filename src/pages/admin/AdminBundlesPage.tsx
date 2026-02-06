@@ -117,7 +117,6 @@ export default function AdminBundlesPage() {
       const { data, error } = await supabase
         .from("products")
         .select("id, name, price, image, category")
-        .eq("is_active", true)
         .order("name");
       if (error) {
         console.error("Error fetching products:", error);

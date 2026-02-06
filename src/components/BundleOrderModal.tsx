@@ -95,8 +95,6 @@ export function BundleOrderModal({ open, onOpenChange, bundle }: BundleOrderModa
   const [saveNewAddress, setSaveNewAddress] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [referralCode, setReferralCode] = useState<string>("");
-  const [referrerId, setReferrerId] = useState<string | null>(null);
   const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>({
     customerName: "",
     phone: "",
@@ -330,7 +328,7 @@ export function BundleOrderModal({ open, onOpenChange, bundle }: BundleOrderModa
         currentPrice: priceRM,
         saveNewAddress,
         selectedAddressId,
-        referrerId,
+        referrerId: null,
       });
 
       window.location.href = data.url;
@@ -339,26 +337,6 @@ export function BundleOrderModal({ open, onOpenChange, bundle }: BundleOrderModa
       setPaymentError(err instanceof Error ? err.message : "Payment failed. Please try again.");
     } finally {
       setIsProcessingPayment(false);
-    }
-  };
-
-  // Validate referral code
-  const validateReferralCode = async (code: string) => {
-    if (!code.trim()) {
-      setReferrerId(null);
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("members")
-      .select("id")
-      .eq("referral_code", code.toUpperCase())
-      .single();
-
-    if (data && !error) {
-      setReferrerId(data.id);
-    } else {
-      setReferrerId(null);
     }
   };
 
@@ -379,8 +357,6 @@ export function BundleOrderModal({ open, onOpenChange, bundle }: BundleOrderModa
     setSelectedAddressId(null);
     setSaveNewAddress(false);
     setPaymentError(null);
-    setReferralCode("");
-    setReferrerId(null);
   };
 
   const handleSelectSavedAddress = (address: MemberAddress) => {
@@ -692,32 +668,6 @@ export function BundleOrderModal({ open, onOpenChange, bundle }: BundleOrderModa
                       min={new Date().toISOString().split('T')[0]}
                       data-testid="input-delivery-date"
                     />
-                  </div>
-
-                  {/* Referral Code Input */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="referralCode" className="text-sm text-muted-foreground flex items-center gap-2">
-                      <Gift className="w-4 h-4" />
-                      {t("order.referralCode") || "Referral Code (Optional)"}
-                    </Label>
-                    <Input
-                      id="referralCode"
-                      value={referralCode}
-                      onChange={(e) => {
-                        setReferralCode(e.target.value.toUpperCase());
-                        validateReferralCode(e.target.value);
-                      }}
-                      placeholder="ABC123"
-                      maxLength={8}
-                      data-testid="input-referral-code"
-                    />
-                    {referralCode && (
-                      <p className={`text-xs ${referrerId ? "text-green-600" : "text-muted-foreground"}`}>
-                        {referrerId
-                          ? (t("order.referralCodeValid") || "Valid referral code")
-                          : (t("order.referralCodeInvalid") || "Enter a valid referral code")}
-                      </p>
-                    )}
                   </div>
 
                   {isAuthenticated && !selectedAddressId && (
