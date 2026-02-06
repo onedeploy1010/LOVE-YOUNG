@@ -7,6 +7,7 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { FlavorModal } from "@/components/FlavorModal";
 import { OrderModal } from "@/components/OrderModal";
 import { BundleOrderModal } from "@/components/BundleOrderModal";
+import { FortuneGiftBoxModal } from "@/components/FortuneGiftBoxModal";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import {
@@ -99,6 +100,7 @@ export default function LandingPage() {
   const [flavorModalOpen, setFlavorModalOpen] = useState(false);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [bundleModalOpen, setBundleModalOpen] = useState(false);
+  const [fortuneModalOpen, setFortuneModalOpen] = useState(false);
   const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(null);
 
   // Fetch hero settings
@@ -162,9 +164,9 @@ export default function LandingPage() {
     },
   });
 
-  // Handle CNY gift box order - opens the OrderModal for custom flavor selection
+  // Handle CNY gift box order - opens the FortuneGiftBoxModal
   const handleCnyOrder = () => {
-    setOrderModalOpen(true);
+    setFortuneModalOpen(true);
   };
 
   const whatsappLink = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(t("landing.whatsappMessage"))}`;
@@ -832,6 +834,7 @@ export default function LandingPage() {
       <WhatsAppButton whatsappLink={whatsappLink} />
       <FlavorModal open={flavorModalOpen} onOpenChange={setFlavorModalOpen} />
       <OrderModal open={orderModalOpen} onOpenChange={setOrderModalOpen} />
+      <FortuneGiftBoxModal open={fortuneModalOpen} onOpenChange={setFortuneModalOpen} />
       {selectedBundle && (
         <BundleOrderModal
           open={bundleModalOpen}
