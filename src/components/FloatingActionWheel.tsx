@@ -2,8 +2,11 @@ import { useState, useEffect, useRef, type CSSProperties } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/lib/i18n";
 import { MessageCircle, Share2, X } from "lucide-react";
+import { SiWhatsapp } from "react-icons/si";
 import { AiChatBot } from "./AiChatBot";
 import { FloatingReferralButton } from "./FloatingReferralButton";
+
+const WHATSAPP_PHONE = "60178228658";
 
 type PanelType = "chat" | "referral" | null;
 
@@ -29,21 +32,24 @@ export function FloatingActionWheel() {
     return () => document.removeEventListener("keydown", handleEscape);
   }, []);
 
+  const whatsappLink = `https://wa.me/${WHATSAPP_PHONE}`;
+
   const handleMainClick = () => {
     if (activePanel) {
       setActivePanel(null);
       return;
     }
-    if (hasReferral) {
-      setExpanded(!expanded);
-    } else {
-      setActivePanel("chat");
-    }
+    setExpanded(!expanded);
   };
 
-  const handleSubClick = (panel: "chat" | "referral") => {
+  const handleSubClick = (id: string) => {
+    if (id === "whatsapp") {
+      window.open(whatsappLink, "_blank");
+      setExpanded(false);
+      return;
+    }
     setExpanded(false);
-    setActivePanel(panel);
+    setActivePanel(id as PanelType);
   };
 
   const handleClosePanel = () => {
@@ -75,7 +81,7 @@ export function FloatingActionWheel() {
 
   const handleTouchEnd = () => {
     if (hoveredItem) {
-      handleSubClick(hoveredItem as "chat" | "referral");
+      handleSubClick(hoveredItem);
     }
     setHoveredItem(null);
   };
@@ -94,6 +100,7 @@ export function FloatingActionWheel() {
 
   const subItems = [
     { id: "chat", icon: MessageCircle, label: t("chatbot.title"), bg: "bg-gradient-to-r from-blue-500 to-indigo-500" },
+    { id: "whatsapp", icon: SiWhatsapp, label: t("chatbot.whatsappLabel"), bg: "bg-gradient-to-r from-green-500 to-green-600" },
     ...(hasReferral
       ? [{ id: "referral", icon: Share2, label: t("chatbot.referralLabel"), bg: "bg-gradient-to-r from-emerald-500 to-green-500" }]
       : []),
@@ -133,7 +140,7 @@ export function FloatingActionWheel() {
               style={getSubStyle(item.id)}
               onMouseEnter={() => setHoveredItem(item.id)}
               onMouseLeave={() => setHoveredItem(null)}
-              onClick={() => handleSubClick(item.id as "chat" | "referral")}
+              onClick={() => handleSubClick(item.id)}
             >
               <item.icon className="w-5 h-5 shrink-0" />
               <span className="text-sm whitespace-nowrap">{item.label}</span>

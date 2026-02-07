@@ -3598,6 +3598,9 @@
     "recommendProducts": "Berikut produk yang kami syorkan:",
     "viewProduct": "Lihat",
     "error": "Maaf, terdapat masalah. Sila cuba lagi kemudian.",
-    "referralLabel": "Rujukan"
+    "referralLabel": "Rujukan",
+    "transferHuman": "Hubungi Sokongan",
+    "restart": "Sembang Baharu",
+    "whatsappLabel": "Sembang WhatsApp"
   }
 }

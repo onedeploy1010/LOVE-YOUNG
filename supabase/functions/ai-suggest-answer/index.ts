@@ -63,75 +63,134 @@ serve(async (req) => {
       );
     }
 
-    // Search for relevant context from knowledge base and memory tables
-    const searchTerms = question.toLowerCase().split(/\s+/).filter((w: string) => w.length > 2);
-    const likePattern = searchTerms.length > 0 ? `%${searchTerms[0]}%` : `%${question}%`;
+    // Detect question intent for targeted search
+    const questionLower = question.toLowerCase();
+    const isProductQuestion = /产品|燕窝|价格|多少钱|买|购买|口味|product|price|buy|bird.?nest/i.test(question);
+    const isPartnerQuestion = /经营人|合伙|加盟|赚钱|收益|LY|RWA|返现|partner|join|earn|commission/i.test(question);
+    const isBrandQuestion = /品牌|公司|LOVE|YOUNG|燕之爱|brand|company|about/i.test(question);
 
-    // Query knowledge base - search in content and title
-    const knowledgeRes = await supabase
+    // Determine category to search
+    let categoryFilter = null;
+    if (isProductQuestion) categoryFilter = "product";
+    else if (isPartnerQuestion) categoryFilter = "partner";
+    else if (isBrandQuestion) categoryFilter = "general";
+
+    // Build search patterns from question keywords
+    const searchTerms = question
+      .replace(/[?？！!。，,]/g, "")
+      .split(/\s+/)
+      .filter((w: string) => w.length > 1);
+
+    // Query knowledge base with category filter if applicable
+    let knowledgeQuery = supabase
       .from("ai_knowledge_base")
       .select("title, content, category")
-      .eq("is_active", true)
-      .or(`content.ilike.${likePattern},title.ilike.${likePattern}`)
-      .limit(5);
+      .eq("is_active", true);
 
-    // Also try searching training data for direct Q&A matches
-    const trainingRes = await supabase
-      .from("ai_training_data")
-      .select("question, answer")
-      .eq("is_verified", true)
-      .or(`question.ilike.${likePattern},answer.ilike.${likePattern}`)
-      .limit(3);
-
-    // Query memory tables (may not exist, handle gracefully)
-    let productRes = { data: null, error: null };
-    let partnerRes = { data: null, error: null };
-
-    try {
-      productRes = await supabase
-        .from("product_memory")
-        .select("title, content")
-        .eq("is_active", true)
-        .ilike("content", likePattern)
-        .limit(3);
-    } catch {
-      // Table may not exist, ignore
+    if (categoryFilter) {
+      knowledgeQuery = knowledgeQuery.eq("category", categoryFilter);
     }
 
-    try {
-      partnerRes = await supabase
-        .from("partner_memory")
-        .select("title, content")
+    const knowledgeRes = await knowledgeQuery.limit(5);
+
+    // If no results with category filter, try without filter
+    let fallbackKnowledge = { data: null };
+    if (!knowledgeRes.data?.length && categoryFilter) {
+      fallbackKnowledge = await supabase
+        .from("ai_knowledge_base")
+        .select("title, content, category")
         .eq("is_active", true)
-        .ilike("content", likePattern)
         .limit(3);
-    } catch {
-      // Table may not exist, ignore
+    }
+
+    // Search training data Q&A with keyword matching
+    let trainingRes = { data: null };
+    if (searchTerms.length > 0) {
+      const searchPattern = `%${searchTerms[0]}%`;
+      trainingRes = await supabase
+        .from("ai_training_data")
+        .select("question, answer")
+        .eq("is_verified", true)
+        .ilike("question", searchPattern)
+        .limit(3);
+    }
+
+    // If product question, also fetch actual products from database
+    let productsData: Array<{ id: string; name: string; price: number; description: string | null }> = [];
+    if (isProductQuestion) {
+      const { data: products } = await supabase
+        .from("products")
+        .select("id, name, price, description")
+        .eq("is_active", true)
+        .limit(5);
+      if (products) productsData = products;
     }
 
     // Build context from search results
     const contextParts: string[] = [];
 
-    if (knowledgeRes.data?.length) {
-      contextParts.push("Knowledge Base:\n" + knowledgeRes.data.map(
-        (k: { title: string; content: string }) => `- ${k.title}: ${k.content}`
-      ).join("\n"));
+    // Add knowledge base content
+    const allKnowledge = [
+      ...(knowledgeRes.data || []),
+      ...(fallbackKnowledge.data || [])
+    ];
+    if (allKnowledge.length) {
+      contextParts.push("Knowledge Base:\n" + allKnowledge.map(
+        (k: { title: string; content: string }) => `【${k.title}】\n${k.content}`
+      ).join("\n\n"));
     }
 
+    // Add training Q&A
     if (trainingRes.data?.length) {
       contextParts.push("Related Q&A:\n" + trainingRes.data.map(
         (q: { question: string; answer: string }) => `Q: ${q.question}\nA: ${q.answer}`
       ).join("\n\n"));
     }
 
+    // Add actual product data if this is a product question
+    if (productsData.length) {
+      contextParts.push("Available Products (recommend these to customer):\n" + productsData.map(
+        (p: { name: string; price: number; description: string | null }) =>
+          `- ${p.name}: RM ${(p.price / 100).toFixed(2)}${p.description ? ` - ${p.description}` : ""}`
+      ).join("\n") + "\n\n告诉客户可以在 /products 页面下单购买");
+    }
+
+    // Query memory tables (may not exist, handle gracefully)
+    let productRes = { data: null, error: null };
+    let partnerRes = { data: null, error: null };
+
+    if (!isProductQuestion) {
+      try {
+        productRes = await supabase
+          .from("product_memory")
+          .select("title, content")
+          .eq("is_active", true)
+          .limit(3);
+      } catch {
+        // Table may not exist
+      }
+    }
+
+    if (!isPartnerQuestion) {
+      try {
+        partnerRes = await supabase
+          .from("partner_memory")
+          .select("title, content")
+          .eq("is_active", true)
+          .limit(3);
+      } catch {
+        // Table may not exist
+      }
+    }
+
     if (productRes.data?.length) {
-      contextParts.push("Product Information:\n" + productRes.data.map(
+      contextParts.push("Product Memory:\n" + productRes.data.map(
         (p: { title: string; content: string }) => `- ${p.title}: ${p.content}`
       ).join("\n"));
     }
 
     if (partnerRes.data?.length) {
-      contextParts.push("Partner Information:\n" + partnerRes.data.map(
+      contextParts.push("Partner Memory:\n" + partnerRes.data.map(
         (p: { title: string; content: string }) => `- ${p.title}: ${p.content}`
       ).join("\n"));
     }

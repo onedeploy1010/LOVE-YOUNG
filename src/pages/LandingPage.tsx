@@ -3,7 +3,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { FlavorModal } from "@/components/FlavorModal";
 import { OrderModal } from "@/components/OrderModal";
 import { BundleOrderModal } from "@/components/BundleOrderModal";
@@ -873,7 +872,6 @@ export default function LandingPage() {
       </section>
 
       <Footer whatsappLink={whatsappLink} metaShopLink={META_SHOP_LINK} />
-      <WhatsAppButton whatsappLink={whatsappLink} />
       <FlavorModal open={flavorModalOpen} onOpenChange={setFlavorModalOpen} />
       <OrderModal open={orderModalOpen} onOpenChange={setOrderModalOpen} />
       <FortuneGiftBoxModal open={fortuneModalOpen} onOpenChange={setFortuneModalOpen} />

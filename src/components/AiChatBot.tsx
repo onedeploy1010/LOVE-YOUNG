@@ -15,7 +15,11 @@ import {
   LogIn,
   UserPlus,
   Bot,
+  RotateCcw,
 } from "lucide-react";
+import { SiWhatsapp } from "react-icons/si";
+
+const WHATSAPP_PHONE = "60178228658";
 
 interface ChatMessage {
   id: string;
@@ -48,6 +52,15 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const whatsappLink = `https://wa.me/${WHATSAPP_PHONE}`;
+
+  const handleRestart = () => {
+    setMessages([]);
+    setConversationId(null);
+    setShowTopics(true);
+    setInput("");
+  };
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
@@ -175,6 +188,26 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
             {language.toUpperCase()}
           </p>
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 shrink-0 text-green-600 hover:text-green-700"
+          onClick={() => window.open(whatsappLink, "_blank")}
+          title={t("chatbot.transferHuman")}
+        >
+          <SiWhatsapp className="w-4 h-4" />
+        </Button>
+        {messages.length > 0 && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 shrink-0"
+            onClick={handleRestart}
+            title={t("chatbot.restart")}
+          >
+            <RotateCcw className="w-4 h-4" />
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="icon"
