@@ -76,8 +76,8 @@ export const useAuthStore = create<AuthState>()(
 
         const doFetch = async () => {
           const [userRes, memberRes, adminRpc] = await Promise.all([
-            supabase.from('users').select('role').eq('id', userId).single(),
-            supabase.from('members').select('*').eq('user_id', userId).single(),
+            supabase.from('users').select('role').eq('id', userId).maybeSingle(),
+            supabase.from('members').select('*').eq('user_id', userId).maybeSingle(),
             supabase.rpc('is_admin'),
           ]);
           return { userRes, memberRes, adminRpc };
@@ -99,7 +99,7 @@ export const useAuthStore = create<AuthState>()(
           if (userRes.error) {
             console.warn('[auth] users query error:', userRes.error.message, userRes.error.code);
           }
-          if (memberRes.error && memberRes.error.code !== 'PGRST116') {
+          if (memberRes.error) {
             console.warn('[auth] members query error:', memberRes.error.message, memberRes.error.code);
           }
 
@@ -132,7 +132,7 @@ export const useAuthStore = create<AuthState>()(
                 .from('partners')
                 .select('*')
                 .eq('member_id', memberData.id)
-                .single();
+                .maybeSingle();
 
               if (partnerData) {
                 partnerObj = {

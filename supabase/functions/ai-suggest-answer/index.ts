@@ -216,26 +216,30 @@ serve(async (req) => {
       ]);
 
       // Update message count
-      await supabase.rpc("increment_message_count", { conv_id: activeConversationId }).catch(() => {
+      try {
+        await supabase.rpc("increment_message_count", { conv_id: activeConversationId });
+      } catch {
         // Fallback: manual update if RPC doesn't exist
-        supabase
+        await supabase
           .from("ai_conversations")
           .update({ message_count: conversation_history.length + 2 })
           .eq("id", activeConversationId);
-      });
+      }
     }
 
     // Save to ai_training_data for learning
-    await supabase.from("ai_training_data").insert({
-      question,
-      answer,
-      category: "general",
-      source: "customer_asked",
-      confidence_score: contextParts.length > 0 ? 0.8 : 0.4,
-      metadata: { language, member_id, conversation_id: activeConversationId },
-    }).catch(() => {
+    try {
+      await supabase.from("ai_training_data").insert({
+        question,
+        answer,
+        category: "general",
+        source: "customer_asked",
+        confidence_score: contextParts.length > 0 ? 0.8 : 0.4,
+        metadata: { language, member_id, conversation_id: activeConversationId },
+      });
+    } catch {
       // Non-critical, don't fail the request
-    });
+    }
 
     return new Response(
       JSON.stringify({
