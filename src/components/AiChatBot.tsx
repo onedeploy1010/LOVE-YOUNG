@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/lib/i18n";
@@ -254,8 +253,8 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
       ) : (
         <>
           {/* Messages Area */}
-          <ScrollArea className="flex-1 min-h-0">
-            <div ref={scrollRef} className="p-3 space-y-3">
+          <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
+            <div className="p-3 space-y-3">
               {/* Greeting */}
               <div className="flex gap-2">
                 <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -402,7 +401,7 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
                 </div>
               )}
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Input Area */}
           <div className="p-3 border-t shrink-0">
