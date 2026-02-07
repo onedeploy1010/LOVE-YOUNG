@@ -62,7 +62,15 @@ interface WhatsappAssignment {
   created_at: string;
 }
 
+interface SystemAdmin {
+  id: string;
+  name: string | null;
+  email: string;
+  phone: string | null;
+}
+
 interface AdminFormData {
+  user_id: string;
   name: string;
   phone: string;
   duty_start: string;
@@ -71,6 +79,7 @@ interface AdminFormData {
 }
 
 const emptyForm: AdminFormData = {
+  user_id: "",
   name: "",
   phone: "",
   duty_start: "09:00",
@@ -93,6 +102,20 @@ export default function AdminWhatsappAdminPage() {
   const [form, setForm] = useState<AdminFormData>(emptyForm);
   const [selectedConversationId, setSelectedConversationId] = useState("");
   const [assignAdminId, setAssignAdminId] = useState("");
+
+  // Fetch system admins (members where role = 'admin')
+  const { data: systemAdmins = [] } = useQuery({
+    queryKey: ["system_admins"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("members")
+        .select("id, name, email, phone")
+        .eq("role", "admin")
+        .order("name", { ascending: true });
+      if (error) throw error;
+      return data as SystemAdmin[];
+    },
+  });
 
   // Fetch admins
   const { data: admins = [], isLoading } = useQuery({
@@ -136,10 +159,16 @@ export default function AdminWhatsappAdminPage() {
     },
   });
 
+  // Get list of system admins not yet bound as WhatsApp admins
+  const availableSystemAdmins = systemAdmins.filter(
+    (sa) => !admins.some((wa) => wa.user_id === sa.id)
+  );
+
   // Create admin
   const createMutation = useMutation({
     mutationFn: async (data: AdminFormData) => {
       const { error } = await supabase.from("whatsapp_admins").insert({
+        user_id: data.user_id,
         name: data.name,
         phone: data.phone,
         duty_start: data.duty_start || null,
@@ -305,8 +334,44 @@ export default function AdminWhatsappAdminPage() {
     setEditOpen(true);
   };
 
-  const FormFields = () => (
+  const handleSelectSystemAdmin = (userId: string) => {
+    const selected = systemAdmins.find((sa) => sa.id === userId);
+    if (selected) {
+      setForm({
+        ...form,
+        user_id: userId,
+        name: selected.name || selected.email,
+        phone: selected.phone || "",
+      });
+    }
+  };
+
+  const FormFields = ({ isEdit = false }: { isEdit?: boolean }) => (
     <div className="space-y-4">
+      {/* System Admin Selector (only for create) */}
+      {!isEdit && (
+        <div>
+          <label className="text-sm font-medium">{t("admin.whatsappAdminsPage.selectSystemAdmin")}</label>
+          <Select value={form.user_id} onValueChange={handleSelectSystemAdmin}>
+            <SelectTrigger>
+              <SelectValue placeholder={t("admin.whatsappAdminsPage.selectSystemAdminPlaceholder")} />
+            </SelectTrigger>
+            <SelectContent>
+              {availableSystemAdmins.length === 0 ? (
+                <div className="p-2 text-sm text-muted-foreground text-center">
+                  {t("admin.whatsappAdminsPage.noAvailableAdmins")}
+                </div>
+              ) : (
+                availableSystemAdmins.map((sa) => (
+                  <SelectItem key={sa.id} value={sa.id}>
+                    {sa.name || sa.email} {sa.phone && `(${sa.phone})`}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       <div>
         <label className="text-sm font-medium">{t("admin.whatsappAdminsPage.fieldName")}</label>
         <Input
@@ -613,14 +678,14 @@ export default function AdminWhatsappAdminPage() {
               <DialogTitle>{t("admin.whatsappAdminsPage.addAdmin")}</DialogTitle>
               <DialogDescription>{t("admin.whatsappAdminsPage.addAdminDesc")}</DialogDescription>
             </DialogHeader>
-            <FormFields />
+            <FormFields isEdit={false} />
             <DialogFooter>
               <Button variant="outline" onClick={() => setCreateOpen(false)}>
                 {t("admin.whatsappAdminsPage.cancel")}
               </Button>
               <Button
                 onClick={() => createMutation.mutate(form)}
-                disabled={!form.name || !form.phone || createMutation.isPending}
+                disabled={!form.user_id || !form.name || !form.phone || createMutation.isPending}
               >
                 {createMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {t("admin.whatsappAdminsPage.create")}
@@ -636,7 +701,7 @@ export default function AdminWhatsappAdminPage() {
               <DialogTitle>{t("admin.whatsappAdminsPage.editAdmin")}</DialogTitle>
               <DialogDescription>{t("admin.whatsappAdminsPage.editAdminDesc")}</DialogDescription>
             </DialogHeader>
-            <FormFields />
+            <FormFields isEdit={true} />
             <DialogFooter>
               <Button variant="outline" onClick={() => setEditOpen(false)}>
                 {t("admin.whatsappAdminsPage.cancel")}

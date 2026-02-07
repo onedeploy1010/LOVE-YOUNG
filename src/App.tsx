@@ -83,6 +83,7 @@ import AdminWhatsappFlowsPage from "@/pages/admin/AdminWhatsappFlowsPage";
 import AdminMemoryDatabasePage from "@/pages/admin/AdminMemoryDatabasePage";
 import AdminKnowledgeBasePage from "@/pages/admin/AdminKnowledgeBasePage";
 import AdminSystemHealthPage from "@/pages/admin/AdminSystemHealthPage";
+import AdminNotificationsPage from "@/pages/admin/AdminNotificationsPage";
 
 function Router() {
   return (
@@ -250,6 +251,9 @@ function Router() {
 
         <Route path="/admin/system-health">
           <AdminRoute><AdminSystemHealthPage /></AdminRoute>
+        </Route>
+        <Route path="/admin/notifications">
+          <AdminRoute><AdminNotificationsPage /></AdminRoute>
         </Route>
 
         {/* 404 */}

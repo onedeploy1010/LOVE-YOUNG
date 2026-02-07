@@ -22,9 +22,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Wallet, ArrowUpRight, ArrowDownRight, CreditCard,
   Building2, Clock, CheckCircle, XCircle, AlertCircle,
-  Download, History, TrendingUp, Loader2
+  Download, History, TrendingUp, Loader2, Plus, Trash2, Star
 } from "lucide-react";
 
 interface Transaction {
@@ -34,6 +41,15 @@ interface Transaction {
   description: string;
   status: string;
   createdAt: string;
+}
+
+interface BankAccount {
+  id: string;
+  partner_id: string;
+  bank_name: string;
+  account_number: string;
+  account_name: string;
+  is_default: boolean;
 }
 
 const statusConfig: Record<string, { icon: React.ElementType; color: string }> = {
@@ -48,32 +64,40 @@ export default function PartnerWalletPage() {
   const { toast } = useToast();
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+  const [selectedBankId, setSelectedBankId] = useState("");
+  const [isBankDialogOpen, setIsBankDialogOpen] = useState(false);
+  const [bankForm, setBankForm] = useState({ bankName: "", accountNumber: "", accountName: "" });
 
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ["partner-wallet-transactions", partner?.id],
     queryFn: async () => {
       if (!partner?.id) return [];
-
       const { data, error } = await supabase
         .from("cash_wallet_ledger")
         .select("*")
         .eq("partner_id", partner.id)
         .order("created_at", { ascending: false })
         .limit(50);
-
-      if (error) {
-        console.error("Error fetching transactions:", error);
-        return [];
-      }
-
+      if (error) { console.error("Error fetching transactions:", error); return []; }
       return (data || []).map((row): Transaction => ({
-        id: row.id,
-        type: row.type,
-        amount: row.amount,
-        description: row.description || "",
-        status: row.status,
-        createdAt: row.created_at,
+        id: row.id, type: row.type, amount: row.amount,
+        description: row.description || "", status: row.status, createdAt: row.created_at,
       }));
+    },
+    enabled: !!partner?.id,
+  });
+
+  const { data: bankAccounts = [], isLoading: bankLoading } = useQuery({
+    queryKey: ["partner-bank-accounts", partner?.id],
+    queryFn: async () => {
+      if (!partner?.id) return [];
+      const { data, error } = await supabase
+        .from("partner_bank_accounts")
+        .select("*")
+        .eq("partner_id", partner.id)
+        .order("is_default", { ascending: false });
+      if (error) { console.error("Error fetching bank accounts:", error); return []; }
+      return (data || []) as BankAccount[];
     },
     enabled: !!partner?.id,
   });
@@ -82,28 +106,74 @@ export default function PartnerWalletPage() {
     queryKey: ["partner-pending-withdrawals", partner?.id],
     queryFn: async () => {
       if (!partner?.id) return [];
-
       const { data } = await supabase
         .from("withdrawal_requests")
         .select("*")
         .eq("partner_id", partner.id)
         .eq("status", "pending");
-
       return data || [];
     },
     enabled: !!partner?.id,
   });
 
+  const addBankMutation = useMutation({
+    mutationFn: async () => {
+      if (!partner?.id) throw new Error("Not authenticated");
+      const { error } = await supabase.from("partner_bank_accounts").insert({
+        partner_id: partner.id,
+        bank_name: bankForm.bankName,
+        account_number: bankForm.accountNumber,
+        account_name: bankForm.accountName,
+        is_default: bankAccounts.length === 0,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner-bank-accounts"] });
+      toast({ title: t("member.wallet.bankSaved") });
+      setIsBankDialogOpen(false);
+      setBankForm({ bankName: "", accountNumber: "", accountName: "" });
+    },
+    onError: (error: Error) => {
+      toast({ title: t("member.wallet.withdrawFailed"), description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteBankMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("partner_bank_accounts").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner-bank-accounts"] });
+      toast({ title: t("member.wallet.bankDeleted") });
+    },
+  });
+
+  const setDefaultBankMutation = useMutation({
+    mutationFn: async (id: string) => {
+      if (!partner?.id) return;
+      const { error } = await supabase
+        .from("partner_bank_accounts")
+        .update({ is_default: true })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["partner-bank-accounts"] }),
+  });
+
   const withdrawMutation = useMutation({
     mutationFn: async (amount: number) => {
       if (!partner?.id) throw new Error("Not authenticated");
-
+      const bank = bankAccounts.find(b => b.id === selectedBankId);
       const { error } = await supabase.from("withdrawal_requests").insert({
         partner_id: partner.id,
         amount: amount * 100,
+        bank_name: bank?.bank_name || "",
+        account_number: bank?.account_number || "",
+        account_name: bank?.account_name || "",
         status: "pending",
       });
-
       if (error) throw error;
     },
     onSuccess: () => {
@@ -129,11 +199,12 @@ export default function PartnerWalletPage() {
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "-";
-    return new Date(dateStr).toLocaleDateString("zh-CN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
+    return new Date(dateStr).toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" });
+  };
+
+  const maskAccount = (num: string) => {
+    if (num.length <= 4) return num;
+    return "****" + num.slice(-4);
   };
 
   const handleWithdraw = () => {
@@ -146,8 +217,18 @@ export default function PartnerWalletPage() {
       toast({ title: t("member.wallet.insufficientBalance"), description: t("member.wallet.exceedsBalanceMsg"), variant: "destructive" });
       return;
     }
+    if (!selectedBankId && bankAccounts.length > 0) {
+      toast({ title: t("member.wallet.bindBankFirst"), variant: "destructive" });
+      return;
+    }
     withdrawMutation.mutate(amount);
   };
+
+  // Auto-select default bank
+  if (!selectedBankId && bankAccounts.length > 0) {
+    const defaultBank = bankAccounts.find(b => b.is_default) || bankAccounts[0];
+    if (defaultBank) setSelectedBankId(defaultBank.id);
+  }
 
   if (isLoading) {
     return (
@@ -191,9 +272,7 @@ export default function PartnerWalletPage() {
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>{t("member.wallet.withdrawTitle")}</DialogTitle>
-                      <DialogDescription>
-                        {t("member.wallet.withdrawDesc")}
-                      </DialogDescription>
+                      <DialogDescription>{t("member.wallet.withdrawDesc")}</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                       <div className="space-y-2">
@@ -210,20 +289,33 @@ export default function PartnerWalletPage() {
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <Label>{t("member.wallet.selectBank")}</Label>
-                        <div className="p-3 bg-muted rounded-lg flex items-center gap-3">
-                          <Building2 className="w-5 h-5 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">{t("member.wallet.bindBankFirst")}</p>
-                            <p className="text-xs text-muted-foreground">{t("member.wallet.contactToAdd")}</p>
+                        <Label>{t("member.wallet.selectBankForWithdraw")}</Label>
+                        {bankAccounts.length > 0 ? (
+                          <Select value={selectedBankId} onValueChange={setSelectedBankId}>
+                            <SelectTrigger>
+                              <SelectValue placeholder={t("member.wallet.selectBankForWithdraw")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {bankAccounts.map(bank => (
+                                <SelectItem key={bank.id} value={bank.id}>
+                                  {bank.bank_name} - {maskAccount(bank.account_number)} ({bank.account_name})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <div className="p-3 bg-muted rounded-lg flex items-center gap-3">
+                            <Building2 className="w-5 h-5 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">{t("member.wallet.bindBankFirst")}</p>
+                              <p className="text-xs text-muted-foreground">{t("member.wallet.contactToAdd")}</p>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                       <div className="p-3 bg-orange-500/10 rounded-lg flex items-start gap-2">
                         <AlertCircle className="w-4 h-4 text-orange-500 mt-0.5" />
-                        <p className="text-sm text-orange-500">
-                          {t("member.wallet.minWithdrawNote")}
-                        </p>
+                        <p className="text-sm text-orange-500">{t("member.wallet.minWithdrawNote")}</p>
                       </div>
                     </div>
                     <DialogFooter>
@@ -232,7 +324,7 @@ export default function PartnerWalletPage() {
                       </Button>
                       <Button
                         onClick={handleWithdraw}
-                        disabled={withdrawMutation.isPending}
+                        disabled={withdrawMutation.isPending || (bankAccounts.length > 0 && !selectedBankId)}
                         data-testid="button-confirm-withdraw"
                       >
                         {withdrawMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -267,6 +359,140 @@ export default function PartnerWalletPage() {
           </Card>
         </div>
 
+        {/* Bank Accounts */}
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-primary" />
+                  {t("member.wallet.bankAccount")}
+                </CardTitle>
+                <CardDescription>{t("member.wallet.bankAccountDesc")}</CardDescription>
+              </div>
+              <Dialog open={isBankDialogOpen} onOpenChange={setIsBankDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="gap-2" data-testid="button-add-bank">
+                    <Plus className="w-4 h-4" />
+                    {t("member.wallet.addBankAccount")}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{t("member.wallet.addBankAccount")}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label>{t("member.wallet.bankName")}</Label>
+                      <Input
+                        placeholder={t("member.wallet.bankNamePlaceholder")}
+                        value={bankForm.bankName}
+                        onChange={(e) => setBankForm(prev => ({ ...prev, bankName: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t("member.wallet.accountNumber")}</Label>
+                      <Input
+                        placeholder={t("member.wallet.accountNumberPlaceholder")}
+                        value={bankForm.accountNumber}
+                        onChange={(e) => setBankForm(prev => ({ ...prev, accountNumber: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t("member.wallet.accountName")}</Label>
+                      <Input
+                        placeholder={t("member.wallet.accountNamePlaceholder")}
+                        value={bankForm.accountName}
+                        onChange={(e) => setBankForm(prev => ({ ...prev, accountName: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsBankDialogOpen(false)}>
+                      {t("member.wallet.cancel")}
+                    </Button>
+                    <Button
+                      onClick={() => addBankMutation.mutate()}
+                      disabled={addBankMutation.isPending || !bankForm.bankName || !bankForm.accountNumber || !bankForm.accountName}
+                    >
+                      {addBankMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                      {t("member.wallet.saveBankAccount")}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {bankLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : bankAccounts.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Building2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>{t("member.wallet.noBankAccount")}</p>
+                <p className="text-sm">{t("member.wallet.contactForBank")}</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {bankAccounts.map((bank) => (
+                  <div
+                    key={bank.id}
+                    className={`flex items-center justify-between p-4 border rounded-lg ${bank.is_default ? "border-secondary bg-secondary/5" : ""}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Building2 className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{bank.bank_name}</span>
+                          {bank.is_default && (
+                            <Badge className="bg-secondary text-secondary-foreground gap-1 text-xs">
+                              <Star className="w-3 h-3" />
+                              {t("member.wallet.defaultBadge")}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {maskAccount(bank.account_number)} · {bank.account_name}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {!bank.is_default && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDefaultBankMutation.mutate(bank.id)}
+                          disabled={setDefaultBankMutation.isPending}
+                        >
+                          {t("member.wallet.setDefault")}
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-500 hover:text-red-600"
+                        onClick={() => {
+                          if (confirm(t("member.wallet.confirmDeleteBank"))) {
+                            deleteBankMutation.mutate(bank.id);
+                          }
+                        }}
+                        disabled={deleteBankMutation.isPending}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Transaction History */}
         <Card>
           <CardHeader>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -290,20 +516,10 @@ export default function PartnerWalletPage() {
                 const StatusIcon = statusInfo.icon;
                 const isIncome = tx.amount > 0;
                 return (
-                  <div
-                    key={tx.id}
-                    className="flex items-center justify-between py-4"
-                    data-testid={`transaction-${tx.id}`}
-                  >
+                  <div key={tx.id} className="flex items-center justify-between py-4" data-testid={`transaction-${tx.id}`}>
                     <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        isIncome ? "bg-green-500/10" : "bg-blue-500/10"
-                      }`}>
-                        {isIncome ? (
-                          <ArrowUpRight className="w-5 h-5 text-green-500" />
-                        ) : (
-                          <ArrowDownRight className="w-5 h-5 text-blue-500" />
-                        )}
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isIncome ? "bg-green-500/10" : "bg-blue-500/10"}`}>
+                        {isIncome ? <ArrowUpRight className="w-5 h-5 text-green-500" /> : <ArrowDownRight className="w-5 h-5 text-blue-500" />}
                       </div>
                       <div>
                         <p className="font-medium">{tx.description || tx.type}</p>
@@ -329,26 +545,6 @@ export default function PartnerWalletPage() {
                 <p>{t("member.wallet.noTransactions")}</p>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-primary" />
-              {t("member.wallet.bankAccount")}
-            </CardTitle>
-            <CardDescription>{t("member.wallet.bankAccountDesc")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              <Building2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>{t("member.wallet.noBankAccount")}</p>
-              <p className="text-sm">{t("member.wallet.contactForBank")}</p>
-            </div>
-            <Button variant="outline" className="w-full mt-4" data-testid="button-add-bank">
-              {t("member.wallet.addBankAccount")}
-            </Button>
           </CardContent>
         </Card>
       </div>

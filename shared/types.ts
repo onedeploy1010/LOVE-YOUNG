@@ -176,6 +176,8 @@ export interface Partner {
   paymentAmount: number | null;
   paymentDate: string | null;
   paymentReference: string | null;
+  packagesPurchased: number;
+  totalBoxesProcessed: number;
   createdAt: string | null;
   updatedAt: string | null;
 }

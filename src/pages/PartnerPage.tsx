@@ -169,96 +169,72 @@ const FAQ_ITEMS = [
 
 function NetworkDiagram({ t }: { t: (key: string) => string }) {
   const [animatedLevel, setAnimatedLevel] = useState(0);
-  
+
   useEffect(() => {
     const timer = setInterval(() => {
       setAnimatedLevel(prev => (prev + 1) % 4);
-    }, 1500);
+    }, 2000);
     return () => clearInterval(timer);
   }, []);
 
   return (
     <div className="relative py-8">
       <div className="flex flex-col items-center gap-3 sm:gap-4">
-        <motion.div 
-          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground font-bold text-sm sm:text-lg shadow-lg"
+        {/* Customer (buyer) */}
+        <motion.div
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-bold text-xs sm:text-sm shadow"
           animate={{ scale: animatedLevel === 0 ? [1, 1.1, 1] : 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          {t("partner.network.customer") || "客户"}
+        </motion.div>
+
+        <div className="flex items-center gap-2">
+          <ArrowDown className="w-4 h-4 text-primary" />
+        </div>
+
+        {/* Direct partner - gets 50%/30% cashback */}
+        <motion.div
+          className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center font-bold text-sm sm:text-lg shadow-lg ${
+            animatedLevel === 1 ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+          }`}
+          animate={{ scale: animatedLevel === 1 ? [1, 1.15, 1] : 1 }}
           transition={{ duration: 0.5 }}
         >
           {t("partner.network.you")}
         </motion.div>
-        
-        <div className="flex items-center gap-2">
-          <div className="w-0.5 h-8 bg-secondary/50" />
+
+        <div className="text-center">
+          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+            {t("partner.dividends.cashbackFirst5")}
+          </Badge>
         </div>
-        
-        <div className="flex items-center gap-3 sm:gap-6 flex-wrap justify-center max-w-xs sm:max-w-none">
-          {[1, 2, 3].map((i) => (
+
+        <div className="flex items-center gap-2">
+          <ArrowDown className="w-4 h-4 text-secondary/50" />
+        </div>
+
+        {/* Same-level Gen 1 - gets 10% of direct cashback */}
+        <div className="flex items-center gap-3 sm:gap-6 flex-wrap justify-center">
+          {[1, 2].map((i) => (
             <motion.div
               key={i}
               className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shadow-md ${
-                animatedLevel === 1 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                animatedLevel === 2 ? "bg-secondary/80 text-secondary-foreground" : "bg-muted text-muted-foreground"
               }`}
-              animate={{ 
-                scale: animatedLevel === 1 ? [1, 1.15, 1] : 1,
-                backgroundColor: animatedLevel === 1 ? ["hsl(var(--muted))", "hsl(var(--primary))", "hsl(var(--primary))"] : undefined
-              }}
+              animate={{ scale: animatedLevel === 2 ? [1, 1.15, 1] : 1 }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
             >
-              {t("partner.network.gen1")}
+              L{i}
             </motion.div>
           ))}
         </div>
-        
-        <div className="text-center">
-          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-            {t("partner.dividends.cashback50")}
-          </Badge>
-        </div>
-        
-        <div className="flex items-center gap-2 sm:gap-4 mt-2 flex-wrap justify-center max-w-xs sm:max-w-md">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <motion.div
-              key={i}
-              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs font-bold shadow ${
-                animatedLevel === 2 ? "bg-secondary/80 text-secondary-foreground" : "bg-muted/80 text-muted-foreground"
-              }`}
-              animate={{ 
-                scale: animatedLevel === 2 ? [1, 1.2, 1] : 1 
-              }}
-              transition={{ duration: 0.5, delay: i * 0.05 }}
-            >
-              {t("partner.network.gen2")}
-            </motion.div>
-          ))}
-        </div>
-        
+
         <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/30">
-          {t("partner.dividends.cashback30")}
-        </Badge>
-        
-        <div className="flex items-center gap-2 sm:gap-4 mt-2 flex-wrap justify-center max-w-xs sm:max-w-md">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
-            <motion.div
-              key={i}
-              className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-medium ${
-                animatedLevel === 3 ? "bg-muted-foreground/20 text-foreground" : "bg-muted/50 text-muted-foreground"
-              }`}
-              animate={{ 
-                scale: animatedLevel === 3 ? [1, 1.15, 1] : 1 
-              }}
-              transition={{ duration: 0.5, delay: i * 0.03 }}
-            >
-              {t("partner.network.gen3")}
-            </motion.div>
-          ))}
-        </div>
-        
-        <Badge variant="outline" className="bg-muted text-muted-foreground">
-          {t("partner.dividends.cashback20")}
+          {t("partner.dividends.sameLevelReward")}
         </Badge>
       </div>
-      
+
       {animatedLevel > 0 && (
         <motion.div
           className="hidden sm:flex absolute top-1/2 right-4 items-center gap-2"
@@ -450,12 +426,11 @@ export default function PartnerPage() {
   const calculateEarnings = (boxes: number) => {
     const pricePerBox = 199;
     let cashback = 0;
+    // 2-tier: first 5 boxes per package = 50%, after = 30%
     if (boxes <= 5) {
       cashback = boxes * pricePerBox * 0.5;
-    } else if (boxes <= 10) {
-      cashback = 5 * pricePerBox * 0.5 + (boxes - 5) * pricePerBox * 0.3;
     } else {
-      cashback = 5 * pricePerBox * 0.5 + 5 * pricePerBox * 0.3 + (boxes - 10) * pricePerBox * 0.2;
+      cashback = 5 * pricePerBox * 0.5 + (boxes - 5) * pricePerBox * 0.3;
     }
     return Math.round(cashback);
   };
@@ -631,16 +606,20 @@ export default function PartnerPage() {
 
                   <div className="mt-6 space-y-3">
                     <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg">
-                      <span className="font-medium">{t("partner.dividends.gen1")}</span>
-                      <Badge className="bg-primary text-primary-foreground">{t("partner.dividends.cashback50")}</Badge>
+                      <span className="font-medium">{t("partner.dividends.directPartner")}</span>
+                      <Badge className="bg-primary text-primary-foreground">{t("partner.dividends.cashbackFirst5")}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg">
+                      <span className="font-medium">{t("partner.dividends.directPartner")}</span>
+                      <Badge className="bg-secondary text-secondary-foreground">{t("partner.dividends.cashbackAfter")}</Badge>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-secondary/5 rounded-lg">
-                      <span className="font-medium">{t("partner.dividends.gen2")}</span>
-                      <Badge className="bg-secondary text-secondary-foreground">{t("partner.dividends.cashback30")}</Badge>
+                      <span className="font-medium">{t("partner.dividends.sameLevelGen1")}</span>
+                      <Badge variant="outline">{t("partner.dividends.sameLevelReward")}</Badge>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                      <span className="font-medium">{t("partner.dividends.gen3")}</span>
-                      <Badge variant="outline">{t("partner.dividends.cashback20")}</Badge>
+                      <span className="font-medium">{t("partner.dividends.sameLevelGen2")}</span>
+                      <Badge variant="outline">{t("partner.dividends.sameLevelReward")}</Badge>
                     </div>
                   </div>
 

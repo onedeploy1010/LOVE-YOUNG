@@ -150,6 +150,8 @@ export const useAuthStore = create<AuthState>()(
                   paymentAmount: partnerData.payment_amount,
                   paymentDate: partnerData.payment_date,
                   paymentReference: partnerData.payment_reference,
+                  packagesPurchased: partnerData.packages_purchased ?? 1,
+                  totalBoxesProcessed: partnerData.total_boxes_processed ?? 0,
                   createdAt: partnerData.created_at,
                   updatedAt: partnerData.updated_at,
                 };

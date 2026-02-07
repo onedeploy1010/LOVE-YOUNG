@@ -1,5 +1,7 @@
 import { useLocation } from "wouter";
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -42,6 +44,7 @@ import {
   Database,
   Brain,
   GitBranch,
+  Bell,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -58,6 +61,7 @@ const getCoreItems = (t: (key: string) => string) => [
   { path: "/admin/withdrawals", label: t("admin.menu.withdrawals"), icon: Wallet },
   { path: "/admin/site-settings", label: t("admin.menu.siteSettings"), icon: Settings },
   { path: "/admin/system-health", label: t("admin.menu.systemHealth"), icon: Activity },
+  { path: "/admin/notifications", label: t("admin.menu.notifications"), icon: Bell },
 ];
 
 const getErpItems = (t: (key: string) => string) => [
@@ -103,6 +107,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const whatsappItems = useMemo(() => getWhatsappItems(t), [t]);
   const aiKnowledgeItems = useMemo(() => getAiKnowledgeItems(t), [t]);
   const allItems = useMemo(() => [...coreItems, ...erpItems, ...marketingItems, ...whatsappItems, ...aiKnowledgeItems], [coreItems, erpItems, marketingItems, whatsappItems, aiKnowledgeItems]);
+
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ["admin-notifications-count"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("admin_notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("is_read", false);
+      return count || 0;
+    },
+    refetchInterval: 30000,
+  });
 
   const isActive = (path: string) => location === path;
 
@@ -317,6 +333,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </div>
 
           <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative text-primary-foreground"
+              onClick={() => navigate("/admin/notifications")}
+              data-testid="button-notification-bell"
+            >
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </Button>
             <LanguageSwitcher testId="button-language-switcher-header" />
             <Button variant="ghost" size="sm" className="hidden sm:flex text-primary-foreground gap-2" onClick={() => navigate("/member")} data-testid="button-header-member">
               <ArrowLeft className="w-4 h-4" />

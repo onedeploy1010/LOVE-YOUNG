@@ -6,9 +6,9 @@ export const PARTNER_TIERS = {
   phase1: {
     name: "Phase 1 - 启航经营人",
     price: 100000, // RM 1000 in cents
-    initialLyPoints: 1000,
+    initialLyPoints: 2000,
     initialRwaTokens: 1,
-    cashbackRate: { first5: 0.5, next5: 0.3, beyond: 0.2 },
+    cashbackRate: { first5PerPkg: 0.5, after: 0.3 },
     weight: 1.0,
   },
   phase2: {
@@ -16,15 +16,15 @@ export const PARTNER_TIERS = {
     price: 130000, // RM 1300 in cents
     initialLyPoints: 2600,
     initialRwaTokens: 1,
-    cashbackRate: { first5: 0.5, next5: 0.3, beyond: 0.2 },
+    cashbackRate: { first5PerPkg: 0.5, after: 0.3 },
     weight: 1.2,
   },
   phase3: {
     name: "Phase 3 - 卓越经营人",
     price: 150000, // RM 1500 in cents
-    initialLyPoints: 3800,
+    initialLyPoints: 3000,
     initialRwaTokens: 1,
-    cashbackRate: { first5: 0.5, next5: 0.3, beyond: 0.2 },
+    cashbackRate: { first5PerPkg: 0.5, after: 0.3 },
     weight: 1.5,
   },
 } as const;
@@ -42,17 +42,16 @@ export const BONUS_POOL_CONFIG = {
   minPartnersForRwa: 10, // Every 10 partners = 1 RWA
 };
 
-// Order cashback configuration (3-generation rewards for partners)
+// Order cashback configuration (2-tier per package)
 export const ORDER_CASHBACK_CONFIG = {
-  maxGenerations: 3, // 三代返现
-  maxCashbackPerCycle: 10, // Maximum 10 cashback events per 30-day cycle
-  cycleDays: 30, // 30 days per cycle reset
-  tiers: {
-    tier1: { minBoxes: 0, maxBoxes: 2, rate: 0.50 },   // 20% for boxes 1-2
-    tier2: { minBoxes: 2, maxBoxes: 5, rate: 0.30 },   // 30% for boxes 3-5
-    tier3: { minBoxes: 5, maxBoxes: 10, rate: 0.20 },  // 50% for boxes 6-10
-  },
+  first5Rate: 0.50, // 50% for first 5 boxes per package
+  afterRate: 0.30,   // 30% after
+  sameLevelRate: 0.10, // 10% of direct cashback to partner-referrers
+  sameLevelMaxGen: 2, // Up to 2 generations of partner-referrers
 };
+
+// LY replenishment rates per network layer (10 layers)
+export const LY_NETWORK_LEVELS = [20, 15, 10, 10, 10, 5, 5, 5, 5, 5];
 
 // Generate referral code
 function generateReferralCode(): string {
@@ -335,245 +334,227 @@ export async function checkGroupRwaEligibility(): Promise<void> {
   console.log(`Total partners: ${totalPartners}, RWA milestones: ${rwaToAward}`);
 }
 
-// ============ Order Cashback System (3-Generation) ============
+// ============ Order Cashback System (2-tier per package) ============
 
-// Get current 30-day cycle key (YYYY-MM format)
-function getCurrentCashbackCycle(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-}
-
-// Get partner's box count for current cycle
-export async function getPartnerBoxCount(partnerId: string): Promise<number> {
-  const yearMonth = getCurrentCashbackCycle();
-
-  const { data } = await supabase
-    .from("monthly_cashback_tracking")
-    .select("box_count")
-    .eq("partner_id", partnerId)
-    .eq("year_month", yearMonth)
-    .single();
-
-  return data?.box_count || 0;
-}
-
-// Get partner's cashback rate based on current box count
-export function getPartnerCashbackRate(currentBoxCount: number): number {
-  const { tiers } = ORDER_CASHBACK_CONFIG;
-
-  if (currentBoxCount < tiers.tier1.maxBoxes) {
-    return tiers.tier1.rate; // 20%
-  } else if (currentBoxCount < tiers.tier2.maxBoxes) {
-    return tiers.tier2.rate; // 30%
-  } else if (currentBoxCount < tiers.tier3.maxBoxes) {
-    return tiers.tier3.rate; // 50%
+// Get partner's cashback rate based on boxes processed vs packages purchased
+export function getPartnerCashbackRate(
+  totalBoxesProcessed: number,
+  packagesPurchased: number = 1
+): number {
+  const fiftyPctLimit = packagesPurchased * 5;
+  if (totalBoxesProcessed < fiftyPctLimit) {
+    return ORDER_CASHBACK_CONFIG.first5Rate; // 50%
   }
-  return 0; // Max 10 boxes reached
+  return ORDER_CASHBACK_CONFIG.afterRate; // 30%
 }
 
-// Find upline partners (up to 3 generations)
-export async function findUplinePartners(
-  memberId: string,
-  maxGenerations: number = 3
-): Promise<Array<{
+// Find the nearest upline partner (walk up referral chain)
+export async function findNearestUplinePartner(
+  memberId: string
+): Promise<{
   partnerId: string;
   memberId: string;
-  generation: number;
-  boxCount: number;
-  cashbackRate: number;
-}>> {
-  const uplinePartners: Array<{
-    partnerId: string;
-    memberId: string;
-    generation: number;
-    boxCount: number;
-    cashbackRate: number;
-  }> = [];
-
+  totalBoxesProcessed: number;
+  packagesPurchased: number;
+  lyBalance: number;
+} | null> {
   let currentMemberId = memberId;
-  let generation = 0;
+  const maxDepth = 10;
 
-  while (generation < maxGenerations) {
-    // Get referrer of current member
+  for (let depth = 0; depth < maxDepth; depth++) {
     const { data: member } = await supabase
       .from("members")
       .select("referrer_id")
       .eq("id", currentMemberId)
       .single();
 
-    if (!member?.referrer_id) {
-      break;
-    }
+    if (!member?.referrer_id) break;
 
-    generation++;
-
-    // Check if referrer is a partner
     const { data: partner } = await supabase
       .from("partners")
-      .select("id, member_id")
+      .select("id, member_id, total_boxes_processed, packages_purchased, ly_balance")
       .eq("member_id", member.referrer_id)
       .eq("status", "active")
       .single();
 
     if (partner) {
-      const boxCount = await getPartnerBoxCount(partner.id);
-      const cashbackRate = getPartnerCashbackRate(boxCount);
-
-      uplinePartners.push({
+      return {
         partnerId: partner.id,
         memberId: partner.member_id,
-        generation,
-        boxCount,
-        cashbackRate,
-      });
+        totalBoxesProcessed: partner.total_boxes_processed || 0,
+        packagesPurchased: partner.packages_purchased || 1,
+        lyBalance: partner.ly_balance || 0,
+      };
     }
 
     currentMemberId = member.referrer_id;
   }
 
-  return uplinePartners;
+  return null;
+}
+
+// Find partner-referrers above a given partner (up to maxGen)
+async function findPartnerReferrers(
+  partnerId: string,
+  maxGen: number
+): Promise<Array<{ partnerId: string; lyBalance: number }>> {
+  const result: Array<{ partnerId: string; lyBalance: number }> = [];
+  let currentPartnerId = partnerId;
+
+  for (let gen = 0; gen < maxGen; gen++) {
+    const { data: current } = await supabase
+      .from("partners")
+      .select("referrer_id")
+      .eq("id", currentPartnerId)
+      .single();
+
+    if (!current?.referrer_id) break;
+
+    const { data: parent } = await supabase
+      .from("partners")
+      .select("id, ly_balance")
+      .eq("id", current.referrer_id)
+      .eq("status", "active")
+      .single();
+
+    if (!parent) break;
+
+    result.push({ partnerId: parent.id, lyBalance: parent.ly_balance || 0 });
+    currentPartnerId = parent.id;
+  }
+
+  return result;
 }
 
 // Process order cashback rewards (called when order is delivered)
+// New logic: direct partner cashback + same-level 10% + LY proportional deduction + replenishment
 export async function processOrderCashback(
   orderId: string,
-  orderAmount: number,
+  orderAmount: number, // in cents
   boxCount: number,
   buyerMemberId: string
 ): Promise<{
   success: boolean;
-  rewards: Array<{ partnerId: string; generation: number; rate: number; amount: number }>;
+  rewards: Array<{ partnerId: string; type: string; rate?: number; amount: number; lyDeducted: number }>;
+  blocked: Array<{ partnerId: string; amount: number; reason: string }>;
   error: Error | null;
 }> {
-  const rewards: Array<{ partnerId: string; generation: number; rate: number; amount: number }> = [];
+  const rewards: Array<{ partnerId: string; type: string; rate?: number; amount: number; lyDeducted: number }> = [];
+  const blocked: Array<{ partnerId: string; amount: number; reason: string }> = [];
 
-  // Find upline partners (up to 3 generations)
-  const uplinePartners = await findUplinePartners(buyerMemberId, ORDER_CASHBACK_CONFIG.maxGenerations);
+  // Step 1: Find nearest upline partner
+  const directPartner = await findNearestUplinePartner(buyerMemberId);
 
-  if (uplinePartners.length === 0) {
-    return { success: true, rewards: [], error: null };
-  }
+  if (directPartner) {
+    const rate = getPartnerCashbackRate(directPartner.totalBoxesProcessed, directPartner.packagesPurchased);
+    const cashbackAmount = Math.floor(orderAmount * rate);
+    const lyRequired = Math.ceil(cashbackAmount / 100); // 1 LY = RM 1 cashback
 
-  const yearMonth = getCurrentCashbackCycle();
-  let prevRate = 0;
-
-  for (const upline of uplinePartners) {
-    // Check if partner has reached max 10 cashback events
-    if (upline.boxCount >= ORDER_CASHBACK_CONFIG.maxCashbackPerCycle) {
-      continue;
-    }
-
-    // Check if partner has LY points
-    const { data: partner } = await supabase
-      .from("partners")
-      .select("ly_balance")
-      .eq("id", upline.partnerId)
-      .single();
-
-    if (!partner || (partner.ly_balance || 0) <= 0) {
-      // No LY points - reward is invalid, skip
-      continue;
-    }
-
-    let cashbackAmount = 0;
-
-    // Calculate cashback amount
-    if (upline.generation === 1) {
-      // First generation gets full rate
-      cashbackAmount = Math.floor(orderAmount * upline.cashbackRate);
+    if (directPartner.lyBalance < lyRequired) {
+      // Block: insufficient LY
+      blocked.push({ partnerId: directPartner.partnerId, amount: cashbackAmount, reason: "insufficient_ly" });
+      // Record blocked in DB
+      await supabase.from("cashback_blocked_records").insert({
+        partner_id: directPartner.partnerId,
+        order_id: orderId,
+        blocked_amount: cashbackAmount,
+        reason: "insufficient_ly",
+        ly_balance_at_time: directPartner.lyBalance,
+        ly_required: lyRequired,
+      });
     } else {
-      // Higher generations get differential (roll-up from lower tier)
-      if (upline.cashbackRate > prevRate) {
-        cashbackAmount = Math.floor(orderAmount * (upline.cashbackRate - prevRate));
+      // Deduct LY proportionally
+      await deductLyPoints(directPartner.partnerId, lyRequired, "cashback", orderId, `Cashback LY deduction (RM ${(cashbackAmount / 100).toFixed(2)})`);
+
+      // Add to cash wallet and increment boxes processed
+      await addToCashWallet(directPartner.partnerId, cashbackAmount, "order_cashback", orderId, `Order cashback (Direct, Rate: ${rate * 100}%)`);
+
+      // Update total_boxes_processed
+      await supabase
+        .from("partners")
+        .update({
+          total_boxes_processed: directPartner.totalBoxesProcessed + boxCount,
+          total_cashback: (directPartner.totalBoxesProcessed || 0) + cashbackAmount,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", directPartner.partnerId);
+
+      rewards.push({ partnerId: directPartner.partnerId, type: "direct", rate, amount: cashbackAmount, lyDeducted: lyRequired });
+    }
+
+    // Step 2: Same-level partner-referrers (up to 2 gen)
+    const sameLevelAmount = Math.floor(cashbackAmount * ORDER_CASHBACK_CONFIG.sameLevelRate);
+    if (sameLevelAmount > 0) {
+      const partnerReferrers = await findPartnerReferrers(directPartner.partnerId, ORDER_CASHBACK_CONFIG.sameLevelMaxGen);
+
+      for (let i = 0; i < partnerReferrers.length; i++) {
+        const ref = partnerReferrers[i];
+        const lyReq = Math.ceil(sameLevelAmount / 100);
+
+        if (ref.lyBalance < lyReq) {
+          blocked.push({ partnerId: ref.partnerId, amount: sameLevelAmount, reason: "insufficient_ly_same_level" });
+          await supabase.from("cashback_blocked_records").insert({
+            partner_id: ref.partnerId,
+            order_id: orderId,
+            blocked_amount: sameLevelAmount,
+            reason: "insufficient_ly_same_level",
+            ly_balance_at_time: ref.lyBalance,
+            ly_required: lyReq,
+          });
+        } else {
+          await deductLyPoints(ref.partnerId, lyReq, "cashback", orderId, `Same-level cashback LY deduction (Gen ${i + 1})`);
+          await addToCashWallet(ref.partnerId, sameLevelAmount, "order_cashback", orderId, `Same-level cashback (Gen ${i + 1}, 10% of direct)`);
+          rewards.push({ partnerId: ref.partnerId, type: "same_level", amount: sameLevelAmount, lyDeducted: lyReq });
+        }
       }
     }
 
-    if (cashbackAmount <= 0) {
-      prevRate = upline.cashbackRate;
-      continue;
+    // Step 3: RWA for direct + same-level partners (handled by DB trigger in migration)
+  }
+
+  // Step 4: LY Replenishment (10-layer network)
+  await replenishLyFromNetwork(orderId, orderAmount, buyerMemberId);
+
+  return { success: true, rewards, blocked, error: null };
+}
+
+// LY Replenishment: walk 10 layers of referral network from buyer
+export async function replenishLyFromNetwork(
+  orderId: string,
+  orderAmount: number, // in cents
+  buyerMemberId: string
+): Promise<void> {
+  const orderAmountRm = orderAmount / 100;
+  let currentMemberId = buyerMemberId;
+
+  for (let layer = 0; layer < LY_NETWORK_LEVELS.length; layer++) {
+    const { data: member } = await supabase
+      .from("members")
+      .select("referrer_id")
+      .eq("id", currentMemberId)
+      .single();
+
+    if (!member?.referrer_id) break;
+
+    // Check if referrer is a partner
+    const { data: partner } = await supabase
+      .from("partners")
+      .select("id")
+      .eq("member_id", member.referrer_id)
+      .eq("status", "active")
+      .single();
+
+    if (partner) {
+      const lyReplenish = Math.floor(orderAmountRm * LY_NETWORK_LEVELS[layer] / 100);
+      if (lyReplenish > 0) {
+        await addLyPoints(partner.id, lyReplenish, "replenish", orderId, layer + 1, `Network LY replenishment (Layer ${layer + 1}, ${LY_NETWORK_LEVELS[layer]}%)`);
+      }
     }
 
-    // Deduct 1 LY point
-    await deductLyPoints(upline.partnerId, 1, "cashback", orderId, "Cashback reward processing fee");
-
-    // Add to cash wallet
-    await addToCashWallet(
-      upline.partnerId,
-      cashbackAmount,
-      "order_cashback",
-      orderId,
-      `Order cashback (Gen ${upline.generation}, Rate: ${upline.cashbackRate * 100}%)`
-    );
-
-    // Update monthly tracking
-    await updateMonthlyCashbackTracking(upline.partnerId, yearMonth, boxCount, cashbackAmount);
-
-    rewards.push({
-      partnerId: upline.partnerId,
-      generation: upline.generation,
-      rate: upline.cashbackRate,
-      amount: cashbackAmount,
-    });
-
-    prevRate = upline.cashbackRate;
-  }
-
-  return { success: true, rewards, error: null };
-}
-
-// Update monthly cashback tracking
-async function updateMonthlyCashbackTracking(
-  partnerId: string,
-  yearMonth: string,
-  boxCount: number,
-  cashbackAmount: number
-): Promise<void> {
-  // Check if record exists
-  const { data: existing } = await supabase
-    .from("monthly_cashback_tracking")
-    .select("id, box_count, total_cashback")
-    .eq("partner_id", partnerId)
-    .eq("year_month", yearMonth)
-    .single();
-
-  if (existing) {
-    // Update existing record
-    await supabase
-      .from("monthly_cashback_tracking")
-      .update({
-        box_count: (existing.box_count || 0) + boxCount,
-        total_cashback: (existing.total_cashback || 0) + cashbackAmount,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", existing.id);
-  } else {
-    // Create new record
-    await supabase.from("monthly_cashback_tracking").insert({
-      partner_id: partnerId,
-      year_month: yearMonth,
-      box_count: boxCount,
-      total_cashback: cashbackAmount,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
+    currentMemberId = member.referrer_id;
   }
 }
 
-// Reset monthly cashback tracking (call at start of each month via cron)
-export async function resetMonthlyCashbackTracking(): Promise<{ count: number; error: Error | null }> {
-  const currentCycle = getCurrentCashbackCycle();
-
-  const { error, count } = await supabase
-    .from("monthly_cashback_tracking")
-    .delete()
-    .neq("year_month", currentCycle);
-
-  if (error) {
-    return { count: 0, error: new Error(error.message) };
-  }
-
-  return { count: count || 0, error: null };
-}
 
 // ============ Referral Network System ============
 
@@ -644,64 +625,22 @@ export async function getReferralTree(
   return { tree, error: null };
 }
 
-// Check for order RWA rewards in referral network
+// Process network order RWA rewards
+// Direct partner +1 RWA, same-level partners (up to 2 gen) +1 RWA each
 export async function processNetworkOrderRwa(
   orderId: string,
   buyerMemberId: string
 ): Promise<void> {
-  // Find if buyer is a member under any partner's network
-  const { data: buyerMember } = await supabase
-    .from("members")
-    .select("referrer_id")
-    .eq("id", buyerMemberId)
-    .single();
+  const directPartner = await findNearestUplinePartner(buyerMemberId);
+  if (!directPartner) return;
 
-  if (!buyerMember?.referrer_id) return;
+  // Award 1 RWA to direct partner
+  await addRwaTokens(directPartner.partnerId, 1, "network_order", orderId);
 
-  // Check if referrer is a partner
-  const { data: referrerPartner } = await supabase
-    .from("partners")
-    .select("id, referrer_id")
-    .eq("member_id", buyerMember.referrer_id)
-    .eq("status", "active")
-    .single();
-
-  if (referrerPartner) {
-    // Award 1 RWA to the referring partner
-    await addRwaTokens(referrerPartner.id, 1, "network_order", orderId);
-  } else {
-    // Buyer's referrer is not a partner, check up the chain
-    // Find the nearest partner in the upline
-    let currentReferrerId = buyerMember.referrer_id;
-    let depth = 0;
-    const maxDepth = 10;
-
-    while (currentReferrerId && depth < maxDepth) {
-      const { data: member } = await supabase
-        .from("members")
-        .select("id, referrer_id")
-        .eq("id", currentReferrerId)
-        .single();
-
-      if (!member) break;
-
-      // Check if this member is a partner
-      const { data: partner } = await supabase
-        .from("partners")
-        .select("id")
-        .eq("member_id", member.id)
-        .eq("status", "active")
-        .single();
-
-      if (partner) {
-        // Award RWA to this partner
-        await addRwaTokens(partner.id, 1, "network_order", orderId);
-        break;
-      }
-
-      currentReferrerId = member.referrer_id;
-      depth++;
-    }
+  // Award 1 RWA to same-level partner-referrers (up to 2 gen)
+  const referrers = await findPartnerReferrers(directPartner.partnerId, ORDER_CASHBACK_CONFIG.sameLevelMaxGen);
+  for (const ref of referrers) {
+    await addRwaTokens(ref.partnerId, 1, "network_order", orderId);
   }
 }
 
@@ -1095,6 +1034,8 @@ function mapPartnerFromDb(row: Record<string, unknown>): Partner {
     paymentAmount: row.payment_amount as number | null,
     paymentDate: row.payment_date as string | null,
     paymentReference: row.payment_reference as string | null,
+    packagesPurchased: (row.packages_purchased as number) ?? 1,
+    totalBoxesProcessed: (row.total_boxes_processed as number) ?? 0,
     createdAt: row.created_at as string | null,
     updatedAt: row.updated_at as string | null,
   };

@@ -39,7 +39,10 @@ import {
   CheckCircle,
   RotateCcw,
   User,
+  BookOpen,
+  Check,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -85,6 +88,7 @@ interface BotConfig {
   is_enabled: boolean;
   system_prompt: string;
   knowledge_base: unknown;
+  knowledge_base_ids?: string[];
   greeting_message: string;
   fallback_message: string;
   model: string;
@@ -94,6 +98,13 @@ interface BotConfig {
   tags: string[];
   created_at: string;
   updated_at: string;
+}
+
+interface KnowledgeBaseArticle {
+  id: string;
+  title: string;
+  category: string | null;
+  is_active: boolean;
 }
 
 type FilterTab = "ai" | "mine" | "unassigned" | "escalated" | "resolved";
@@ -164,7 +175,7 @@ export default function AdminAiCustomerServicePage() {
   // Bot config form state
   const [editDescription, setEditDescription] = useState("");
   const [editSystemPrompt, setEditSystemPrompt] = useState("");
-  const [editKnowledgeBase, setEditKnowledgeBase] = useState("");
+  const [editKnowledgeBaseIds, setEditKnowledgeBaseIds] = useState<string[]>([]);
   const [editGreetingMessage, setEditGreetingMessage] = useState("");
   const [editFallbackMessage, setEditFallbackMessage] = useState("");
   const [editModel, setEditModel] = useState("");
@@ -265,6 +276,23 @@ export default function AdminAiCustomerServicePage() {
         return [];
       }
       return (data || []) as BotConfig[];
+    },
+  });
+
+  // Fetch knowledge base articles
+  const { data: knowledgeBaseArticles = [] } = useQuery({
+    queryKey: ["knowledge-base-articles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ai_knowledge_base")
+        .select("id, title, category, is_active")
+        .eq("is_active", true)
+        .order("category", { ascending: true });
+      if (error) {
+        console.error("Error fetching knowledge base:", error);
+        return [];
+      }
+      return (data || []) as KnowledgeBaseArticle[];
     },
   });
 
@@ -595,7 +623,7 @@ export default function AdminAiCustomerServicePage() {
     setSelectedBot(bot);
     setEditDescription(bot.description || "");
     setEditSystemPrompt(bot.system_prompt || "");
-    setEditKnowledgeBase(bot.knowledge_base ? JSON.stringify(bot.knowledge_base, null, 2) : "");
+    setEditKnowledgeBaseIds(bot.knowledge_base_ids || []);
     setEditGreetingMessage(bot.greeting_message || "");
     setEditFallbackMessage(bot.fallback_message || "");
     setEditModel(bot.model || "gpt-4o-mini");
@@ -607,20 +635,11 @@ export default function AdminAiCustomerServicePage() {
 
   const handleSaveBotConfig = useCallback(() => {
     if (!selectedBot) return;
-    let parsedKnowledgeBase: unknown = null;
-    if (editKnowledgeBase.trim()) {
-      try {
-        parsedKnowledgeBase = JSON.parse(editKnowledgeBase);
-      } catch {
-        toast({ title: t("admin.aiCustomerServicePage.invalidJson"), variant: "destructive" });
-        return;
-      }
-    }
     updateBotMutation.mutate({
       id: selectedBot.id,
       description: editDescription,
       system_prompt: editSystemPrompt,
-      knowledge_base: parsedKnowledgeBase,
+      knowledge_base_ids: editKnowledgeBaseIds,
       greeting_message: editGreetingMessage,
       fallback_message: editFallbackMessage,
       model: editModel,
@@ -632,7 +651,7 @@ export default function AdminAiCustomerServicePage() {
     selectedBot,
     editDescription,
     editSystemPrompt,
-    editKnowledgeBase,
+    editKnowledgeBaseIds,
     editGreetingMessage,
     editFallbackMessage,
     editModel,
@@ -640,9 +659,13 @@ export default function AdminAiCustomerServicePage() {
     editMaxTokens,
     editResponseLanguage,
     updateBotMutation,
-    toast,
-    t,
   ]);
+
+  const toggleKnowledgeBase = useCallback((id: string) => {
+    setEditKnowledgeBaseIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }, []);
 
   // -------------------------------------------------------------------------
   // Render helpers
@@ -1288,17 +1311,55 @@ export default function AdminAiCustomerServicePage() {
                 />
               </div>
 
-              {/* Knowledge Base (JSON) */}
+              {/* Knowledge Base Selection */}
               <div className="space-y-1.5">
-                <label className="text-xs sm:text-sm text-muted-foreground">
+                <label className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
+                  <BookOpen className="w-4 h-4" />
                   {t("admin.aiCustomerServicePage.fieldKnowledgeBase")}
+                  <span className="text-xs text-muted-foreground">
+                    ({editKnowledgeBaseIds.length} {t("admin.aiCustomerServicePage.selected")})
+                  </span>
                 </label>
-                <Textarea
-                  value={editKnowledgeBase}
-                  onChange={(e) => setEditKnowledgeBase(e.target.value)}
-                  placeholder="JSON format"
-                  className="min-h-[120px] font-mono text-xs sm:text-sm"
-                />
+                <div className="border rounded-lg max-h-[200px] overflow-y-auto">
+                  {knowledgeBaseArticles.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-muted-foreground">
+                      {t("admin.aiCustomerServicePage.noKnowledgeBase")}
+                    </div>
+                  ) : (
+                    <div className="divide-y">
+                      {/* Group by category */}
+                      {Object.entries(
+                        knowledgeBaseArticles.reduce((acc, article) => {
+                          const cat = article.category || t("admin.knowledgeBasePage.category_general");
+                          if (!acc[cat]) acc[cat] = [];
+                          acc[cat].push(article);
+                          return acc;
+                        }, {} as Record<string, KnowledgeBaseArticle[]>)
+                      ).map(([category, articles]) => (
+                        <div key={category}>
+                          <div className="px-3 py-1.5 bg-muted/50 text-xs font-medium text-muted-foreground">
+                            {category}
+                          </div>
+                          {articles.map((article) => (
+                            <label
+                              key={article.id}
+                              className="flex items-center gap-3 px-3 py-2 hover:bg-muted/30 cursor-pointer"
+                            >
+                              <Checkbox
+                                checked={editKnowledgeBaseIds.includes(article.id)}
+                                onCheckedChange={() => toggleKnowledgeBase(article.id)}
+                              />
+                              <span className="text-sm flex-1 truncate">{article.title}</span>
+                              {editKnowledgeBaseIds.includes(article.id) && (
+                                <Check className="w-4 h-4 text-green-500 shrink-0" />
+                              )}
+                            </label>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Greeting Message */}

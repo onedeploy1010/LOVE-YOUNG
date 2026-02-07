@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
             // Check if partner already exists for this member
             const { data: existingPartner } = await supabase
               .from("partners")
-              .select("id, ly_balance, rwa_tokens, tier")
+              .select("id, ly_balance, rwa_tokens, tier, packages_purchased")
               .eq("member_id", memberId)
               .single();
 
@@ -111,6 +111,7 @@ Deno.serve(async (req) => {
                 .update({
                   ly_balance: existingPartner.ly_balance + lyPoints,
                   rwa_tokens: existingPartner.rwa_tokens + rwaTokens,
+                  packages_purchased: (existingPartner.packages_purchased || 1) + 1,
                   updated_at: new Date().toISOString(),
                 })
                 .eq("id", existingPartner.id);

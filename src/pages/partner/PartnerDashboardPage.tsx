@@ -10,7 +10,7 @@ import { supabase } from "@/lib/supabase";
 import {
   TrendingUp, Users, Wallet, Award, Share2,
   ArrowUpRight, ArrowDownRight, Copy, Check,
-  Crown, Star, Target, Zap, Loader2
+  Crown, Star, Target, Zap, Loader2, Package, AlertCircle
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "@/lib/i18n";
@@ -71,6 +71,12 @@ export default function PartnerDashboardPage() {
 
       const totalEarningsAmount = totalEarnings?.reduce((sum, e) => sum + e.amount, 0) || 0;
 
+      // Get blocked cashback count
+      const { count: blockedCount } = await supabase
+        .from("cashback_blocked_records")
+        .select("*", { count: "exact", head: true })
+        .eq("partner_id", partner.id);
+
       // Get current bonus pool cycle
       const { data: currentCycle } = await supabase
         .from("bonus_pool_cycles")
@@ -98,6 +104,7 @@ export default function PartnerDashboardPage() {
         monthlyEarnings: thisMonthTotal,
         lastMonthEarnings: lastMonthTotal,
         totalEarnings: totalEarningsAmount,
+        blockedCashback: blockedCount || 0,
         currentCycle: currentCycle?.cycle_number || 1,
         cycleProgress,
         nextPayout,
@@ -307,6 +314,46 @@ export default function PartnerDashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Cashback Progress */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="w-5 h-5 text-primary" />
+              {t("member.partnerDashboard.cashbackProgress")}
+            </CardTitle>
+            <CardDescription>{t("member.partnerDashboard.cashbackProgressDesc")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-muted-foreground">{t("member.partnerDashboard.boxesProcessed")}</span>
+                  <span className="font-medium">
+                    {partner?.totalBoxesProcessed || 0} / {(partner?.packagesPurchased || 1) * 5}
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, ((partner?.totalBoxesProcessed || 0) / ((partner?.packagesPurchased || 1) * 5)) * 100)}
+                  className="h-3"
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  {(partner?.totalBoxesProcessed || 0) < (partner?.packagesPurchased || 1) * 5
+                    ? t("member.partnerDashboard.currentRate50")
+                    : t("member.partnerDashboard.currentRate30")}
+                </p>
+              </div>
+              {(stats?.blockedCashback || 0) > 0 && (
+                <div className="flex items-center gap-2 p-3 bg-orange-500/10 rounded-lg">
+                  <AlertCircle className="w-4 h-4 text-orange-500" />
+                  <p className="text-sm text-orange-500">
+                    {t("member.partnerDashboard.blockedCashback").replace("{count}", String(stats?.blockedCashback || 0))}
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
