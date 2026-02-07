@@ -28,9 +28,10 @@ CREATE INDEX IF NOT EXISTS idx_admin_notifications_created ON admin_notification
 -- RLS
 ALTER TABLE admin_notifications ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Admin full access admin_notifications" ON admin_notifications;
 CREATE POLICY "Admin full access admin_notifications"
   ON admin_notifications FOR ALL
-  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid() AND members.role = 'admin'));
+  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid()::text AND members.role = 'admin'));
 
 -- ============================================
 -- Add notification preferences to whatsapp_admins

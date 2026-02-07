@@ -92,8 +92,8 @@ ALTER TABLE marketing_content ENABLE ROW LEVEL SECURITY;
 -- RLS policies for marketing_content
 CREATE POLICY "Admin full access to marketing_content"
   ON marketing_content FOR ALL
-  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid() AND members.role = 'admin'))
-  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid() AND members.role = 'admin'));
+  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid()::text AND members.role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid()::text AND members.role = 'admin'));
 
 -- Indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_marketing_content_status ON marketing_content(status);

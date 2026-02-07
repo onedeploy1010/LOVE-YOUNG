@@ -35,13 +35,15 @@ CREATE INDEX IF NOT EXISTS idx_cashback_blocked_order ON cashback_blocked_record
 -- RLS
 ALTER TABLE cashback_blocked_records ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Admin full access cashback_blocked" ON cashback_blocked_records;
 CREATE POLICY "Admin full access cashback_blocked"
   ON cashback_blocked_records FOR ALL
-  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid() AND members.role = 'admin'));
+  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid()::text AND members.role = 'admin'));
 
+DROP POLICY IF EXISTS "Partner view own blocked records" ON cashback_blocked_records;
 CREATE POLICY "Partner view own blocked records"
   ON cashback_blocked_records FOR SELECT
-  USING (partner_id IN (SELECT id FROM partners WHERE user_id = auth.uid()));
+  USING (partner_id IN (SELECT id FROM partners WHERE user_id = auth.uid()::text));
 
 -- ============================================
 -- Rewrite: get_partner_cashback_rate
@@ -161,11 +163,7 @@ BEGIN
     v_current_member_id := v_referrer_id;
   END LOOP;
 
-  IF v_direct_partner_id IS NULL THEN
-    -- No upline partner found, still do LY replenishment and RWA pool contribution
-    GOTO ly_replenishment;
-  END IF;
-
+  IF v_direct_partner_id IS NOT NULL THEN
   -- Calculate direct cashback rate
   v_direct_boxes_processed := COALESCE(v_direct_boxes_processed, 0);
   v_direct_packages := COALESCE(v_direct_packages, 1);
@@ -279,8 +277,9 @@ BEGIN
     v_current_partner_id := v_parent_partner_id;
   END LOOP;
 
+  END IF; -- v_direct_partner_id IS NOT NULL
+
   -- ========== STEP 3: LY Replenishment ==========
-  <<ly_replenishment>>
   v_current_member_id := v_buyer_member_id;
 
   FOR v_layer IN 1..10 LOOP

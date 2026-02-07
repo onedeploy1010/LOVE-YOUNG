@@ -39,8 +39,10 @@ CREATE INDEX IF NOT EXISTS idx_ai_training_data_verified ON ai_training_data(is_
 ALTER TABLE ai_knowledge_base ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ai_training_data ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "admin_manage_knowledge_base" ON ai_knowledge_base;
 CREATE POLICY "admin_manage_knowledge_base" ON ai_knowledge_base FOR ALL
-  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid() AND members.role = 'admin'));
+  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid()::text AND members.role = 'admin'));
 
+DROP POLICY IF EXISTS "admin_manage_training_data" ON ai_training_data;
 CREATE POLICY "admin_manage_training_data" ON ai_training_data FOR ALL
-  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid() AND members.role = 'admin'));
+  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid()::text AND members.role = 'admin'));

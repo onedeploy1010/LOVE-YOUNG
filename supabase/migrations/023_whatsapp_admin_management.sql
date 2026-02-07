@@ -58,18 +58,18 @@ ALTER TABLE whatsapp_duty_roster ENABLE ROW LEVEL SECURITY;
 -- RLS policies
 CREATE POLICY "Admin full access to whatsapp_admins"
   ON whatsapp_admins FOR ALL
-  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid() AND members.role = 'admin'))
-  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid() AND members.role = 'admin'));
+  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid()::text AND members.role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid()::text AND members.role = 'admin'));
 
 CREATE POLICY "Admin full access to whatsapp_assignments"
   ON whatsapp_assignments FOR ALL
-  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid() AND members.role = 'admin'))
-  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid() AND members.role = 'admin'));
+  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid()::text AND members.role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid()::text AND members.role = 'admin'));
 
 CREATE POLICY "Admin full access to whatsapp_duty_roster"
   ON whatsapp_duty_roster FOR ALL
-  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid() AND members.role = 'admin'))
-  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid() AND members.role = 'admin'));
+  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid()::text AND members.role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid()::text AND members.role = 'admin'));
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_whatsapp_admins_status ON whatsapp_admins(status);

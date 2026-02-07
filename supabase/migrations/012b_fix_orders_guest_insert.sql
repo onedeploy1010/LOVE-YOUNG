@@ -1,16 +1,11 @@
 -- Migration 012: Fix orders table to allow guest (anonymous) inserts
---
--- Problem: The current RLS policy "Users can insert own orders" checks:
---   (user_id = auth.uid() OR user_id IS NULL)
--- But anon users have auth.uid() = NULL, and the policy check fails because
--- the condition is evaluated in a way that requires authentication context.
---
--- Fix: Add a separate policy for anon role to insert orders with user_id IS NULL
 
 BEGIN;
 
--- Drop existing insert policy and create a more permissive one
+-- Drop existing policies to recreate cleanly
 DROP POLICY IF EXISTS "Users can insert own orders" ON orders;
+DROP POLICY IF EXISTS "Authenticated users can insert orders" ON orders;
+DROP POLICY IF EXISTS "Anonymous users can insert guest orders" ON orders;
 
 -- Policy for authenticated users: can insert orders with their user_id or NULL
 CREATE POLICY "Authenticated users can insert orders"

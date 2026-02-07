@@ -1,7 +1,7 @@
 -- 032: Web Chatbot - extend AI tables for member-facing chat
 
 -- Extend ai_conversations for web chat
-ALTER TABLE ai_conversations ADD COLUMN IF NOT EXISTS member_id UUID REFERENCES members(id);
+ALTER TABLE ai_conversations ADD COLUMN IF NOT EXISTS member_id VARCHAR REFERENCES members(id);
 ALTER TABLE ai_conversations ADD COLUMN IF NOT EXISTS language TEXT DEFAULT 'zh';
 ALTER TABLE ai_conversations ADD COLUMN IF NOT EXISTS channel TEXT DEFAULT 'whatsapp';
 
@@ -9,13 +9,15 @@ ALTER TABLE ai_conversations ADD COLUMN IF NOT EXISTS channel TEXT DEFAULT 'what
 ALTER TABLE ai_messages ADD COLUMN IF NOT EXISTS feedback TEXT CHECK (feedback IN ('positive', 'negative'));
 
 -- RLS: members can manage their own web conversations
+DROP POLICY IF EXISTS "member_own_conversations" ON ai_conversations;
 CREATE POLICY "member_own_conversations" ON ai_conversations FOR ALL
-  USING (member_id IS NOT NULL AND member_id = (SELECT id FROM members WHERE user_id = auth.uid() LIMIT 1));
+  USING (member_id IS NOT NULL AND member_id = (SELECT id FROM members WHERE user_id = auth.uid()::text LIMIT 1));
 
+DROP POLICY IF EXISTS "member_own_messages" ON ai_messages;
 CREATE POLICY "member_own_messages" ON ai_messages FOR ALL
   USING (conversation_id IN (
     SELECT id FROM ai_conversations
-    WHERE member_id = (SELECT id FROM members WHERE user_id = auth.uid() LIMIT 1)
+    WHERE member_id = (SELECT id FROM members WHERE user_id = auth.uid()::text LIMIT 1)
   ));
 
 -- Insert web_chat bot config

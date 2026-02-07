@@ -18,13 +18,15 @@ CREATE INDEX IF NOT EXISTS idx_partner_bank_accounts_partner ON partner_bank_acc
 -- RLS
 ALTER TABLE partner_bank_accounts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Admin full access partner_bank_accounts" ON partner_bank_accounts;
 CREATE POLICY "Admin full access partner_bank_accounts"
   ON partner_bank_accounts FOR ALL
-  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid() AND members.role = 'admin'));
+  USING (EXISTS (SELECT 1 FROM members WHERE members.user_id = auth.uid()::text AND members.role = 'admin'));
 
+DROP POLICY IF EXISTS "Partner manage own bank accounts" ON partner_bank_accounts;
 CREATE POLICY "Partner manage own bank accounts"
   ON partner_bank_accounts FOR ALL
-  USING (partner_id IN (SELECT id FROM partners WHERE user_id = auth.uid()));
+  USING (partner_id IN (SELECT id FROM partners WHERE user_id = auth.uid()::text));
 
 -- Ensure only one default per partner
 CREATE OR REPLACE FUNCTION ensure_single_default_bank()
