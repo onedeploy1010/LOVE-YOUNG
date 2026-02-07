@@ -3597,6 +3597,7 @@
     },
     "recommendProducts": "Here are some products we recommend:",
     "viewProduct": "View",
-    "error": "Sorry, something went wrong. Please try again later."
+    "error": "Sorry, something went wrong. Please try again later.",
+    "referralLabel": "Referral"
   }
 }

@@ -8,8 +8,7 @@ import { LanguageProvider } from "@/lib/i18n";
 import { useAuthStore, initAuthListener } from "@/stores/authStore";
 import { AdminRoute, PartnerRoute, MemberRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { FloatingReferralButton } from "@/components/FloatingReferralButton";
-import { AiChatBot } from "@/components/AiChatBot";
+import { FloatingActionWheel } from "@/components/FloatingActionWheel";
 import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import AuthLoginPage from "@/pages/auth/AuthLoginPage";
@@ -299,8 +298,7 @@ function App() {
             <Toaster />
             <AuthGate>
               <Router />
-              <FloatingReferralButton />
-              <AiChatBot />
+              <FloatingActionWheel />
             </AuthGate>
           </TooltipProvider>
         </LanguageProvider>

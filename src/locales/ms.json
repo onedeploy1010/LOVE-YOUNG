@@ -3597,6 +3597,7 @@
     },
     "recommendProducts": "Berikut produk yang kami syorkan:",
     "viewProduct": "Lihat",
-    "error": "Maaf, terdapat masalah. Sila cuba lagi kemudian."
+    "error": "Maaf, terdapat masalah. Sila cuba lagi kemudian.",
+    "referralLabel": "Rujukan"
   }
 }

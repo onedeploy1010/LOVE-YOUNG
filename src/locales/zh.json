@@ -3597,6 +3597,7 @@
     },
     "recommendProducts": "为您推荐以下产品：",
     "viewProduct": "查看详情",
-    "error": "抱歉，出现了一点问题，请稍后再试"
+    "error": "抱歉，出现了一点问题，请稍后再试",
+    "referralLabel": "推荐链接"
   }
 }
