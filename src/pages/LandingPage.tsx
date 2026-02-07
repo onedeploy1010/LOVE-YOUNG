@@ -246,29 +246,64 @@ export default function LandingPage() {
             transition={{ delay: 0.8, duration: 0.8 }}
             className="flex flex-col sm:flex-row justify-center items-center gap-4 px-4"
           >
-            <ShakeButton>
-              <Button
-                size="lg"
-                className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold rounded-full px-8 sm:px-10 py-3 text-base sm:text-lg shadow-xl hover:shadow-2xl transition-all duration-300 whitespace-nowrap"
-                onClick={handleCnyOrder}
-                data-testid="button-hero-order"
-              >
-                {t("landing.cnyGiftBox")}
-              </Button>
-            </ShakeButton>
-            <GoldCoinButton>
-              <Link href="/partner">
+            {/* Gift box button - isolated container with fixed dimensions to prevent layout shift */}
+            <div className="relative h-14 flex items-center justify-center min-w-[200px]">
+              <ShakeButton>
                 <Button
-                  variant="outline"
                   size="lg"
-                  className="border-white/70 text-white rounded-full px-6 sm:px-8 lg:px-10 text-base sm:text-lg bg-transparent whitespace-nowrap"
-                  data-testid="button-hero-partner"
+                  className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold rounded-full px-8 sm:px-10 py-3 text-base sm:text-lg shadow-xl hover:shadow-2xl transition-all duration-300 whitespace-nowrap"
+                  onClick={handleCnyOrder}
+                  data-testid="button-hero-order"
                 >
-                  {t("landing.heroPartnerBtn")}
+                  {t("landing.cnyGiftBox")}
                 </Button>
-              </Link>
-            </GoldCoinButton>
+              </ShakeButton>
+            </div>
+            {/* Partner button - isolated container with fixed dimensions to prevent layout shift */}
+            <div className="relative h-14 flex items-center justify-center min-w-[180px]">
+              <GoldCoinButton>
+                <Link href="/partner">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="border-white/70 text-white rounded-full px-6 sm:px-8 lg:px-10 text-base sm:text-lg bg-transparent whitespace-nowrap hover:bg-white/10"
+                    data-testid="button-hero-partner"
+                  >
+                    {t("landing.heroPartnerBtn")}
+                  </Button>
+                </Link>
+              </GoldCoinButton>
+            </div>
           </motion.div>
+        </div>
+
+        {/* Floating particles for background animation */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(12)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full"
+              style={{
+                width: 4 + Math.random() * 8,
+                height: 4 + Math.random() * 8,
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                background: `radial-gradient(circle, rgba(255,215,0,${0.3 + Math.random() * 0.4}) 0%, transparent 70%)`,
+              }}
+              animate={{
+                y: [0, -30 - Math.random() * 50, 0],
+                x: [0, (Math.random() - 0.5) * 40, 0],
+                opacity: [0.3, 0.7, 0.3],
+                scale: [1, 1.2, 1],
+              }}
+              transition={{
+                duration: 4 + Math.random() * 4,
+                repeat: Infinity,
+                delay: Math.random() * 3,
+                ease: "easeInOut",
+              }}
+            />
+          ))}
         </div>
 
         <motion.div

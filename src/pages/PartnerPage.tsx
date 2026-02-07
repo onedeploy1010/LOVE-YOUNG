@@ -1078,8 +1078,8 @@ export default function PartnerPage() {
               viewport={{ once: true }}
               variants={fadeInUp}
             >
-              <img 
-                src="/attached_assets/love_young_ecosystem_20260106043624_1_1769380035812.png"
+              <img
+                src="/pics/love_young_ecosystem_20260106043624_1.png"
                 alt={t("partner.ecosystem.imgAlt")}
                 className="rounded-2xl shadow-xl w-full"
                 data-testid="img-ecosystem"
