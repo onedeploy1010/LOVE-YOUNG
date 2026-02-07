@@ -3581,15 +3581,19 @@
     "thinking": "Thinking...",
     "topics": {
       "products": "Products",
+      "giftBox": "Gift Box",
       "partner": "Partner Plan",
-      "company": "About Us",
-      "orders": "Orders"
+      "brandStory": "Brand Story",
+      "howToOrder": "How to Order",
+      "price": "Pricing"
     },
     "topicQuestions": {
-      "products": "What are the main products from LOVE YOUNG?",
-      "partner": "Can you tell me about the partner plan in detail?",
-      "company": "Tell me about LOVE YOUNG's background",
-      "orders": "I'd like to ask about my order"
+      "products": "What products do you recommend?",
+      "giftBox": "What is the Fortune Gift Box?",
+      "partner": "How can I become a partner and earn?",
+      "brandStory": "Tell me the brand story",
+      "howToOrder": "How do I place an order?",
+      "price": "How much is the bird's nest per box?"
     },
     "feedback": {
       "helpful": "Helpful",

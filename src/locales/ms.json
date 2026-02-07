@@ -3581,15 +3581,19 @@
     "thinking": "Sedang berfikir...",
     "topics": {
       "products": "Produk",
-      "partner": "Pelan Rakan Kongsi",
-      "company": "Tentang Kami",
-      "orders": "Pesanan"
+      "giftBox": "Kotak Hadiah",
+      "partner": "Pelan Rakan",
+      "brandStory": "Cerita Jenama",
+      "howToOrder": "Cara Pesan",
+      "price": "Harga"
     },
     "topicQuestions": {
-      "products": "Apakah produk utama LOVE YOUNG?",
-      "partner": "Bolehkah anda ceritakan tentang pelan rakan kongsi?",
-      "company": "Ceritakan tentang latar belakang LOVE YOUNG",
-      "orders": "Saya ingin bertanya tentang pesanan saya"
+      "products": "Apakah produk yang anda syorkan?",
+      "giftBox": "Apakah Kotak Hadiah Fortune?",
+      "partner": "Bagaimana menjadi rakan kongsi dan menjana?",
+      "brandStory": "Ceritakan kisah jenama",
+      "howToOrder": "Bagaimana cara membuat pesanan?",
+      "price": "Berapakah harga sarang burung sekotak?"
     },
     "feedback": {
       "helpful": "Membantu",

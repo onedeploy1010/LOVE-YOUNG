@@ -177,7 +177,14 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
     }
   };
 
-  const topicKeys = ["products", "partner", "company", "orders"] as const;
+  const topicKeys = [
+    "products",
+    "giftBox",
+    "partner",
+    "brandStory",
+    "howToOrder",
+    "price",
+  ] as const;
 
   // Component always mounted for state persistence; only render panel when open
   if (!open) return null;

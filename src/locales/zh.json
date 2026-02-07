@@ -3580,16 +3580,20 @@
     "send": "发送",
     "thinking": "正在思考...",
     "topics": {
-      "products": "产品咨询",
+      "products": "产品推荐",
+      "giftBox": "发财礼盒",
       "partner": "经营人计划",
-      "company": "公司背景",
-      "orders": "订单服务"
+      "brandStory": "品牌故事",
+      "howToOrder": "如何下单",
+      "price": "价格咨询"
     },
     "topicQuestions": {
-      "products": "请介绍一下LOVE YOUNG的主要产品有哪些？",
-      "partner": "请详细介绍经营人计划是怎样的？",
-      "company": "请介绍一下LOVE YOUNG的公司背景",
-      "orders": "我想查询订单相关的问题"
+      "products": "有什么产品推荐？",
+      "giftBox": "发财礼盒是什么？",
+      "partner": "怎么成为经营人赚钱？",
+      "brandStory": "跟我讲讲品牌故事",
+      "howToOrder": "怎么下单购买？",
+      "price": "燕窝多少钱一盒？"
     },
     "feedback": {
       "helpful": "有帮助",
