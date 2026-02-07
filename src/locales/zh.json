@@ -1693,7 +1693,12 @@
       "namePlaceholder": "输入姓名",
       "emailPlaceholder": "输入邮箱地址",
       "cancel": "取消",
-      "confirm": "确认"
+      "confirm": "确认",
+      "withOrders": "有订单",
+      "partners": "经营人",
+      "newMembers": "新会员",
+      "totalOrders": "个订单",
+      "status": "状态"
     },
     "aiCustomerServicePage": {
       "title": "AI客服",

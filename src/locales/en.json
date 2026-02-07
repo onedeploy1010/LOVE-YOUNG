@@ -1693,7 +1693,12 @@
       "namePlaceholder": "Enter name",
       "emailPlaceholder": "Enter email address",
       "cancel": "Cancel",
-      "confirm": "Confirm"
+      "confirm": "Confirm",
+      "withOrders": "With Orders",
+      "partners": "Partners",
+      "newMembers": "New",
+      "totalOrders": "Orders",
+      "status": "Status"
     },
     "aiCustomerServicePage": {
       "title": "AI Customer Service",

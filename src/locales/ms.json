@@ -1693,7 +1693,12 @@
       "namePlaceholder": "Masukkan nama",
       "emailPlaceholder": "Masukkan alamat e-mel",
       "cancel": "Batal",
-      "confirm": "Sahkan"
+      "confirm": "Sahkan",
+      "withOrders": "Dengan Pesanan",
+      "partners": "Rakan Kongsi",
+      "newMembers": "Baharu",
+      "totalOrders": "Pesanan",
+      "status": "Status"
     },
     "aiCustomerServicePage": {
       "title": "Perkhidmatan Pelanggan AI",
