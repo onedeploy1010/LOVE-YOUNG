@@ -200,7 +200,6 @@ serve(async (req) => {
     }
 
     // Check for negative sentiment → fetch product recommendations
-    const questionLower = question.toLowerCase();
     const hasNegativeSentiment = negativeKeywords.some(kw => questionLower.includes(kw));
     let recommendedProducts: Array<{ id: string; name: string; price: number; image_url: string | null }> = [];
 
