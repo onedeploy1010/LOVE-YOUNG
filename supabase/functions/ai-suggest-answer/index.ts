@@ -120,12 +120,11 @@ serve(async (req) => {
     }
 
     // If product question, also fetch actual products from database
-    let productsData: Array<{ id: string; name: string; price: number; description: string | null }> = [];
+    let productsData: Array<{ id: string; name: string; price: number; description: string | null; image: string | null }> = [];
     if (isProductQuestion) {
       const { data: products } = await supabase
         .from("products")
-        .select("id, name, price, description")
-        .eq("is_active", true)
+        .select("id, name, price, description, image")
         .limit(5);
       if (products) productsData = products;
     }
@@ -203,14 +202,27 @@ serve(async (req) => {
     const hasNegativeSentiment = negativeKeywords.some(kw => questionLower.includes(kw));
     let recommendedProducts: Array<{ id: string; name: string; price: number; image_url: string | null }> = [];
 
-    if (hasNegativeSentiment) {
+    // Return products for product questions or negative sentiment
+    if (isProductQuestion && productsData.length) {
+      // Use already fetched products data for product questions
+      recommendedProducts = productsData.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        image_url: p.image,
+      }));
+    } else if (hasNegativeSentiment) {
       const { data: products } = await supabase
         .from("products")
-        .select("id, name, price, image_url")
-        .eq("is_active", true)
+        .select("id, name, price, image")
         .limit(3);
       if (products?.length) {
-        recommendedProducts = products;
+        recommendedProducts = products.map(p => ({
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          image_url: p.image,
+        }));
         contextParts.push(
           "Recommended Products (suggest these to the customer):\n" +
           products.map((p: { name: string; price: number }) =>

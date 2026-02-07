@@ -332,7 +332,10 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
                                   variant="outline"
                                   size="sm"
                                   className="h-6 text-[10px] px-2 shrink-0"
-                                  onClick={() => navigate("/products")}
+                                  onClick={() => {
+                                    onClose();
+                                    navigate(`/products?highlight=${product.id}`);
+                                  }}
                                 >
                                   {t("chatbot.viewProduct")}
                                 </Button>
