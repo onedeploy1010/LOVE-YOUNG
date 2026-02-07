@@ -130,6 +130,13 @@ serve(async (req) => {
       if (products) productsData = products;
     }
 
+    // Partner packages (static data)
+    const partnerPackages = [
+      { id: "phase1", name: "Phase 1 启航经营人", price: 100000, ly_points: 2000, description: "入门配套，开启经营之旅" },
+      { id: "phase2", name: "Phase 2 创始经营人", price: 130000, ly_points: 2860, description: "进阶配套，更高收益权重" },
+      { id: "phase3", name: "Phase 3 战略经营人", price: 150000, ly_points: 3750, description: "顶级配套，最高分红权重" },
+    ];
+
     // Build context from search results
     const contextParts: string[] = [];
 
@@ -369,6 +376,7 @@ serve(async (req) => {
         context_sources: contextParts.length,
         conversation_id: activeConversationId,
         recommended_products: recommendedProducts.length > 0 ? recommendedProducts : undefined,
+        recommended_packages: isPartnerQuestion ? partnerPackages : undefined,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

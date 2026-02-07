@@ -3580,28 +3580,30 @@
     "send": "Hantar",
     "thinking": "Sedang berfikir...",
     "topics": {
-      "products": "Produk",
-      "giftBox": "Kotak Hadiah",
-      "partner": "Pelan Rakan",
-      "brandStory": "Cerita Jenama",
-      "howToOrder": "Cara Pesan",
-      "price": "Harga"
+      "intro": "Pengenalan",
+      "cashback": "Cashback",
+      "rwa": "Dividen RWA",
+      "lyPoints": "Mata LY",
+      "network": "Rangkaian",
+      "referral": "Bonus Rujukan"
     },
     "topicQuestions": {
-      "products": "Apakah produk yang anda syorkan?",
-      "giftBox": "Apakah Kotak Hadiah Fortune?",
-      "partner": "Bagaimana menjadi rakan kongsi dan menjana?",
-      "brandStory": "Ceritakan kisah jenama",
-      "howToOrder": "Bagaimana cara membuat pesanan?",
-      "price": "Berapakah harga sarang burung sekotak?"
+      "intro": "Apakah Program Rakan Kongsi?",
+      "cashback": "Bagaimana cashback berfungsi?",
+      "rwa": "Apakah dividen RWA?",
+      "lyPoints": "Untuk apa mata LY?",
+      "network": "Apakah pengisian rangkaian?",
+      "referral": "Apakah ganjaran rujukan?"
     },
     "feedback": {
       "helpful": "Membantu",
       "notHelpful": "Tidak membantu"
     },
     "recommendProducts": "Berikut produk yang kami syorkan:",
+    "recommendPackages": "Pakej rakan kongsi untuk anda:",
     "viewProduct": "Lihat",
     "orderNow": "Pesan Sekarang",
+    "joinNow": "Sertai Sekarang",
     "error": "Maaf, terdapat masalah. Sila cuba lagi kemudian.",
     "referralLabel": "Rujukan",
     "transferHuman": "Hubungi Sokongan",

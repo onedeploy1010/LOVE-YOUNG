@@ -3580,28 +3580,30 @@
     "send": "发送",
     "thinking": "正在思考...",
     "topics": {
-      "products": "产品推荐",
-      "giftBox": "发财礼盒",
-      "partner": "经营人计划",
-      "brandStory": "品牌故事",
-      "howToOrder": "如何下单",
-      "price": "价格咨询"
+      "intro": "基础简介",
+      "cashback": "返现分红",
+      "rwa": "RWA经营分红",
+      "lyPoints": "LY能量值",
+      "network": "推荐网络",
+      "referral": "推荐奖励"
     },
     "topicQuestions": {
-      "products": "有什么产品推荐？",
-      "giftBox": "发财礼盒是什么？",
-      "partner": "怎么成为经营人赚钱？",
-      "brandStory": "跟我讲讲品牌故事",
-      "howToOrder": "怎么下单购买？",
-      "price": "燕窝多少钱一盒？"
+      "intro": "经营人计划是什么？",
+      "cashback": "返现分红怎么算？",
+      "rwa": "RWA经营分红是什么？",
+      "lyPoints": "LY能量值有什么用？",
+      "network": "推荐网络补充是什么？",
+      "referral": "推荐经营人有什么奖励？"
     },
     "feedback": {
       "helpful": "有帮助",
       "notHelpful": "没帮助"
     },
     "recommendProducts": "为您推荐以下产品：",
+    "recommendPackages": "经营人配套推荐：",
     "viewProduct": "查看详情",
     "orderNow": "立即下单",
+    "joinNow": "立即加入",
     "error": "抱歉，出现了一点问题，请稍后再试",
     "referralLabel": "推荐链接",
     "transferHuman": "转人工客服",

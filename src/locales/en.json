@@ -3580,28 +3580,30 @@
     "send": "Send",
     "thinking": "Thinking...",
     "topics": {
-      "products": "Products",
-      "giftBox": "Gift Box",
-      "partner": "Partner Plan",
-      "brandStory": "Brand Story",
-      "howToOrder": "How to Order",
-      "price": "Pricing"
+      "intro": "Introduction",
+      "cashback": "Cashback",
+      "rwa": "RWA Dividend",
+      "lyPoints": "LY Points",
+      "network": "Network",
+      "referral": "Referral Bonus"
     },
     "topicQuestions": {
-      "products": "What products do you recommend?",
-      "giftBox": "What is the Fortune Gift Box?",
-      "partner": "How can I become a partner and earn?",
-      "brandStory": "Tell me the brand story",
-      "howToOrder": "How do I place an order?",
-      "price": "How much is the bird's nest per box?"
+      "intro": "What is the Partner Program?",
+      "cashback": "How does cashback work?",
+      "rwa": "What is RWA dividend?",
+      "lyPoints": "What are LY points for?",
+      "network": "What is network replenishment?",
+      "referral": "What are the referral rewards?"
     },
     "feedback": {
       "helpful": "Helpful",
       "notHelpful": "Not helpful"
     },
     "recommendProducts": "Here are some products we recommend:",
+    "recommendPackages": "Partner packages for you:",
     "viewProduct": "View",
     "orderNow": "Order Now",
+    "joinNow": "Join Now",
     "error": "Sorry, something went wrong. Please try again later.",
     "referralLabel": "Referral",
     "transferHuman": "Contact Support",

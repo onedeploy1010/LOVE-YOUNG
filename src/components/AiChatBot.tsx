@@ -17,6 +17,7 @@ import {
   Bot,
   RotateCcw,
   ShoppingBag,
+  Users,
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 
@@ -32,6 +33,13 @@ interface ChatMessage {
     name: string;
     price: number;
     image_url: string | null;
+  }>;
+  packages?: Array<{
+    id: string;
+    name: string;
+    price: number;
+    ly_points: number;
+    description: string;
   }>;
 }
 
@@ -131,6 +139,7 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
         role: "assistant",
         content: data.answer || t("chatbot.error"),
         products: data.recommended_products,
+        packages: data.recommended_packages,
       };
 
       setMessages((prev) => [...prev, botMsg]);
@@ -178,12 +187,12 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
   };
 
   const topicKeys = [
-    "products",
-    "giftBox",
-    "partner",
-    "brandStory",
-    "howToOrder",
-    "price",
+    "intro",
+    "cashback",
+    "rwa",
+    "lyPoints",
+    "network",
+    "referral",
   ] as const;
 
   // Component always mounted for state persistence; only render panel when open
@@ -361,6 +370,48 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
                                 >
                                   <ShoppingBag className="w-3 h-3" />
                                   {t("chatbot.orderNow")}
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Partner Package Recommendations */}
+                        {msg.packages && msg.packages.length > 0 && (
+                          <div className="space-y-1.5">
+                            <p className="text-xs text-muted-foreground px-1">
+                              {t("chatbot.recommendPackages")}
+                            </p>
+                            {msg.packages.map((pkg) => (
+                              <div
+                                key={pkg.id}
+                                className="flex items-center gap-2 p-2 rounded-lg border bg-gradient-to-r from-primary/5 to-secondary/5"
+                              >
+                                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                  <Users className="w-5 h-5 text-primary" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-medium truncate">
+                                    {pkg.name}
+                                  </p>
+                                  <p className="text-xs text-primary font-semibold">
+                                    RM {(pkg.price / 100).toFixed(0)}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground">
+                                    {pkg.ly_points} LY能量值
+                                  </p>
+                                </div>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  className="h-6 text-[10px] px-2 shrink-0 gap-1"
+                                  onClick={() => {
+                                    onClose();
+                                    navigate(`/partner/join?tier=${pkg.id}`);
+                                  }}
+                                >
+                                  <Users className="w-3 h-3" />
+                                  {t("chatbot.joinNow")}
                                 </Button>
                               </div>
                             ))}
