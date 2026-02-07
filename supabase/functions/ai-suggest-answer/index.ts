@@ -119,12 +119,13 @@ serve(async (req) => {
         .limit(3);
     }
 
-    // If product question, also fetch actual products from database (limit to 2 for concise responses)
+    // If product question, fetch featured products first (发财礼盒)
     let productsData: Array<{ id: string; name: string; price: number; description: string | null; image: string | null }> = [];
     if (isProductQuestion) {
       const { data: products } = await supabase
         .from("products")
         .select("id, name, price, description, image")
+        .order("featured", { ascending: false })
         .limit(2);
       if (products) productsData = products;
     }
