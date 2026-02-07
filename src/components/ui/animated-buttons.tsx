@@ -12,12 +12,35 @@ interface ShakeButtonProps {
 
 export function ShakeButton({ children, className = "" }: ShakeButtonProps) {
   const [hovered, setHovered] = useState(false);
+  const touchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleTouchStart = useCallback(() => {
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+      touchTimeoutRef.current = null;
+    }
+    setHovered(true);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    touchTimeoutRef.current = setTimeout(() => {
+      setHovered(false);
+    }, 1500);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
+    };
+  }, []);
 
   return (
     <motion.div
       className={`inline-block relative ${className}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       animate={
         hovered
           ? {
