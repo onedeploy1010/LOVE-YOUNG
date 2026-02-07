@@ -72,13 +72,25 @@ serve(async (req) => {
     const embeddingData = await embeddingRes.json();
     const embedding = embeddingData.data[0].embedding;
 
-    // Update the record with the embedding
-    const { error: updateError } = await supabase
-      .from(table)
-      .update({ embedding })
-      .eq("id", record_id);
+    // Convert embedding array to PostgreSQL vector format string
+    const embeddingStr = `[${embedding.join(",")}]`;
 
-    if (updateError) throw updateError;
+    // Update the record with the embedding using raw SQL
+    const { error: updateError } = await supabase.rpc("update_embedding", {
+      p_table: table,
+      p_id: record_id,
+      p_embedding: embeddingStr,
+    });
+
+    if (updateError) {
+      // Fallback: try direct update with string cast
+      const { error: fallbackError } = await supabase
+        .from(table)
+        .update({ embedding: embeddingStr })
+        .eq("id", record_id);
+
+      if (fallbackError) throw fallbackError;
+    }
 
     return new Response(
       JSON.stringify({ success: true, dimensions: embedding.length }),
