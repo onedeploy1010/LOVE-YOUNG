@@ -3579,7 +3579,32 @@
     "placeholder": "Type your question...",
     "send": "Send",
     "thinking": "Thinking...",
+    "categories": {
+      "brand": "Brand",
+      "founders": "Founders",
+      "products": "Products",
+      "orders": "Orders",
+      "partner": "Partner Program"
+    },
+    "categoryQuestions": {
+      "brand": "Tell me about LOVE YOUNG brand",
+      "founders": "Tell me the founder stories",
+      "products": "What products do you recommend",
+      "orders": "Order related questions",
+      "partner": "What is the Partner Program"
+    },
     "topics": {
+      "brandIntro": "Brand Philosophy",
+      "brandValues": "Brand Values",
+      "vivian": "Vivian's Story",
+      "agnes": "Agnes's Story",
+      "andrey": "Andrey's Story",
+      "recommend": "Recommendations",
+      "giftBox": "Gift Box",
+      "price": "Pricing",
+      "howToOrder": "How to Order",
+      "shipping": "Shipping",
+      "refund": "Refunds",
       "intro": "Introduction",
       "cashback": "Cashback",
       "rwa": "RWA Dividend",
@@ -3588,6 +3613,17 @@
       "referral": "Referral Bonus"
     },
     "topicQuestions": {
+      "brandIntro": "What is LOVE YOUNG's brand philosophy?",
+      "brandValues": "What are LOVE YOUNG's core values?",
+      "vivian": "Tell me about founder Vivian",
+      "agnes": "Tell me about founder Agnes",
+      "andrey": "Tell me about founder Andrey",
+      "recommend": "What products do you recommend?",
+      "giftBox": "What is the Fortune Gift Box?",
+      "price": "How much is bird's nest per box?",
+      "howToOrder": "How do I place an order?",
+      "shipping": "How long is shipping?",
+      "refund": "Can I get a refund?",
       "intro": "What is the Partner Program?",
       "cashback": "How does cashback work?",
       "rwa": "What is RWA dividend?",
@@ -3595,6 +3631,7 @@
       "network": "What is network replenishment?",
       "referral": "What are the referral rewards?"
     },
+    "backToTopics": "Back",
     "feedback": {
       "helpful": "Helpful",
       "notHelpful": "Not helpful"

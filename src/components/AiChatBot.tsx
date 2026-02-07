@@ -186,14 +186,32 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
     }
   };
 
-  const topicKeys = [
-    "intro",
-    "cashback",
-    "rwa",
-    "lyPoints",
-    "network",
-    "referral",
-  ] as const;
+  // Two-level topic system
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const mainCategories = ["brand", "founders", "products", "orders", "partner"] as const;
+
+  const subTopics: Record<string, readonly string[]> = {
+    brand: ["brandIntro", "brandValues"],
+    founders: ["vivian", "agnes", "andrey"],
+    products: ["recommend", "giftBox", "price"],
+    orders: ["howToOrder", "shipping", "refund"],
+    partner: ["intro", "cashback", "rwa", "lyPoints", "network", "referral"],
+  };
+
+  const handleCategoryClick = (category: string) => {
+    setSelectedCategory(category);
+    // Send the category intro question
+    sendMessage(t(`chatbot.categoryQuestions.${category}`));
+  };
+
+  const handleSubTopicClick = (topic: string) => {
+    sendMessage(t(`chatbot.topicQuestions.${topic}`));
+  };
+
+  const handleBackToCategories = () => {
+    setSelectedCategory(null);
+  };
 
   // Component always mounted for state persistence; only render panel when open
   if (!open) return null;
@@ -291,20 +309,46 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
                 </div>
               </div>
 
-              {/* Topic Chips */}
-              {showTopics && (
+              {/* Topic Chips - Two Level Navigation */}
+              {showTopics && !selectedCategory && (
                 <div className="flex flex-wrap gap-1.5 pl-8">
-                  {topicKeys.map((key) => (
+                  {mainCategories.map((cat) => (
                     <button
-                      key={key}
+                      key={cat}
                       className="px-2.5 py-1 text-xs rounded-full border bg-background hover:bg-primary/5 hover:border-primary/30 transition-colors"
-                      onClick={() =>
-                        sendMessage(t(`chatbot.topicQuestions.${key}`))
-                      }
+                      onClick={() => handleCategoryClick(cat)}
                     >
-                      {t(`chatbot.topics.${key}`)}
+                      {t(`chatbot.categories.${cat}`)}
                     </button>
                   ))}
+                </div>
+              )}
+
+              {/* Sub-topic Chips */}
+              {showTopics && selectedCategory && subTopics[selectedCategory] && (
+                <div className="pl-8 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="text-xs text-muted-foreground hover:text-primary"
+                      onClick={handleBackToCategories}
+                    >
+                      ← {t("chatbot.backToTopics")}
+                    </button>
+                    <span className="text-xs font-medium text-primary">
+                      {t(`chatbot.categories.${selectedCategory}`)}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {subTopics[selectedCategory].map((topic) => (
+                      <button
+                        key={topic}
+                        className="px-2.5 py-1 text-xs rounded-full border bg-background hover:bg-primary/5 hover:border-primary/30 transition-colors"
+                        onClick={() => handleSubTopicClick(topic)}
+                      >
+                        {t(`chatbot.topics.${topic}`)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
 

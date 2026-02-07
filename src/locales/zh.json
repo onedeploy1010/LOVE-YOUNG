@@ -3579,7 +3579,32 @@
     "placeholder": "输入您的问题...",
     "send": "发送",
     "thinking": "正在思考...",
+    "categories": {
+      "brand": "品牌介绍",
+      "founders": "创始人故事",
+      "products": "产品咨询",
+      "orders": "订单服务",
+      "partner": "经营人计划"
+    },
+    "categoryQuestions": {
+      "brand": "介绍一下LOVE YOUNG品牌",
+      "founders": "讲讲创始人的故事",
+      "products": "有什么产品推荐",
+      "orders": "订单相关问题",
+      "partner": "经营人计划是什么"
+    },
     "topics": {
+      "brandIntro": "品牌理念",
+      "brandValues": "品牌价值",
+      "vivian": "Vivian的故事",
+      "agnes": "Agnes的故事",
+      "andrey": "Andrey的故事",
+      "recommend": "产品推荐",
+      "giftBox": "发财礼盒",
+      "price": "价格咨询",
+      "howToOrder": "如何下单",
+      "shipping": "发货物流",
+      "refund": "退款售后",
       "intro": "基础简介",
       "cashback": "返现分红",
       "rwa": "RWA经营分红",
@@ -3588,6 +3613,17 @@
       "referral": "推荐奖励"
     },
     "topicQuestions": {
+      "brandIntro": "LOVE YOUNG的品牌理念是什么？",
+      "brandValues": "LOVE YOUNG有什么核心价值？",
+      "vivian": "讲讲Vivian创始人的故事",
+      "agnes": "讲讲Agnes创始人的故事",
+      "andrey": "讲讲Andrey创始人的故事",
+      "recommend": "有什么产品推荐？",
+      "giftBox": "发财礼盒是什么？",
+      "price": "燕窝多少钱一盒？",
+      "howToOrder": "怎么下单购买？",
+      "shipping": "发货需要多久？",
+      "refund": "可以退款吗？",
       "intro": "经营人计划是什么？",
       "cashback": "返现分红怎么算？",
       "rwa": "RWA经营分红是什么？",
@@ -3595,6 +3631,7 @@
       "network": "推荐网络补充是什么？",
       "referral": "推荐经营人有什么奖励？"
     },
+    "backToTopics": "返回",
     "feedback": {
       "helpful": "有帮助",
       "notHelpful": "没帮助"
