@@ -136,14 +136,15 @@ export function FloatingActionWheel() {
             <button
               key={item.id}
               data-wheel-id={item.id}
-              className={`flex items-center gap-2.5 px-5 py-3.5 rounded-2xl shadow-xl text-white font-semibold select-none touch-none active:scale-95 ${item.bg}`}
+              className={`flex items-center justify-center gap-2 px-3 py-3 sm:px-5 sm:py-3.5 rounded-2xl shadow-xl text-white font-semibold select-none touch-none active:scale-95 ${item.bg}`}
               style={getSubStyle(item.id)}
               onMouseEnter={() => setHoveredItem(item.id)}
               onMouseLeave={() => setHoveredItem(null)}
               onClick={() => handleSubClick(item.id)}
+              title={item.label}
             >
               <item.icon className="w-5 h-5 shrink-0" />
-              <span className="text-sm whitespace-nowrap">{item.label}</span>
+              <span className="text-sm whitespace-nowrap hidden sm:inline">{item.label}</span>
             </button>
           ))}
         </div>
