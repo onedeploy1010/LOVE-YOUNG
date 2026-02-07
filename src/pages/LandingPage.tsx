@@ -8,6 +8,7 @@ import { FlavorModal } from "@/components/FlavorModal";
 import { OrderModal } from "@/components/OrderModal";
 import { BundleOrderModal } from "@/components/BundleOrderModal";
 import { FortuneGiftBoxModal } from "@/components/FortuneGiftBoxModal";
+import { ShakeButton, GoldCoinButton } from "@/components/ui/animated-buttons";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import {
@@ -245,24 +246,28 @@ export default function LandingPage() {
             transition={{ delay: 0.8, duration: 0.8 }}
             className="flex flex-col sm:flex-row justify-center items-center gap-4 px-4"
           >
-            <Button
-              size="lg"
-              className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold rounded-full px-8 sm:px-10 py-3 text-base sm:text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 whitespace-nowrap"
-              onClick={handleCnyOrder}
-              data-testid="button-hero-order"
-            >
-              {t("landing.cnyGiftBox")}
-            </Button>
-            <Link href="/partner">
+            <ShakeButton>
               <Button
-                variant="outline"
                 size="lg"
-                className="border-white/70 text-white rounded-full px-6 sm:px-8 lg:px-10 text-base sm:text-lg bg-transparent whitespace-nowrap"
-                data-testid="button-hero-partner"
+                className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold rounded-full px-8 sm:px-10 py-3 text-base sm:text-lg shadow-xl hover:shadow-2xl transition-all duration-300 whitespace-nowrap"
+                onClick={handleCnyOrder}
+                data-testid="button-hero-order"
               >
-                {t("landing.heroPartnerBtn")}
+                {t("landing.cnyGiftBox")}
               </Button>
-            </Link>
+            </ShakeButton>
+            <GoldCoinButton>
+              <Link href="/partner">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-white/70 text-white rounded-full px-6 sm:px-8 lg:px-10 text-base sm:text-lg bg-transparent whitespace-nowrap"
+                  data-testid="button-hero-partner"
+                >
+                  {t("landing.heroPartnerBtn")}
+                </Button>
+              </Link>
+            </GoldCoinButton>
           </motion.div>
         </div>
 
@@ -536,11 +541,13 @@ export default function LandingPage() {
                     {t("landing.phase1Feature3")}
                   </li>
                 </ul>
-                <Link href="/partner">
-                  <Button className="w-full bg-secondary text-secondary-foreground rounded-full border-none" data-testid="button-phase1-join">
-                    {t("landing.limitedApply")}
-                  </Button>
-                </Link>
+                <GoldCoinButton className="w-full">
+                  <Link href="/partner">
+                    <Button className="w-full bg-secondary text-secondary-foreground rounded-full border-none" data-testid="button-phase1-join">
+                      {t("landing.limitedApply")}
+                    </Button>
+                  </Link>
+                </GoldCoinButton>
               </Card>
             </motion.div>
 

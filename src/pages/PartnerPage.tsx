@@ -37,6 +37,7 @@ import {
   ArrowUpRight
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { GoldCoinButton } from "@/components/ui/animated-buttons";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -949,16 +950,28 @@ export default function PartnerPage() {
                   </CardContent>
 
                   <CardFooter className="p-6 pt-0">
-                    <Button
-                      className={`w-full ${tier.highlight ? "bg-secondary text-secondary-foreground" : ""}`}
-                      variant={tier.highlight ? "default" : tier.disabled ? "secondary" : "outline"}
-                      onClick={() => !tier.disabled && handleJoin(tier.id)}
-                      disabled={tier.disabled}
-                      data-testid={`button-join-${tier.id}`}
-                    >
-                      {tier.disabled ? t("landing.waitingToOpen") : t("partner.tierSection.consultNow")}
-                      {!tier.disabled && <ArrowRight className="ml-2 w-4 h-4" />}
-                    </Button>
+                    {tier.disabled ? (
+                      <Button
+                        className="w-full"
+                        variant="secondary"
+                        disabled
+                        data-testid={`button-join-${tier.id}`}
+                      >
+                        {t("landing.waitingToOpen")}
+                      </Button>
+                    ) : (
+                      <GoldCoinButton className="w-full">
+                        <Button
+                          className={`w-full ${tier.highlight ? "bg-secondary text-secondary-foreground" : ""}`}
+                          variant={tier.highlight ? "default" : "outline"}
+                          onClick={() => handleJoin(tier.id)}
+                          data-testid={`button-join-${tier.id}`}
+                        >
+                          {t("partner.tierSection.consultNow")}
+                          <ArrowRight className="ml-2 w-4 h-4" />
+                        </Button>
+                      </GoldCoinButton>
+                    )}
                   </CardFooter>
                 </Card>
               </motion.div>
@@ -1157,15 +1170,17 @@ export default function PartnerPage() {
             {t("partner.cta.subtitle")}<strong>{t("partner.cta.subtitleBold")}</strong>
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button
-              size="lg"
-              className="bg-secondary text-secondary-foreground"
-              onClick={() => document.getElementById("tiers")?.scrollIntoView({ behavior: "smooth" })}
-              data-testid="button-final-cta"
-            >
-              {t("partner.cta.becomePartner")}
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
+            <GoldCoinButton>
+              <Button
+                size="lg"
+                className="bg-secondary text-secondary-foreground"
+                onClick={() => document.getElementById("tiers")?.scrollIntoView({ behavior: "smooth" })}
+                data-testid="button-final-cta"
+              >
+                {t("partner.cta.becomePartner")}
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </GoldCoinButton>
             <Button
               variant="outline"
               size="lg"
