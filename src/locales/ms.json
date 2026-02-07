@@ -3569,5 +3569,34 @@
     "viewOrder": "Lihat Pesanan",
     "continueShopping": "Teruskan Membeli-belah",
     "backToHome": "Kembali ke Laman Utama"
+  },
+  "chatbot": {
+    "title": "Pembantu LOVE YOUNG",
+    "greeting": "Hai! Saya pembantu pintar LOVE YOUNG, gembira dapat membantu anda 😊 Tanya saya tentang produk, pelan rakan kongsi, atau syarikat kami.",
+    "loginRequired": "Sila log masuk atau daftar untuk mula berbual",
+    "login": "Log Masuk",
+    "register": "Daftar",
+    "placeholder": "Taip soalan anda...",
+    "send": "Hantar",
+    "thinking": "Sedang berfikir...",
+    "topics": {
+      "products": "Produk",
+      "partner": "Pelan Rakan Kongsi",
+      "company": "Tentang Kami",
+      "orders": "Pesanan"
+    },
+    "topicQuestions": {
+      "products": "Apakah produk utama LOVE YOUNG?",
+      "partner": "Bolehkah anda ceritakan tentang pelan rakan kongsi?",
+      "company": "Ceritakan tentang latar belakang LOVE YOUNG",
+      "orders": "Saya ingin bertanya tentang pesanan saya"
+    },
+    "feedback": {
+      "helpful": "Membantu",
+      "notHelpful": "Tidak membantu"
+    },
+    "recommendProducts": "Berikut produk yang kami syorkan:",
+    "viewProduct": "Lihat",
+    "error": "Maaf, terdapat masalah. Sila cuba lagi kemudian."
   }
 }

@@ -6,13 +6,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const languageInstructions: Record<string, string> = {
+  zh: "请用中文回答。",
+  en: "Please respond in English.",
+  ms: "Sila jawab dalam Bahasa Melayu.",
+};
+
+const negativeKeywords = [
+  // Chinese
+  "不好", "差", "失望", "投诉", "退款", "不满", "问题", "糟糕", "烂", "骗",
+  // English
+  "bad", "terrible", "disappoint", "complain", "refund", "unhappy", "poor", "worst", "awful",
+  // Malay
+  "buruk", "teruk", "kecewa", "aduan", "bayaran balik",
+];
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { question } = await req.json();
+    const {
+      question,
+      language = "zh",
+      conversation_history = [],
+      conversation_id,
+      member_id,
+    } = await req.json();
 
     if (!question) {
       return new Response(
@@ -87,9 +108,62 @@ serve(async (req) => {
       ).join("\n"));
     }
 
+    // Check for negative sentiment → fetch product recommendations
+    const questionLower = question.toLowerCase();
+    const hasNegativeSentiment = negativeKeywords.some(kw => questionLower.includes(kw));
+    let recommendedProducts: Array<{ id: string; name: string; price: number; image_url: string | null }> = [];
+
+    if (hasNegativeSentiment) {
+      const { data: products } = await supabase
+        .from("products")
+        .select("id, name, price, image_url")
+        .eq("is_active", true)
+        .limit(3);
+      if (products?.length) {
+        recommendedProducts = products;
+        contextParts.push(
+          "Recommended Products (suggest these to the customer):\n" +
+          products.map((p: { name: string; price: number }) =>
+            `- ${p.name}: RM ${(p.price / 100).toFixed(2)}`
+          ).join("\n")
+        );
+      }
+    }
+
     const context = contextParts.length > 0
       ? contextParts.join("\n\n")
       : "No relevant context found in the knowledge base.";
+
+    // Get bot config for web_chat system prompt
+    const { data: botConfig } = await supabase
+      .from("ai_bot_config")
+      .select("system_prompt, max_tokens, temperature")
+      .eq("id", "web_chat")
+      .single();
+
+    const systemPrompt = botConfig?.system_prompt ||
+      `You are a helpful customer service AI for LOVE YOUNG, a Malaysian beauty and wellness brand. Answer questions based on the provided context. If the context doesn't contain enough information, provide a general helpful answer. Keep answers concise and professional.`;
+
+    const langInstruction = languageInstructions[language] || languageInstructions.zh;
+
+    // Build messages array with conversation history
+    const messages = [
+      {
+        role: "system",
+        content: `${systemPrompt}\n\n${langInstruction}`,
+      },
+    ];
+
+    // Add conversation history for context continuity
+    for (const msg of conversation_history.slice(-10)) {
+      messages.push({ role: msg.role, content: msg.content });
+    }
+
+    // Add current question with context
+    messages.push({
+      role: "user",
+      content: `Context:\n${context}\n\nQuestion: ${question}\n\nPlease provide a helpful answer:`,
+    });
 
     // Call OpenAI to generate answer
     const chatRes = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -100,18 +174,9 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `You are a helpful customer service AI for LOVE YOUNG, a Malaysian beauty and wellness brand. Answer questions based on the provided context. If the context doesn't contain enough information, provide a general helpful answer. Keep answers concise and professional. Respond in the same language as the question.`,
-          },
-          {
-            role: "user",
-            content: `Context:\n${context}\n\nQuestion: ${question}\n\nPlease provide a helpful answer:`,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
+        messages,
+        temperature: botConfig?.temperature ?? 0.7,
+        max_tokens: botConfig?.max_tokens ?? 500,
       }),
     });
 
@@ -123,8 +188,62 @@ serve(async (req) => {
     const chatData = await chatRes.json();
     const answer = chatData.choices[0]?.message?.content || "";
 
+    // Persist conversation and messages if conversation_id or member_id provided
+    let activeConversationId = conversation_id;
+
+    if (member_id && !activeConversationId) {
+      // Create new conversation
+      const { data: conv } = await supabase
+        .from("ai_conversations")
+        .insert({
+          bot_id: "web_chat",
+          member_id,
+          language,
+          channel: "web",
+          status: "active",
+        })
+        .select("id")
+        .single();
+      activeConversationId = conv?.id;
+    }
+
+    if (activeConversationId) {
+      // Save user message and assistant reply
+      await supabase.from("ai_messages").insert([
+        { conversation_id: activeConversationId, role: "user", content: question },
+        { conversation_id: activeConversationId, role: "assistant", content: answer },
+      ]);
+
+      // Update message count
+      await supabase.rpc("increment_message_count", { conv_id: activeConversationId }).catch(() => {
+        // Fallback: manual update if RPC doesn't exist
+        supabase
+          .from("ai_conversations")
+          .update({ message_count: conversation_history.length + 2 })
+          .eq("id", activeConversationId);
+      });
+    }
+
+    // Save to ai_training_data for learning
+    await supabase.from("ai_training_data").insert({
+      question,
+      answer,
+      category: "general",
+      source: "customer_asked",
+      confidence_score: contextParts.length > 0 ? 0.8 : 0.4,
+      metadata: { language, member_id, conversation_id: activeConversationId },
+    }).catch(() => {
+      // Non-critical, don't fail the request
+    });
+
     return new Response(
-      JSON.stringify({ success: true, answer, context_sources: contextParts.length }),
+      JSON.stringify({
+        success: true,
+        answer,
+        context_sources: contextParts.length,
+        conversation_id: activeConversationId,
+        recommended_products: recommendedProducts.length > 0 ? recommendedProducts : undefined,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

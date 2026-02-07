@@ -3569,5 +3569,34 @@
     "viewOrder": "查看订单",
     "continueShopping": "继续购物",
     "backToHome": "返回首页"
+  },
+  "chatbot": {
+    "title": "LOVE YOUNG 助手",
+    "greeting": "您好！我是LOVE YOUNG智能助手，很高兴为您服务 😊 您可以问我关于产品、经营人计划或公司的任何问题。",
+    "loginRequired": "请先登录或注册会员，即可与我对话",
+    "login": "登录",
+    "register": "注册",
+    "placeholder": "输入您的问题...",
+    "send": "发送",
+    "thinking": "正在思考...",
+    "topics": {
+      "products": "产品咨询",
+      "partner": "经营人计划",
+      "company": "公司背景",
+      "orders": "订单服务"
+    },
+    "topicQuestions": {
+      "products": "请介绍一下LOVE YOUNG的主要产品有哪些？",
+      "partner": "请详细介绍经营人计划是怎样的？",
+      "company": "请介绍一下LOVE YOUNG的公司背景",
+      "orders": "我想查询订单相关的问题"
+    },
+    "feedback": {
+      "helpful": "有帮助",
+      "notHelpful": "没帮助"
+    },
+    "recommendProducts": "为您推荐以下产品：",
+    "viewProduct": "查看详情",
+    "error": "抱歉，出现了一点问题，请稍后再试"
   }
 }

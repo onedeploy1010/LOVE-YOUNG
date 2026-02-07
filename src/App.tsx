@@ -9,6 +9,7 @@ import { useAuthStore, initAuthListener } from "@/stores/authStore";
 import { AdminRoute, PartnerRoute, MemberRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { FloatingReferralButton } from "@/components/FloatingReferralButton";
+import { AiChatBot } from "@/components/AiChatBot";
 import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import AuthLoginPage from "@/pages/auth/AuthLoginPage";
@@ -299,6 +300,7 @@ function App() {
             <AuthGate>
               <Router />
               <FloatingReferralButton />
+              <AiChatBot />
             </AuthGate>
           </TooltipProvider>
         </LanguageProvider>

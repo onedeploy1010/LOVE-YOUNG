@@ -3569,5 +3569,34 @@
     "viewOrder": "View Order",
     "continueShopping": "Continue Shopping",
     "backToHome": "Back to Home"
+  },
+  "chatbot": {
+    "title": "LOVE YOUNG Assistant",
+    "greeting": "Hello! I'm the LOVE YOUNG smart assistant, happy to help you 😊 Feel free to ask me about products, partner plans, or our company.",
+    "loginRequired": "Please log in or register to start chatting",
+    "login": "Login",
+    "register": "Register",
+    "placeholder": "Type your question...",
+    "send": "Send",
+    "thinking": "Thinking...",
+    "topics": {
+      "products": "Products",
+      "partner": "Partner Plan",
+      "company": "About Us",
+      "orders": "Orders"
+    },
+    "topicQuestions": {
+      "products": "What are the main products from LOVE YOUNG?",
+      "partner": "Can you tell me about the partner plan in detail?",
+      "company": "Tell me about LOVE YOUNG's background",
+      "orders": "I'd like to ask about my order"
+    },
+    "feedback": {
+      "helpful": "Helpful",
+      "notHelpful": "Not helpful"
+    },
+    "recommendProducts": "Here are some products we recommend:",
+    "viewProduct": "View",
+    "error": "Sorry, something went wrong. Please try again later."
   }
 }
