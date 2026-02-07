@@ -67,26 +67,47 @@ serve(async (req) => {
     const searchTerms = question.toLowerCase().split(/\s+/).filter((w: string) => w.length > 2);
     const likePattern = searchTerms.length > 0 ? `%${searchTerms[0]}%` : `%${question}%`;
 
-    const [knowledgeRes, productRes, partnerRes] = await Promise.all([
-      supabase
-        .from("ai_knowledge_base")
-        .select("title, content")
-        .eq("is_active", true)
-        .ilike("content", likePattern)
-        .limit(5),
-      supabase
+    // Query knowledge base - search in content and title
+    const knowledgeRes = await supabase
+      .from("ai_knowledge_base")
+      .select("title, content, category")
+      .eq("is_active", true)
+      .or(`content.ilike.${likePattern},title.ilike.${likePattern}`)
+      .limit(5);
+
+    // Also try searching training data for direct Q&A matches
+    const trainingRes = await supabase
+      .from("ai_training_data")
+      .select("question, answer")
+      .eq("is_verified", true)
+      .or(`question.ilike.${likePattern},answer.ilike.${likePattern}`)
+      .limit(3);
+
+    // Query memory tables (may not exist, handle gracefully)
+    let productRes = { data: null, error: null };
+    let partnerRes = { data: null, error: null };
+
+    try {
+      productRes = await supabase
         .from("product_memory")
         .select("title, content")
         .eq("is_active", true)
         .ilike("content", likePattern)
-        .limit(3),
-      supabase
+        .limit(3);
+    } catch {
+      // Table may not exist, ignore
+    }
+
+    try {
+      partnerRes = await supabase
         .from("partner_memory")
         .select("title, content")
         .eq("is_active", true)
         .ilike("content", likePattern)
-        .limit(3),
-    ]);
+        .limit(3);
+    } catch {
+      // Table may not exist, ignore
+    }
 
     // Build context from search results
     const contextParts: string[] = [];
@@ -95,6 +116,12 @@ serve(async (req) => {
       contextParts.push("Knowledge Base:\n" + knowledgeRes.data.map(
         (k: { title: string; content: string }) => `- ${k.title}: ${k.content}`
       ).join("\n"));
+    }
+
+    if (trainingRes.data?.length) {
+      contextParts.push("Related Q&A:\n" + trainingRes.data.map(
+        (q: { question: string; answer: string }) => `Q: ${q.question}\nA: ${q.answer}`
+      ).join("\n\n"));
     }
 
     if (productRes.data?.length) {
@@ -142,8 +169,23 @@ serve(async (req) => {
       .eq("id", "web_chat")
       .single();
 
-    const systemPrompt = botConfig?.system_prompt ||
-      `You are a helpful customer service AI for LOVE YOUNG, a Malaysian beauty and wellness brand. Answer questions based on the provided context. If the context doesn't contain enough information, provide a general helpful answer. Keep answers concise and professional.`;
+    const defaultPrompt = `You are a friendly customer service AI for LOVE YOUNG (燕之爱), a Malaysian premium bird's nest brand.
+
+CONVERSATION STYLE:
+- Keep responses SHORT (3-4 sentences max)
+- Be conversational, like chatting with a friend
+- Use emojis appropriately to add warmth
+- After explaining something, ask "明白了吗？" or "需要我再解释吗？"
+- If customer doesn't understand, explain in a simpler way
+- Guide customer to next action (view products at /products, join partner program, etc.)
+
+KNOWLEDGE:
+- Answer based on the provided context
+- For product questions, recommend specific products and mention /products to purchase
+- For partner program questions, explain simply and guide to /partner/join
+- If unsure, offer to connect with human support via WhatsApp: +60 17-822 8658`;
+
+    const systemPrompt = botConfig?.system_prompt || defaultPrompt;
 
     const langInstruction = languageInstructions[language] || languageInstructions.zh;
 
@@ -252,9 +294,13 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
+    console.error("AI suggest answer error:", error);
     return new Response(
-      JSON.stringify({ error: (error as Error).message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        error: (error as Error).message,
+        answer: "抱歉，我遇到了一些技术问题。请稍后再试，或者通过 WhatsApp 联系我们：+60 17-822 8658 😊"
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
