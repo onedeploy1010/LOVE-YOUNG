@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
+import { ProductCheckoutModal } from "@/components/ProductCheckoutModal";
 import {
   X,
   Send,
@@ -15,6 +16,7 @@ import {
   UserPlus,
   Bot,
   RotateCcw,
+  ShoppingBag,
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 
@@ -48,6 +50,14 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [showTopics, setShowTopics] = useState(true);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<{
+    id: string;
+    name: string;
+    price: number;
+    originalPrice: number;
+    image: string;
+  } | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -328,15 +338,22 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
                                   </p>
                                 </div>
                                 <Button
-                                  variant="outline"
+                                  variant="default"
                                   size="sm"
-                                  className="h-6 text-[10px] px-2 shrink-0"
+                                  className="h-6 text-[10px] px-2 shrink-0 gap-1"
                                   onClick={() => {
-                                    onClose();
-                                    navigate(`/products?highlight=${product.id}`);
+                                    setSelectedProduct({
+                                      id: product.id,
+                                      name: product.name,
+                                      price: product.price / 100,
+                                      originalPrice: product.price / 100,
+                                      image: product.image_url || "",
+                                    });
+                                    setCheckoutOpen(true);
                                   }}
                                 >
-                                  {t("chatbot.viewProduct")}
+                                  <ShoppingBag className="w-3 h-3" />
+                                  {t("chatbot.orderNow")}
                                 </Button>
                               </div>
                             ))}
@@ -428,6 +445,13 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
           </div>
         </>
       )}
+
+      {/* Product Checkout Modal */}
+      <ProductCheckoutModal
+        open={checkoutOpen}
+        onOpenChange={setCheckoutOpen}
+        product={selectedProduct}
+      />
     </div>
   );
 }
