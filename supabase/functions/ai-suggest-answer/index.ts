@@ -119,43 +119,43 @@ serve(async (req) => {
         .limit(3);
     }
 
-    // If product question, also fetch actual products from database
+    // If product question, also fetch actual products from database (limit to 2 for concise responses)
     let productsData: Array<{ id: string; name: string; price: number; description: string | null; image: string | null }> = [];
     if (isProductQuestion) {
       const { data: products } = await supabase
         .from("products")
         .select("id, name, price, description, image")
-        .limit(5);
+        .limit(2);
       if (products) productsData = products;
     }
 
     // Build context from search results
     const contextParts: string[] = [];
 
-    // Add knowledge base content
+    // Add knowledge base content (truncated to keep responses concise)
     const allKnowledge = [
       ...(knowledgeRes.data || []),
       ...(fallbackKnowledge.data || [])
     ];
     if (allKnowledge.length) {
-      contextParts.push("Knowledge Base:\n" + allKnowledge.map(
-        (k: { title: string; content: string }) => `【${k.title}】\n${k.content}`
-      ).join("\n\n"));
+      // Only use first 200 chars of each knowledge entry
+      const summaries = allKnowledge.slice(0, 2).map(
+        (k: { title: string; content: string }) => `${k.title}: ${k.content.slice(0, 150)}...`
+      );
+      contextParts.push("参考信息:\n" + summaries.join("\n"));
     }
 
-    // Add training Q&A
+    // Add training Q&A (only first matching one)
     if (trainingRes.data?.length) {
-      contextParts.push("Related Q&A:\n" + trainingRes.data.map(
-        (q: { question: string; answer: string }) => `Q: ${q.question}\nA: ${q.answer}`
-      ).join("\n\n"));
+      const first = trainingRes.data[0];
+      contextParts.push(`参考回答: ${first.answer.slice(0, 100)}`);
     }
 
-    // Add actual product data if this is a product question
+    // Add actual product data if this is a product question (simplified)
     if (productsData.length) {
-      contextParts.push("Available Products (recommend these to customer):\n" + productsData.map(
-        (p: { name: string; price: number; description: string | null }) =>
-          `- ${p.name}: RM ${(p.price / 100).toFixed(2)}${p.description ? ` - ${p.description}` : ""}`
-      ).join("\n") + "\n\n告诉客户可以在 /products 页面下单购买");
+      contextParts.push("热门产品: " + productsData.map(
+        (p: { name: string; price: number }) => `${p.name} RM${(p.price / 100).toFixed(0)}`
+      ).join("、") + "。更多产品在 /products");
     }
 
     // Query memory tables (may not exist, handle gracefully)
@@ -243,21 +243,20 @@ serve(async (req) => {
       .eq("id", "web_chat")
       .single();
 
-    const defaultPrompt = `You are a friendly customer service AI for LOVE YOUNG (燕之爱), a Malaysian premium bird's nest brand.
+    const defaultPrompt = `你是 LOVE YOUNG（燕之爱）的客服，像朋友聊天一样回答。
 
-CONVERSATION STYLE:
-- Keep responses SHORT (3-4 sentences max)
-- Be conversational, like chatting with a friend
-- Use emojis appropriately to add warmth
-- After explaining something, ask "明白了吗？" or "需要我再解释吗？"
-- If customer doesn't understand, explain in a simpler way
-- Guide customer to next action (view products at /products, join partner program, etc.)
+【严格限制】回复不能超过50字！一次只说一个重点！
 
-KNOWLEDGE:
-- Answer based on the provided context
-- For product questions, recommend specific products and mention /products to purchase
-- For partner program questions, explain simply and guide to /partner/join
-- If unsure, offer to connect with human support via WhatsApp: +60 17-822 8658`;
+回答模式：
+- 产品问题 → "我们主打即食燕窝，RM199起😊 要我推荐适合你的吗？"
+- 经营人问题 → "成为经营人可以赚返佣哦！想了解怎么加入吗？"
+- 价格问题 → 直接说价格 + "去 /products 下单吧！"
+
+规则：
+- 不要列清单，不要用markdown格式
+- 每次只回答一个点
+- 结尾问一句引导下一轮对话
+- 不确定就说联系WhatsApp: +60 17-822 8658`;
 
     const systemPrompt = botConfig?.system_prompt || defaultPrompt;
 
@@ -279,7 +278,7 @@ KNOWLEDGE:
     // Add current question with context
     messages.push({
       role: "user",
-      content: `Context:\n${context}\n\nQuestion: ${question}\n\nPlease provide a helpful answer:`,
+      content: `${context}\n\n用户问: ${question}\n\n【重要：用2-3句话简短回答，不要列清单】`,
     });
 
     // Call OpenAI to generate answer
@@ -293,7 +292,7 @@ KNOWLEDGE:
         model: "gpt-4o-mini",
         messages,
         temperature: botConfig?.temperature ?? 0.7,
-        max_tokens: botConfig?.max_tokens ?? 500,
+        max_tokens: botConfig?.max_tokens ?? 150,
       }),
     });
 
