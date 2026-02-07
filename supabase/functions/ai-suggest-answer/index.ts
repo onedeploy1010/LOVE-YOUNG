@@ -244,7 +244,7 @@ serve(async (req) => {
       .eq("id", "web_chat")
       .single();
 
-    const defaultPrompt = `你是 LOVE YOUNG（燕之爱）的客服，像朋友聊天一样回答。
+    const defaultPrompt = `你是 LOVE YOUNG（养乐）的客服，像朋友聊天一样回答。
 
 【严格限制】回复不能超过50字！一次只说一个重点！
 
