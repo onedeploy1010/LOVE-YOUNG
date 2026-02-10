@@ -55,8 +55,23 @@ import {
 import {
   Package, Search, Plus, Edit, Eye, Trash2, Settings,
   Image as ImageIcon, Loader2, FolderPlus, MoreHorizontal,
-  Tag, DollarSign, Box, Star, Flame, Sparkles, Check, X, Gift
+  Tag, DollarSign, Box, Star, Flame, Sparkles, Check, X, Gift, Layers
 } from "lucide-react";
+
+// Variant type
+interface BundleVariant {
+  id: string;
+  bundle_id: string;
+  name: string;
+  name_en: string | null;
+  name_ms: string | null;
+  image: string | null;
+  price_adjustment: number;
+  sku: string | null;
+  stock: number;
+  is_available: boolean;
+  sort_order: number;
+}
 import type { Product } from "@shared/types";
 
 // Bundle types
@@ -142,6 +157,14 @@ export default function AdminProductsPage() {
   const [bundleEditOpen, setBundleEditOpen] = useState(false);
   const [bundleCreateOpen, setBundleCreateOpen] = useState(false);
   const [bundleDeleteOpen, setBundleDeleteOpen] = useState(false);
+
+  // Variant states
+  const [variants, setVariants] = useState<BundleVariant[]>([]);
+  const [variantsLoading, setVariantsLoading] = useState(false);
+  const [editingVariant, setEditingVariant] = useState<BundleVariant | null>(null);
+  const [newVariant, setNewVariant] = useState({ name: "", name_en: "", name_ms: "", image: "", stock: 0 });
+  const [variantUploading, setVariantUploading] = useState(false);
+  const variantFileInputRef = useRef<HTMLInputElement>(null);
   const [newBundle, setNewBundle] = useState({
     name: "", name_en: "", name_ms: "",
     description: "", target_audience: "", target_audience_en: "", target_audience_ms: "",
@@ -294,6 +317,124 @@ export default function AdminProductsPage() {
       toast({ title: "设置失败", description: e.message, variant: "destructive" });
     },
   });
+
+  // Load variants when bundle is selected
+  const loadVariants = async (bundleId: string) => {
+    setVariantsLoading(true);
+    const { data, error } = await supabase
+      .from("bundle_variants")
+      .select("*")
+      .eq("bundle_id", bundleId)
+      .order("sort_order", { ascending: true });
+    if (!error && data) {
+      setVariants(data as BundleVariant[]);
+    }
+    setVariantsLoading(false);
+  };
+
+  // Add variant
+  const addVariant = async () => {
+    if (!selectedBundle || !newVariant.name) return;
+    const { error } = await supabase
+      .from("bundle_variants")
+      .insert({
+        bundle_id: selectedBundle.id,
+        name: newVariant.name,
+        name_en: newVariant.name_en || null,
+        name_ms: newVariant.name_ms || null,
+        image: newVariant.image || null,
+        stock: newVariant.stock,
+        sort_order: variants.length,
+      });
+    if (error) {
+      toast({ title: "添加失败", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "规格已添加" });
+      loadVariants(selectedBundle.id);
+      setNewVariant({ name: "", name_en: "", name_ms: "", image: "", stock: 0 });
+    }
+  };
+
+  // Update variant
+  const updateVariant = async (variant: BundleVariant) => {
+    const { error } = await supabase
+      .from("bundle_variants")
+      .update({
+        name: variant.name,
+        name_en: variant.name_en,
+        name_ms: variant.name_ms,
+        image: variant.image,
+        stock: variant.stock,
+        is_available: variant.is_available,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", variant.id);
+    if (error) {
+      toast({ title: "更新失败", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "规格已更新" });
+      if (selectedBundle) loadVariants(selectedBundle.id);
+      setEditingVariant(null);
+    }
+  };
+
+  // Delete variant
+  const deleteVariant = async (variantId: string) => {
+    const { error } = await supabase
+      .from("bundle_variants")
+      .delete()
+      .eq("id", variantId);
+    if (error) {
+      toast({ title: "删除失败", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "规格已删除" });
+      if (selectedBundle) loadVariants(selectedBundle.id);
+    }
+  };
+
+  // Upload variant image
+  const handleVariantImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, variantId?: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      toast({ title: "请上传 JPG/PNG/WebP 格式的图片", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "图片大小不能超过 5MB", variant: "destructive" });
+      return;
+    }
+
+    setVariantUploading(true);
+    const ext = file.name.split(".").pop();
+    const fileName = `variants/${crypto.randomUUID()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("product-images")
+      .upload(fileName, file);
+
+    if (uploadError) {
+      toast({ title: "上传失败", description: uploadError.message, variant: "destructive" });
+      setVariantUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("product-images")
+      .getPublicUrl(fileName);
+
+    const publicUrl = urlData.publicUrl;
+
+    if (variantId && editingVariant) {
+      setEditingVariant({ ...editingVariant, image: publicUrl });
+    } else {
+      setNewVariant({ ...newVariant, image: publicUrl });
+    }
+    setVariantUploading(false);
+    toast({ title: "图片上传成功" });
+  };
 
   const { data: categories = [] } = useQuery<ProductCategory[]>({
     queryKey: ["product-categories"],
@@ -803,7 +944,7 @@ export default function AdminProductsPage() {
                             variant="outline"
                             size="sm"
                             className="h-7 sm:h-8 px-2 text-xs"
-                            onClick={() => { setSelectedBundle(bundle); setBundleEditOpen(true); }}
+                            onClick={() => { setSelectedBundle(bundle); loadVariants(bundle.id); setBundleEditOpen(true); }}
                           >
                             <Edit className="w-3 h-3 sm:mr-1" />
                             <span className="hidden sm:inline">编辑</span>
@@ -1262,6 +1403,201 @@ export default function AdminProductsPage() {
                   </p>
                 )}
               </div>
+
+              {/* Variant Management */}
+              <div className="space-y-3 border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <Layers className="w-4 h-4" />
+                    规格款式管理
+                  </label>
+                  <span className="text-xs text-muted-foreground">{variants.length} 个规格</span>
+                </div>
+
+                {/* Existing Variants */}
+                {variantsLoading ? (
+                  <div className="flex justify-center py-4">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {variants.map((v) => (
+                      <div key={v.id} className="flex items-center gap-2 p-2 border rounded-lg">
+                        {editingVariant?.id === v.id ? (
+                          <>
+                            <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                              {editingVariant.image ? (
+                                <img src={editingVariant.image} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <ImageIcon className="w-5 h-5 text-muted-foreground/50" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 space-y-1">
+                              <Input
+                                value={editingVariant.name}
+                                onChange={(e) => setEditingVariant({ ...editingVariant, name: e.target.value })}
+                                placeholder="规格名称"
+                                className="h-7 text-sm"
+                              />
+                              <div className="flex gap-1">
+                                <Input
+                                  value={editingVariant.name_en || ""}
+                                  onChange={(e) => setEditingVariant({ ...editingVariant, name_en: e.target.value })}
+                                  placeholder="English"
+                                  className="h-6 text-xs"
+                                />
+                                <Input
+                                  type="number"
+                                  value={editingVariant.stock}
+                                  onChange={(e) => setEditingVariant({ ...editingVariant, stock: parseInt(e.target.value) || 0 })}
+                                  placeholder="库存"
+                                  className="h-6 text-xs w-16"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <input
+                                type="file"
+                                className="hidden"
+                                id={`variant-upload-${v.id}`}
+                                accept="image/jpeg,image/png,image/webp"
+                                onChange={(e) => handleVariantImageUpload(e, v.id)}
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="h-6 w-6"
+                                disabled={variantUploading}
+                                onClick={() => document.getElementById(`variant-upload-${v.id}`)?.click()}
+                              >
+                                {variantUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ImageIcon className="w-3 h-3" />}
+                              </Button>
+                              <Button
+                                type="button"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => updateVariant(editingVariant)}
+                              >
+                                <Check className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => setEditingVariant(null)}
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                              {v.image ? (
+                                <img src={v.image} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <ImageIcon className="w-5 h-5 text-muted-foreground/50" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{v.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {v.name_en && <span>{v.name_en} · </span>}
+                                库存: {v.stock}
+                              </p>
+                            </div>
+                            <div className="flex gap-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => setEditingVariant(v)}
+                              >
+                                <Edit className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-destructive"
+                                onClick={() => deleteVariant(v.id)}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add New Variant */}
+                <div className="flex items-center gap-2 p-2 border border-dashed rounded-lg">
+                  <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                    {newVariant.image ? (
+                      <img src={newVariant.image} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <Plus className="w-5 h-5 text-muted-foreground/50" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <Input
+                      value={newVariant.name}
+                      onChange={(e) => setNewVariant({ ...newVariant, name: e.target.value })}
+                      placeholder="新规格名称（如：来财款）"
+                      className="h-7 text-sm"
+                    />
+                    <div className="flex gap-1">
+                      <Input
+                        value={newVariant.name_en}
+                        onChange={(e) => setNewVariant({ ...newVariant, name_en: e.target.value })}
+                        placeholder="English name"
+                        className="h-6 text-xs"
+                      />
+                      <Input
+                        type="number"
+                        value={newVariant.stock || ""}
+                        onChange={(e) => setNewVariant({ ...newVariant, stock: parseInt(e.target.value) || 0 })}
+                        placeholder="库存"
+                        className="h-6 text-xs w-16"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <input
+                      type="file"
+                      ref={variantFileInputRef}
+                      className="hidden"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(e) => handleVariantImageUpload(e)}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-6 w-6"
+                      disabled={variantUploading}
+                      onClick={() => variantFileInputRef.current?.click()}
+                    >
+                      {variantUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ImageIcon className="w-3 h-3" />}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={addVariant}
+                      disabled={!newVariant.name}
+                    >
+                      <Plus className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex flex-wrap gap-4">
                 <label className="flex items-center gap-2">
                   <Switch
