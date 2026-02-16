@@ -12,16 +12,16 @@ import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/lib/i18n";
 import {
   Users, Share2, Copy, Link, QrCode, Network,
-  Star, Crown, Shield, Loader2, CheckCircle, UserPlus
+  Star, Crown, Shield, Loader2, CheckCircle, UserPlus,
+  ChevronDown, ChevronRight
 } from "lucide-react";
 
-interface DownlineMember {
+interface ReferralMember {
   id: string;
   name: string;
   email: string;
   role: string;
   referral_code: string;
-  level: number;
   created_at: string;
   points_balance: number;
 }
@@ -35,15 +35,169 @@ interface ReferralStats {
   level3_count: number;
 }
 
+async function fetchDirectReferrals(parentId: string, roleFilter?: string) {
+  let query = supabase
+    .from("members")
+    .select("id, name, email, role, referral_code, created_at, points_balance")
+    .eq("referrer_id", parentId)
+    .order("created_at", { ascending: false });
+  if (roleFilter && roleFilter !== "all") {
+    query = query.eq("role", roleFilter);
+  }
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data || []).map((m: any): ReferralMember => ({
+    id: m.id,
+    name: m.name || "未命名",
+    email: m.email || "",
+    role: m.role || "member",
+    referral_code: m.referral_code || "",
+    created_at: m.created_at,
+    points_balance: m.points_balance || 0,
+  }));
+}
+
+const getRoleBadge = (role: string) => {
+  switch (role) {
+    case "member": return { label: "会员", icon: Star, variant: "secondary" as const };
+    case "partner": return { label: "合伙人", icon: Crown, variant: "default" as const };
+    case "admin": return { label: "管理员", icon: Shield, variant: "destructive" as const };
+    default: return { label: "用户", icon: Users, variant: "outline" as const };
+  }
+};
+
+const formatDate = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+};
+
+function ReferralTreeNode({
+  member,
+  level,
+  roleFilter,
+  expanded,
+  onToggle,
+}: {
+  member: ReferralMember;
+  level: number;
+  roleFilter: string;
+  expanded: Set<string>;
+  onToggle: (id: string) => void;
+}) {
+  const isExpanded = expanded.has(member.id);
+
+  const { data: children, isLoading } = useQuery<ReferralMember[]>({
+    queryKey: ["referral-children", member.id, roleFilter],
+    queryFn: () => fetchDirectReferrals(member.id, roleFilter),
+    enabled: isExpanded,
+  });
+
+  const roleConfig = getRoleBadge(member.role);
+  const RoleIcon = roleConfig.icon;
+
+  return (
+    <div>
+      <div
+        className="flex items-center justify-between p-4 border rounded-lg"
+        style={{ marginLeft: `${(level - 1) * 24}px` }}
+        data-testid={`downline-${member.id}`}
+      >
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => onToggle(member.id)}
+            className="w-6 h-6 flex items-center justify-center rounded hover:bg-muted transition-colors"
+          >
+            {isExpanded ? (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <RoleIcon className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs">
+                L{level}
+              </Badge>
+              <span className="font-medium">{member.name}</span>
+              <Badge variant={roleConfig.variant} className="text-xs">
+                {roleConfig.label}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">{member.email}</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="font-mono text-sm text-muted-foreground">
+            {member.referral_code}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {formatDate(member.created_at)}
+          </p>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="mt-2 space-y-2">
+          {isLoading ? (
+            <div className="flex items-center py-3" style={{ marginLeft: `${level * 24}px` }}>
+              <Loader2 className="w-4 h-4 animate-spin text-primary mr-2" />
+              <span className="text-sm text-muted-foreground">加载中...</span>
+            </div>
+          ) : children && children.length > 0 ? (
+            children.map((child) => (
+              <ReferralTreeNode
+                key={child.id}
+                member={child}
+                level={level + 1}
+                roleFilter={roleFilter}
+                expanded={expanded}
+                onToggle={onToggle}
+              />
+            ))
+          ) : (
+            <div
+              className="flex items-center py-2 text-sm text-muted-foreground"
+              style={{ marginLeft: `${level * 24}px` }}
+            >
+              暂无下线成员
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function MemberReferralsPage() {
   const { t } = useTranslation();
   const { user, member, loading } = useAuth();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const referralCode = member?.referralCode || "";
-  const referralLink = `${window.location.origin}/auth/login?ref=${referralCode}`;
+  const referralLink = referralCode
+    ? `${window.location.origin}/auth/login?ref=${referralCode}`
+    : "";
+
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   // Fetch referral stats
   const { data: stats } = useQuery<ReferralStats>({
@@ -56,7 +210,6 @@ export default function MemberReferralsPage() {
 
       if (error) {
         console.log("Stats function not available:", error.message);
-        // Manual calculation fallback
         const { data: downline } = await supabase
           .from("members")
           .select("id, role, referrer_id")
@@ -84,48 +237,10 @@ export default function MemberReferralsPage() {
     enabled: !!member?.id,
   });
 
-  // Fetch downline network
-  const { data: downline = [], isLoading } = useQuery<DownlineMember[]>({
-    queryKey: ["member-downline", member?.id],
-    queryFn: async () => {
-      if (!member?.id) return [];
-
-      // Try using the function first
-      const { data, error } = await supabase
-        .rpc("get_member_downline", { p_member_id: member.id, p_max_level: 10 });
-
-      if (error) {
-        console.log("Function not available, using fallback:", error.message);
-        // Fallback to direct query (only level 1)
-        const { data: fallbackData } = await supabase
-          .from("members")
-          .select("*")
-          .eq("referrer_id", member.id)
-          .order("created_at", { ascending: false });
-
-        return (fallbackData || []).map((m): DownlineMember => ({
-          id: m.id,
-          name: m.name || "未命名",
-          email: m.email || "",
-          role: m.role || "member",
-          referral_code: m.referral_code || "",
-          level: 1,
-          created_at: m.created_at,
-          points_balance: m.points_balance || 0,
-        }));
-      }
-
-      return (data || []).map((m: any): DownlineMember => ({
-        id: m.id,
-        name: m.name || "未命名",
-        email: m.email || "",
-        role: m.role || "member",
-        referral_code: m.referral_code || "",
-        level: m.level || 1,
-        created_at: m.created_at,
-        points_balance: m.points_balance || 0,
-      }));
-    },
+  // Fetch L1 direct referrals only
+  const { data: l1Members = [], isLoading } = useQuery<ReferralMember[]>({
+    queryKey: ["referral-children", member?.id, activeTab],
+    queryFn: () => fetchDirectReferrals(member!.id, activeTab),
     enabled: !!member?.id,
   });
 
@@ -140,29 +255,6 @@ export default function MemberReferralsPage() {
     }
   };
 
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case "member": return { label: "会员", icon: Star, variant: "secondary" as const };
-      case "partner": return { label: "合伙人", icon: Crown, variant: "default" as const };
-      case "admin": return { label: "管理员", icon: Shield, variant: "destructive" as const };
-      default: return { label: "用户", icon: Users, variant: "outline" as const };
-    }
-  };
-
-  const filteredDownline = activeTab === "all"
-    ? downline
-    : activeTab === "partner"
-    ? downline.filter(d => d.role === "partner")
-    : downline.filter(d => d.role === "member");
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("zh-CN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  };
-
   if (!user) {
     return (
       <MemberLayout>
@@ -173,29 +265,12 @@ export default function MemberReferralsPage() {
     );
   }
 
-  if (!member) {
-    // Still loading auth data — show spinner
-    if (loading) {
-      return (
-        <MemberLayout>
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        </MemberLayout>
-      );
-    }
-    // Auth loaded but no member record — prompt to purchase
+  // Show spinner while auth is still loading
+  if (loading) {
     return (
       <MemberLayout>
-        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-          <Users className="w-16 h-16 text-muted-foreground/40 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">尚未成为会员</h2>
-          <p className="text-muted-foreground mb-6 max-w-sm">
-            完成首次购物后即可自动升级为会员，解锁推荐网络功能
-          </p>
-          <a href="/#products">
-            <Button>去购物</Button>
-          </a>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       </MemberLayout>
     );
@@ -221,68 +296,79 @@ export default function MemberReferralsPage() {
             <CardDescription>分享给好友，双方都有奖励</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground mb-1">推荐码</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-3xl font-mono font-bold text-primary tracking-wider">
-                    {referralCode}
-                  </span>
+            {referralCode ? (
+              <>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <p className="text-sm text-muted-foreground mb-1">推荐码</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-3xl font-mono font-bold text-primary tracking-wider">
+                        {referralCode}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(referralCode, "推荐码")}
+                        data-testid="button-copy-code"
+                      >
+                        {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center border">
+                    <QrCode className="w-12 h-12 text-muted-foreground" />
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">推荐链接</p>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={referralLink}
+                      readOnly
+                      className="font-mono text-sm"
+                      data-testid="input-referral-link"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => copyToClipboard(referralLink, "推荐链接")}
+                      data-testid="button-copy-link"
+                    >
+                      <Link className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    className="flex-1 bg-green-500 hover:bg-green-600"
+                    onClick={() => {
+                      const text = `加入LOVEYOUNG，使用我的推荐码 ${referralCode} 注册享优惠！${referralLink}`;
+                      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+                    }}
+                  >
+                    <Share2 className="w-4 h-4 mr-2" />
+                    分享到 WhatsApp
+                  </Button>
                   <Button
                     variant="outline"
-                    size="sm"
-                    onClick={() => copyToClipboard(referralCode, "推荐码")}
-                    data-testid="button-copy-code"
+                    className="flex-1"
+                    onClick={() => copyToClipboard(referralLink, "推荐链接")}
                   >
-                    {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    <Copy className="w-4 h-4 mr-2" />
+                    复制链接
                   </Button>
                 </div>
+              </>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-muted-foreground">暂无推荐码</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  完成首次购物后即可获得推荐码
+                </p>
               </div>
-              <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center border">
-                <QrCode className="w-12 h-12 text-muted-foreground" />
-              </div>
-            </div>
-
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">推荐链接</p>
-              <div className="flex items-center gap-2">
-                <Input
-                  value={referralLink}
-                  readOnly
-                  className="font-mono text-sm"
-                  data-testid="input-referral-link"
-                />
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => copyToClipboard(referralLink, "推荐链接")}
-                  data-testid="button-copy-link"
-                >
-                  <Link className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button
-                className="flex-1 bg-green-500 hover:bg-green-600"
-                onClick={() => {
-                  const text = `加入LOVEYOUNG，使用我的推荐码 ${referralCode} 注册享优惠！${referralLink}`;
-                  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
-                }}
-              >
-                <Share2 className="w-4 h-4 mr-2" />
-                分享到 WhatsApp
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => copyToClipboard(referralLink, "推荐链接")}
-              >
-                <Copy className="w-4 h-4 mr-2" />
-                复制链接
-              </Button>
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -318,7 +404,7 @@ export default function MemberReferralsPage() {
           </Card>
         </div>
 
-        {/* Downline List */}
+        {/* Downline Tree */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -328,16 +414,16 @@ export default function MemberReferralsPage() {
             <CardDescription>查看您推荐的所有会员</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setExpanded(new Set()); }}>
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="all" data-testid="tab-all">
-                  全部 ({downline.length})
+                  全部 ({stats?.total_network || 0})
                 </TabsTrigger>
                 <TabsTrigger value="partner" data-testid="tab-partner">
-                  合伙人 ({downline.filter(d => d.role === "partner").length})
+                  合伙人 ({stats?.partners_in_network || 0})
                 </TabsTrigger>
                 <TabsTrigger value="member" data-testid="tab-member">
-                  会员 ({downline.filter(d => d.role === "member").length})
+                  会员 ({(stats?.total_network || 0) - (stats?.partners_in_network || 0)})
                 </TabsTrigger>
               </TabsList>
 
@@ -346,7 +432,7 @@ export default function MemberReferralsPage() {
                   <div className="flex items-center justify-center py-12">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
                   </div>
-                ) : filteredDownline.length === 0 ? (
+                ) : l1Members.length === 0 ? (
                   <div className="text-center py-12">
                     <Users className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
                     <p className="text-muted-foreground">暂无推荐会员</p>
@@ -355,45 +441,17 @@ export default function MemberReferralsPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {filteredDownline.map((member) => {
-                      const roleConfig = getRoleBadge(member.role);
-                      const RoleIcon = roleConfig.icon;
-                      return (
-                        <div
-                          key={member.id}
-                          className="flex items-center justify-between p-4 border rounded-lg"
-                          style={{ marginLeft: `${(member.level - 1) * 16}px` }}
-                          data-testid={`downline-${member.id}`}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                              <RoleIcon className="w-5 h-5 text-primary" />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="text-xs">
-                                  L{member.level}
-                                </Badge>
-                                <span className="font-medium">{member.name}</span>
-                                <Badge variant={roleConfig.variant} className="text-xs">
-                                  {roleConfig.label}
-                                </Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">{member.email}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-mono text-sm text-muted-foreground">
-                              {member.referral_code}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatDate(member.created_at)}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
+                  <div className="space-y-2">
+                    {l1Members.map((m) => (
+                      <ReferralTreeNode
+                        key={m.id}
+                        member={m}
+                        level={1}
+                        roleFilter={activeTab}
+                        expanded={expanded}
+                        onToggle={toggleExpand}
+                      />
+                    ))}
                   </div>
                 )}
               </TabsContent>
