@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { useTranslation } from "@/lib/i18n";
 import {
-  Star, ArrowUpRight, ArrowDownRight, Gift, ShoppingBag,
+  Star, ArrowUpRight, ArrowDownRight,
   Users, TrendingUp, History, Filter, Download, Loader2
 } from "lucide-react";
 
@@ -56,8 +56,7 @@ export default function PartnerLyPointsPage() {
     totalBalance: partner?.lyBalance || 0,
     totalEarned: ledger.filter(l => l.points > 0).reduce((sum, l) => sum + l.points, 0),
     totalSpent: Math.abs(ledger.filter(l => l.points < 0).reduce((sum, l) => sum + l.points, 0)),
-    fromReferrals: ledger.filter(l => l.type === "bonus" && l.description?.includes("推荐")).reduce((sum, l) => sum + l.points, 0),
-    fromReplenishment: ledger.filter(l => l.type === "bonus" && l.description?.includes("补货")).reduce((sum, l) => sum + l.points, 0),
+    fromNetwork: ledger.filter(l => l.type === "replenish").reduce((sum, l) => sum + l.points, 0),
   };
 
   const formatDate = (dateStr: string) => {
@@ -99,21 +98,11 @@ export default function PartnerLyPointsPage() {
                   <h2 className="text-3xl sm:text-4xl font-bold text-primary">{stats.totalBalance.toLocaleString()}</h2>
                 </div>
               </div>
-              <div className="flex gap-2 sm:gap-3">
-                <Button variant="outline" size="sm" className="flex-1 md:flex-none" data-testid="button-redeem">
-                  <Gift className="w-4 h-4 mr-1.5" />
-                  {t("member.lyPoints.redeemGift")}
-                </Button>
-                <Button size="sm" className="flex-1 md:flex-none" data-testid="button-use-points">
-                  <ShoppingBag className="w-4 h-4 mr-1.5" />
-                  {t("member.lyPoints.usePoints")}
-                </Button>
-              </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           <Card>
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-1.5 mb-1 sm:mb-2">
@@ -136,18 +125,9 @@ export default function PartnerLyPointsPage() {
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-1.5 mb-1 sm:mb-2">
                 <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
-                <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight truncate">{t("member.lyPoints.fromReferrals")}</span>
+                <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight truncate">团队消费补充</span>
               </div>
-              <p className="text-lg sm:text-2xl font-bold text-primary">+{stats.fromReferrals.toLocaleString()}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center gap-1.5 mb-1 sm:mb-2">
-                <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-secondary shrink-0" />
-                <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight truncate">{t("member.lyPoints.fromReplenishment")}</span>
-              </div>
-              <p className="text-lg sm:text-2xl font-bold text-secondary">+{stats.fromReplenishment.toLocaleString()}</p>
+              <p className="text-lg sm:text-2xl font-bold text-primary">+{stats.fromNetwork.toLocaleString()}</p>
             </CardContent>
           </Card>
         </div>
