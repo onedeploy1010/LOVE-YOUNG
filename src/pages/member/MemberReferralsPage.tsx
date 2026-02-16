@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MemberLayout } from "@/components/MemberLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -85,7 +85,7 @@ export default function MemberReferralsPage() {
   const { user, member, loading } = useAuth();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
+  const [roleFilter, setRoleFilter] = useState("all");
   // Drill-down navigation: breadcrumb trail of parent nodes
   const [breadcrumb, setBreadcrumb] = useState<BreadcrumbNode[]>([]);
 
@@ -149,8 +149,8 @@ export default function MemberReferralsPage() {
 
   // Fetch children for current parent
   const { data: currentMembers = [], isLoading } = useQuery<ReferralMember[]>({
-    queryKey: ["referral-children", currentParentId, activeTab],
-    queryFn: () => fetchDirectReferrals(currentParentId!, activeTab),
+    queryKey: ["referral-children", currentParentId, roleFilter],
+    queryFn: () => fetchDirectReferrals(currentParentId!, roleFilter),
     enabled: !!currentParentId,
   });
 
@@ -321,122 +321,122 @@ export default function MemberReferralsPage() {
               <Network className="w-5 h-5 text-primary" />
               我的团队
             </CardTitle>
-            <CardDescription>点击成员查看其下线</CardDescription>
+            <CardDescription>
+              {breadcrumb.length === 0 ? "点击成员查看其下线" : `当前查看第 ${breadcrumb.length + 1} 层 · 点击成员继续深入`}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setBreadcrumb([]); }}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="all" data-testid="tab-all">
-                  全部 ({stats?.total_network || 0})
-                </TabsTrigger>
-                <TabsTrigger value="partner" data-testid="tab-partner">
-                  合伙人 ({stats?.partners_in_network || 0})
-                </TabsTrigger>
-                <TabsTrigger value="member" data-testid="tab-member">
-                  会员 ({(stats?.total_network || 0) - (stats?.partners_in_network || 0)})
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value={activeTab} className="mt-4">
-                {/* Breadcrumb navigation */}
-                {breadcrumb.length > 0 && (
-                  <div className="flex items-center gap-1 mb-4 flex-wrap">
-                    <button
-                      onClick={() => navigateTo(0)}
-                      className="flex items-center gap-1 text-sm text-primary hover:underline"
-                    >
-                      <ArrowLeft className="w-3.5 h-3.5" />
-                      我的下线
-                    </button>
-                    {breadcrumb.map((node, index) => (
-                      <span key={node.id} className="flex items-center gap-1">
-                        <span className="text-sm text-muted-foreground">/</span>
-                        {index === breadcrumb.length - 1 ? (
-                          <span className="text-sm font-medium">{node.name}</span>
-                        ) : (
-                          <button
-                            onClick={() => navigateTo(index + 1)}
-                            className="text-sm text-primary hover:underline"
-                          >
-                            {node.name}
-                          </button>
-                        )}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                  </div>
-                ) : currentMembers.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Users className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <p className="text-muted-foreground">
-                      {breadcrumb.length > 0 ? "该成员暂无下线" : "暂无推荐会员"}
-                    </p>
-                    {breadcrumb.length === 0 && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        分享您的推荐码，邀请好友加入
-                      </p>
-                    )}
-                    {breadcrumb.length > 0 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="mt-4"
-                        onClick={() => navigateTo(breadcrumb.length - 1)}
+            {/* Filter dropdown + breadcrumb bar */}
+            <div className="flex items-center justify-between gap-3 mb-4">
+              {/* Breadcrumb navigation */}
+              <div className="flex items-center gap-1 flex-wrap min-w-0">
+                <button
+                  onClick={() => navigateTo(0)}
+                  className={`flex items-center gap-1 text-sm shrink-0 ${breadcrumb.length > 0 ? "text-primary hover:underline" : "font-medium text-foreground"}`}
+                >
+                  {breadcrumb.length > 0 && <ArrowLeft className="w-3.5 h-3.5" />}
+                  我的下线
+                </button>
+                {breadcrumb.map((node, index) => (
+                  <span key={node.id} className="flex items-center gap-1">
+                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                    {index === breadcrumb.length - 1 ? (
+                      <span className="text-sm font-medium truncate">{node.name}</span>
+                    ) : (
+                      <button
+                        onClick={() => navigateTo(index + 1)}
+                        className="text-sm text-primary hover:underline truncate"
                       >
-                        <ArrowLeft className="w-4 h-4 mr-1" />
-                        返回上一层
-                      </Button>
+                        {node.name}
+                      </button>
                     )}
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {currentMembers.map((m) => {
-                      const roleConfig = getRoleBadge(m.role);
-                      const RoleIcon = roleConfig.icon;
-                      return (
-                        <div
-                          key={m.id}
-                          className="flex items-center justify-between p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors gap-2"
-                          data-testid={`downline-${m.id}`}
-                          onClick={() => drillDown(m.id, m.name)}
-                        >
-                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                              <RoleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                                <span className="font-medium text-sm sm:text-base truncate">{m.name}</span>
-                                <Badge variant={roleConfig.variant} className="text-[10px] sm:text-xs px-1.5 sm:px-2">
-                                  {roleConfig.label}
-                                </Badge>
-                              </div>
-                              <p className="text-xs sm:text-sm text-muted-foreground truncate">{m.email}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                            <div className="text-right">
-                              <p className="font-mono text-xs sm:text-sm text-muted-foreground">
-                                {m.referral_code}
-                              </p>
-                              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                                {formatDate(m.created_at)}
-                              </p>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  </span>
+                ))}
+              </div>
+
+              {/* Role filter dropdown */}
+              <Select value={roleFilter} onValueChange={(v) => { setRoleFilter(v); setBreadcrumb([]); }}>
+                <SelectTrigger className="w-[120px] shrink-0" data-testid="select-role-filter">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部</SelectItem>
+                  <SelectItem value="partner">合伙人</SelectItem>
+                  <SelectItem value="member">会员</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Member list */}
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : currentMembers.length === 0 ? (
+              <div className="text-center py-12">
+                <Users className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+                <p className="text-muted-foreground">
+                  {breadcrumb.length > 0 ? "该成员暂无下线" : "暂无推荐会员"}
+                </p>
+                {breadcrumb.length === 0 && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    分享您的推荐码，邀请好友加入
+                  </p>
                 )}
-              </TabsContent>
-            </Tabs>
+                {breadcrumb.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => navigateTo(breadcrumb.length - 1)}
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    返回上一层
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {currentMembers.map((m) => {
+                  const roleConfig = getRoleBadge(m.role);
+                  const RoleIcon = roleConfig.icon;
+                  return (
+                    <div
+                      key={m.id}
+                      className="flex items-center justify-between p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-muted/50 active:bg-muted/70 transition-colors gap-2"
+                      data-testid={`downline-${m.id}`}
+                      onClick={() => drillDown(m.id, m.name)}
+                    >
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <RoleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                            <span className="font-medium text-sm sm:text-base truncate">{m.name}</span>
+                            <Badge variant={roleConfig.variant} className="text-[10px] sm:text-xs px-1.5 sm:px-2">
+                              {roleConfig.label}
+                            </Badge>
+                          </div>
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">{m.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                        <div className="text-right">
+                          <p className="font-mono text-xs sm:text-sm text-muted-foreground">
+                            {m.referral_code}
+                          </p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">
+                            {formatDate(m.created_at)}
+                          </p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
 
