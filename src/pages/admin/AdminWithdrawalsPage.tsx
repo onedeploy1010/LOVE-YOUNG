@@ -71,15 +71,15 @@ export default function AdminWithdrawalsPage() {
   });
 
   const pending = requests.filter(r => r.status === "pending");
-  const processing = requests.filter(r => r.status === "processing");
+  const accepted = requests.filter(r => r.status === "accepted");
   const completed = requests.filter(r => r.status === "completed");
   const rejected = requests.filter(r => r.status === "rejected");
 
   const stats = {
     pendingCount: pending.length,
     pendingAmount: pending.reduce((s, r) => s + r.amount, 0),
-    processingCount: processing.length,
-    processingAmount: processing.reduce((s, r) => s + r.amount, 0),
+    acceptedCount: accepted.length,
+    acceptedAmount: accepted.reduce((s, r) => s + r.amount, 0),
     completedCount: completed.length,
     completedAmount: completed.reduce((s, r) => s + r.amount, 0),
     rejectedCount: rejected.length,
@@ -138,13 +138,13 @@ export default function AdminWithdrawalsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
-        return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/30"><Clock className="w-3 h-3 mr-1" />{t("admin.withdrawals.statusPending")}</Badge>;
-      case "processing":
-        return <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/30"><Loader2 className="w-3 h-3 mr-1 animate-spin" />{t("admin.withdrawals.statusProcessing")}</Badge>;
+        return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/30"><Clock className="w-3 h-3 mr-1" />待处理</Badge>;
+      case "accepted":
+        return <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/30"><CheckCircle className="w-3 h-3 mr-1" />已接收</Badge>;
       case "completed":
-        return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />{t("admin.withdrawals.statusCompleted")}</Badge>;
+        return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />已处理</Badge>;
       case "rejected":
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />{t("admin.withdrawals.statusRejected")}</Badge>;
+        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />已拒绝</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -199,11 +199,11 @@ export default function AdminWithdrawalsPage() {
           <Card className="border-blue-500/20">
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-1.5 mb-1">
-                <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500 shrink-0" />
-                <span className="text-[10px] sm:text-xs text-muted-foreground truncate">{t("admin.withdrawals.processingRequests")}</span>
+                <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500 shrink-0" />
+                <span className="text-[10px] sm:text-xs text-muted-foreground truncate">已接收</span>
               </div>
-              <p className="text-lg sm:text-2xl font-bold text-blue-600">{stats.processingCount}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">RM {(stats.processingAmount / 100).toLocaleString()}</p>
+              <p className="text-lg sm:text-2xl font-bold text-blue-600">{stats.acceptedCount}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">RM {(stats.acceptedAmount / 100).toLocaleString()}</p>
             </CardContent>
           </Card>
           <Card className="border-green-500/20">
@@ -238,11 +238,11 @@ export default function AdminWithdrawalsPage() {
           <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-5 mb-4">
-                <TabsTrigger value="pending" className="text-[10px] sm:text-xs">{t("admin.withdrawals.tabPending")}</TabsTrigger>
-                <TabsTrigger value="processing" className="text-[10px] sm:text-xs">{t("admin.withdrawals.tabProcessing")}</TabsTrigger>
-                <TabsTrigger value="completed" className="text-[10px] sm:text-xs">{t("admin.withdrawals.tabCompleted")}</TabsTrigger>
-                <TabsTrigger value="rejected" className="text-[10px] sm:text-xs">{t("admin.withdrawals.tabRejected")}</TabsTrigger>
-                <TabsTrigger value="all" className="text-[10px] sm:text-xs">{t("admin.withdrawals.tabAll")}</TabsTrigger>
+                <TabsTrigger value="pending" className="text-[10px] sm:text-xs">待处理</TabsTrigger>
+                <TabsTrigger value="accepted" className="text-[10px] sm:text-xs">已接收</TabsTrigger>
+                <TabsTrigger value="completed" className="text-[10px] sm:text-xs">已处理</TabsTrigger>
+                <TabsTrigger value="rejected" className="text-[10px] sm:text-xs">已拒绝</TabsTrigger>
+                <TabsTrigger value="all" className="text-[10px] sm:text-xs">全部</TabsTrigger>
               </TabsList>
 
               <TabsContent value={activeTab}>
@@ -371,7 +371,7 @@ export default function AdminWithdrawalsPage() {
                         onClick={() => { setRejectOpen(true); }}
                       >
                         <Ban className="w-4 h-4 mr-1.5" />
-                        {t("admin.withdrawals.reject")}
+                        拒绝
                       </Button>
                       <Button
                         size="sm"
@@ -380,11 +380,11 @@ export default function AdminWithdrawalsPage() {
                         disabled={approveMutation.isPending}
                       >
                         {approveMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1.5" />}
-                        {t("admin.withdrawals.approve")}
+                        接收
                       </Button>
                     </>
                   )}
-                  {selectedRequest.status === "processing" && (
+                  {selectedRequest.status === "accepted" && (
                     <Button
                       size="sm"
                       className="w-full sm:w-auto bg-green-500 hover:bg-green-600"
@@ -392,7 +392,7 @@ export default function AdminWithdrawalsPage() {
                       disabled={completeMutation.isPending}
                     >
                       {completeMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1.5" />}
-                      {t("admin.withdrawals.markComplete")}
+                      已处理
                     </Button>
                   )}
                 </DialogFooter>

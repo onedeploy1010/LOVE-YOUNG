@@ -911,7 +911,7 @@ export async function createWithdrawalRequest(
   return { requestId: request.id, error: null };
 }
 
-// Approve withdrawal (admin)
+// Accept withdrawal (admin reviews and accepts)
 export async function approveWithdrawal(
   requestId: string,
   adminUserId: string
@@ -919,7 +919,7 @@ export async function approveWithdrawal(
   const { error } = await supabase
     .from("withdrawal_requests")
     .update({
-      status: "processing",
+      status: "accepted",
       processed_by: adminUserId,
       processed_at: new Date().toISOString(),
     })
@@ -933,13 +933,13 @@ export async function approveWithdrawal(
   // Update ledger status
   await supabase
     .from("cash_wallet_ledger")
-    .update({ status: "processing" })
+    .update({ status: "accepted" })
     .eq("reference_id", requestId);
 
   return { success: true, error: null };
 }
 
-// Complete withdrawal (after bank transfer T+3)
+// Complete withdrawal (admin has done the bank transfer)
 export async function completeWithdrawal(
   requestId: string
 ): Promise<{ success: boolean; error: Error | null }> {
@@ -947,7 +947,7 @@ export async function completeWithdrawal(
     .from("withdrawal_requests")
     .update({ status: "completed" })
     .eq("id", requestId)
-    .eq("status", "processing");
+    .eq("status", "accepted");
 
   if (error) {
     return { success: false, error: new Error(error.message) };
