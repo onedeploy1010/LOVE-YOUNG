@@ -101,22 +101,18 @@ function ReferralTreeNode({
   return (
     <div>
       <div
-        className="flex items-center justify-between p-4 border rounded-lg"
+        className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
         style={{ marginLeft: `${(level - 1) * 24}px` }}
         data-testid={`downline-${member.id}`}
+        onClick={() => onToggle(member.id)}
       >
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => onToggle(member.id)}
-            className="w-6 h-6 flex items-center justify-center rounded hover:bg-muted transition-colors"
-          >
-            {isExpanded ? (
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            ) : (
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            )}
-          </button>
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          {isExpanded ? (
+            <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+          ) : (
+            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+          )}
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
             <RoleIcon className="w-5 h-5 text-primary" />
           </div>
           <div>
