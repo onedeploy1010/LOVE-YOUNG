@@ -35,8 +35,8 @@ interface Partner {
   ly_balance: number;
   rwa_tokens: number;
   cash_wallet_balance: number;
+  total_cashback: number;
   total_sales: number;
-  total_commission: number;
   created_at: string;
   member_name?: string;
   member_email?: string;
@@ -170,8 +170,8 @@ export default function AdminPartnersPage() {
         ly_balance: p.ly_balance || 0,
         rwa_tokens: p.rwa_tokens || 0,
         cash_wallet_balance: p.cash_wallet_balance || 0,
+        total_cashback: p.total_cashback || 0,
         total_sales: p.total_sales || 0,
-        total_commission: p.total_commission || 0,
         created_at: p.created_at,
         member_name: p.members?.name,
         member_email: p.members?.email,
@@ -320,6 +320,7 @@ export default function AdminPartnersPage() {
                               <span>RWA: {partner.rwa_tokens}</span>
                               <span className="hidden sm:inline">{t("admin.partnersPage.package")}: Phase {partner.tier === "phase1" ? 1 : partner.tier === "phase2" ? 2 : 3}</span>
                               <span>销售额: RM {(partner.total_sales / 100).toFixed(2)}</span>
+                              <span>返利: RM {(partner.total_cashback / 100).toFixed(2)}</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
@@ -416,8 +417,8 @@ export default function AdminPartnersPage() {
                     <p className="text-sm sm:text-lg font-bold text-primary">RM {(selectedPartner.total_sales / 100).toFixed(2)}</p>
                   </div>
                   <div className="p-2 bg-green-500/10 rounded text-center">
-                    <p className="text-muted-foreground text-[10px] sm:text-xs">总返佣</p>
-                    <p className="text-sm sm:text-lg font-bold text-green-500">RM {(selectedPartner.total_commission / 100).toFixed(2)}</p>
+                    <p className="text-muted-foreground text-[10px] sm:text-xs">总返利</p>
+                    <p className="text-sm sm:text-lg font-bold text-green-500">RM {(selectedPartner.total_cashback / 100).toFixed(2)}</p>
                   </div>
                 </div>
               </Card>

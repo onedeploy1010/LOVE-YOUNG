@@ -13,7 +13,7 @@ import { useTranslation } from "@/lib/i18n";
 import {
   Users, Share2, Copy, Link, QrCode, Network,
   Star, Crown, Shield, Loader2, CheckCircle, UserPlus,
-  ChevronDown, ChevronRight
+  ChevronRight, ArrowLeft
 } from "lucide-react";
 
 interface ReferralMember {
@@ -33,6 +33,12 @@ interface ReferralStats {
   level1_count: number;
   level2_count: number;
   level3_count: number;
+}
+
+// Breadcrumb node for drill-down navigation
+interface BreadcrumbNode {
+  id: string;
+  name: string;
 }
 
 async function fetchDirectReferrals(parentId: string, roleFilter?: string) {
@@ -74,125 +80,33 @@ const formatDate = (dateStr: string) => {
   });
 };
 
-function ReferralTreeNode({
-  member,
-  level,
-  roleFilter,
-  expanded,
-  onToggle,
-}: {
-  member: ReferralMember;
-  level: number;
-  roleFilter: string;
-  expanded: Set<string>;
-  onToggle: (id: string) => void;
-}) {
-  const isExpanded = expanded.has(member.id);
-
-  const { data: children, isLoading } = useQuery<ReferralMember[]>({
-    queryKey: ["referral-children", member.id, roleFilter],
-    queryFn: () => fetchDirectReferrals(member.id, roleFilter),
-    enabled: isExpanded,
-  });
-
-  const roleConfig = getRoleBadge(member.role);
-  const RoleIcon = roleConfig.icon;
-
-  return (
-    <div>
-      <div
-        className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-        style={{ marginLeft: `${(level - 1) * 24}px` }}
-        data-testid={`downline-${member.id}`}
-        onClick={() => onToggle(member.id)}
-      >
-        <div className="flex items-center gap-3">
-          {isExpanded ? (
-            <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
-          ) : (
-            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-          )}
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <RoleIcon className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">
-                L{level}
-              </Badge>
-              <span className="font-medium">{member.name}</span>
-              <Badge variant={roleConfig.variant} className="text-xs">
-                {roleConfig.label}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground">{member.email}</p>
-          </div>
-        </div>
-        <div className="text-right">
-          <p className="font-mono text-sm text-muted-foreground">
-            {member.referral_code}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {formatDate(member.created_at)}
-          </p>
-        </div>
-      </div>
-
-      {isExpanded && (
-        <div className="mt-2 space-y-2">
-          {isLoading ? (
-            <div className="flex items-center py-3" style={{ marginLeft: `${level * 24}px` }}>
-              <Loader2 className="w-4 h-4 animate-spin text-primary mr-2" />
-              <span className="text-sm text-muted-foreground">加载中...</span>
-            </div>
-          ) : children && children.length > 0 ? (
-            children.map((child) => (
-              <ReferralTreeNode
-                key={child.id}
-                member={child}
-                level={level + 1}
-                roleFilter={roleFilter}
-                expanded={expanded}
-                onToggle={onToggle}
-              />
-            ))
-          ) : (
-            <div
-              className="flex items-center py-2 text-sm text-muted-foreground"
-              style={{ marginLeft: `${level * 24}px` }}
-            >
-              暂无下线成员
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function MemberReferralsPage() {
   const { t } = useTranslation();
   const { user, member, loading } = useAuth();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  // Drill-down navigation: breadcrumb trail of parent nodes
+  const [breadcrumb, setBreadcrumb] = useState<BreadcrumbNode[]>([]);
+
+  // The current parent ID to show children for
+  const currentParentId = breadcrumb.length > 0
+    ? breadcrumb[breadcrumb.length - 1].id
+    : member?.id;
 
   const referralCode = member?.referralCode || "";
   const referralLink = referralCode
     ? `${window.location.origin}/auth/login?ref=${referralCode}`
     : "";
 
-  const toggleExpand = (id: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+  // Navigate into a member's children
+  const drillDown = (memberId: string, memberName: string) => {
+    setBreadcrumb((prev) => [...prev, { id: memberId, name: memberName }]);
+  };
+
+  // Navigate back to a specific breadcrumb level
+  const navigateTo = (index: number) => {
+    setBreadcrumb((prev) => prev.slice(0, index));
   };
 
   // Fetch referral stats
@@ -233,11 +147,11 @@ export default function MemberReferralsPage() {
     enabled: !!member?.id,
   });
 
-  // Fetch L1 direct referrals only
-  const { data: l1Members = [], isLoading } = useQuery<ReferralMember[]>({
-    queryKey: ["referral-children", member?.id, activeTab],
-    queryFn: () => fetchDirectReferrals(member!.id, activeTab),
-    enabled: !!member?.id,
+  // Fetch children for current parent
+  const { data: currentMembers = [], isLoading } = useQuery<ReferralMember[]>({
+    queryKey: ["referral-children", currentParentId, activeTab],
+    queryFn: () => fetchDirectReferrals(currentParentId!, activeTab),
+    enabled: !!currentParentId,
   });
 
   const copyToClipboard = async (text: string, label: string) => {
@@ -369,48 +283,48 @@ export default function MemberReferralsPage() {
         </Card>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
           <Card>
-            <CardContent className="p-4 text-center">
-              <UserPlus className="w-8 h-8 mx-auto text-primary mb-2" />
-              <p className="text-2xl font-bold">{stats?.direct_referrals || 0}</p>
-              <p className="text-sm text-muted-foreground">直接推荐</p>
+            <CardContent className="p-3 sm:p-4 text-center">
+              <UserPlus className="w-6 h-6 sm:w-8 sm:h-8 mx-auto text-primary mb-1 sm:mb-2" />
+              <p className="text-lg sm:text-2xl font-bold">{stats?.direct_referrals || 0}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">直接推荐</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <Network className="w-8 h-8 mx-auto text-secondary mb-2" />
-              <p className="text-2xl font-bold">{stats?.total_network || 0}</p>
-              <p className="text-sm text-muted-foreground">团队总人数</p>
+            <CardContent className="p-3 sm:p-4 text-center">
+              <Network className="w-6 h-6 sm:w-8 sm:h-8 mx-auto text-secondary mb-1 sm:mb-2" />
+              <p className="text-lg sm:text-2xl font-bold">{stats?.total_network || 0}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">团队总人数</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <Crown className="w-8 h-8 mx-auto text-primary mb-2" />
-              <p className="text-2xl font-bold text-primary">{stats?.partners_in_network || 0}</p>
-              <p className="text-sm text-muted-foreground">合伙人</p>
+            <CardContent className="p-3 sm:p-4 text-center">
+              <Crown className="w-6 h-6 sm:w-8 sm:h-8 mx-auto text-primary mb-1 sm:mb-2" />
+              <p className="text-lg sm:text-2xl font-bold text-primary">{stats?.partners_in_network || 0}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">合伙人</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <Users className="w-8 h-8 mx-auto text-blue-500 mb-2" />
-              <p className="text-2xl font-bold">{(stats?.level2_count || 0) + (stats?.level3_count || 0)}</p>
-              <p className="text-sm text-muted-foreground">间接推荐</p>
+            <CardContent className="p-3 sm:p-4 text-center">
+              <Users className="w-6 h-6 sm:w-8 sm:h-8 mx-auto text-blue-500 mb-1 sm:mb-2" />
+              <p className="text-lg sm:text-2xl font-bold">{(stats?.level2_count || 0) + (stats?.level3_count || 0)}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">间接推荐</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Downline Tree */}
+        {/* Downline List (Drill-down Navigation) */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Network className="w-5 h-5 text-primary" />
               我的团队
             </CardTitle>
-            <CardDescription>查看您推荐的所有会员</CardDescription>
+            <CardDescription>点击成员查看其下线</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setExpanded(new Set()); }}>
+            <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setBreadcrumb([]); }}>
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="all" data-testid="tab-all">
                   全部 ({stats?.total_network || 0})
@@ -424,30 +338,101 @@ export default function MemberReferralsPage() {
               </TabsList>
 
               <TabsContent value={activeTab} className="mt-4">
+                {/* Breadcrumb navigation */}
+                {breadcrumb.length > 0 && (
+                  <div className="flex items-center gap-1 mb-4 flex-wrap">
+                    <button
+                      onClick={() => navigateTo(0)}
+                      className="flex items-center gap-1 text-sm text-primary hover:underline"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      我的下线
+                    </button>
+                    {breadcrumb.map((node, index) => (
+                      <span key={node.id} className="flex items-center gap-1">
+                        <span className="text-sm text-muted-foreground">/</span>
+                        {index === breadcrumb.length - 1 ? (
+                          <span className="text-sm font-medium">{node.name}</span>
+                        ) : (
+                          <button
+                            onClick={() => navigateTo(index + 1)}
+                            className="text-sm text-primary hover:underline"
+                          >
+                            {node.name}
+                          </button>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
                 {isLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
                   </div>
-                ) : l1Members.length === 0 ? (
+                ) : currentMembers.length === 0 ? (
                   <div className="text-center py-12">
                     <Users className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <p className="text-muted-foreground">暂无推荐会员</p>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      分享您的推荐码，邀请好友加入
+                    <p className="text-muted-foreground">
+                      {breadcrumb.length > 0 ? "该成员暂无下线" : "暂无推荐会员"}
                     </p>
+                    {breadcrumb.length === 0 && (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        分享您的推荐码，邀请好友加入
+                      </p>
+                    )}
+                    {breadcrumb.length > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4"
+                        onClick={() => navigateTo(breadcrumb.length - 1)}
+                      >
+                        <ArrowLeft className="w-4 h-4 mr-1" />
+                        返回上一层
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {l1Members.map((m) => (
-                      <ReferralTreeNode
-                        key={m.id}
-                        member={m}
-                        level={1}
-                        roleFilter={activeTab}
-                        expanded={expanded}
-                        onToggle={toggleExpand}
-                      />
-                    ))}
+                    {currentMembers.map((m) => {
+                      const roleConfig = getRoleBadge(m.role);
+                      const RoleIcon = roleConfig.icon;
+                      return (
+                        <div
+                          key={m.id}
+                          className="flex items-center justify-between p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors gap-2"
+                          data-testid={`downline-${m.id}`}
+                          onClick={() => drillDown(m.id, m.name)}
+                        >
+                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                              <RoleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                <span className="font-medium text-sm sm:text-base truncate">{m.name}</span>
+                                <Badge variant={roleConfig.variant} className="text-[10px] sm:text-xs px-1.5 sm:px-2">
+                                  {roleConfig.label}
+                                </Badge>
+                              </div>
+                              <p className="text-xs sm:text-sm text-muted-foreground truncate">{m.email}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                            <div className="text-right">
+                              <p className="font-mono text-xs sm:text-sm text-muted-foreground">
+                                {m.referral_code}
+                              </p>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                                {formatDate(m.created_at)}
+                              </p>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </TabsContent>

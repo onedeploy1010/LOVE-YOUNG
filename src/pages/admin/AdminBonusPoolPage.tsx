@@ -16,11 +16,11 @@ interface BonusPoolCycle {
   cycle_number: number;
   start_date: string;
   end_date: string;
-  total_pool: number;
-  total_rwa_tokens: number;
+  pool_amount: number;
+  total_tokens: number;
   per_token_value: number;
   participating_partners: number;
-  sales_in_cycle: number;
+  total_sales: number;
   status: string;
   created_at: string;
 }
@@ -43,19 +43,23 @@ export default function AdminBonusPoolPage() {
         return [];
       }
 
-      return (data || []).map((c): BonusPoolCycle => ({
-        id: c.id,
-        cycle_number: c.cycle_number,
-        start_date: c.start_date,
-        end_date: c.end_date,
-        total_pool: c.total_pool || 0,
-        total_rwa_tokens: c.total_rwa_tokens || 0,
-        per_token_value: c.per_token_value || 0,
-        participating_partners: c.participating_partners || 0,
-        sales_in_cycle: c.sales_in_cycle || 0,
-        status: c.status || "pending",
-        created_at: c.created_at,
-      }));
+      return (data || []).map((c): BonusPoolCycle => {
+        const poolAmount = c.pool_amount || 0;
+        const totalTokens = c.total_tokens || 0;
+        return {
+          id: c.id,
+          cycle_number: c.cycle_number,
+          start_date: c.start_date,
+          end_date: c.end_date,
+          pool_amount: poolAmount,
+          total_tokens: totalTokens,
+          per_token_value: totalTokens > 0 ? Math.floor(poolAmount / totalTokens) : 0,
+          participating_partners: 0, // calculated below
+          total_sales: c.total_sales || 0,
+          status: c.status || "pending",
+          created_at: c.created_at,
+        };
+      });
     },
   });
 
@@ -137,7 +141,7 @@ export default function AdminBonusPoolPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 bg-background rounded-lg">
                   <DollarSign className="w-6 h-6 mx-auto text-secondary mb-2" />
-                  <p className="text-2xl font-bold text-secondary">RM {(currentCycle.total_pool / 100).toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-secondary">RM {(currentCycle.pool_amount / 100).toFixed(2)}</p>
                   <p className="text-xs text-muted-foreground">{t("admin.bonusPoolPage.currentPool")}</p>
                 </div>
                 <div className="text-center p-4 bg-background rounded-lg">
@@ -147,12 +151,12 @@ export default function AdminBonusPoolPage() {
                 </div>
                 <div className="text-center p-4 bg-background rounded-lg">
                   <Users className="w-6 h-6 mx-auto text-primary mb-2" />
-                  <p className="text-2xl font-bold">{currentCycle.participating_partners}</p>
-                  <p className="text-xs text-muted-foreground">{t("admin.bonusPoolPage.participatingPartners")}</p>
+                  <p className="text-2xl font-bold">{currentCycle.total_tokens}</p>
+                  <p className="text-xs text-muted-foreground">RWA 令牌总数</p>
                 </div>
                 <div className="text-center p-4 bg-background rounded-lg">
                   <ArrowUpRight className="w-6 h-6 mx-auto text-green-500 mb-2" />
-                  <p className="text-2xl font-bold">RM {(currentCycle.sales_in_cycle / 100).toLocaleString()}</p>
+                  <p className="text-2xl font-bold">RM {(currentCycle.total_sales / 100).toFixed(2)}</p>
                   <p className="text-xs text-muted-foreground">{t("admin.bonusPoolPage.cycleSales")}</p>
                 </div>
               </div>
@@ -186,7 +190,7 @@ export default function AdminBonusPoolPage() {
               </div>
               <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                 <span className="text-sm">{t("admin.bonusPoolPage.totalRwaTokens")}</span>
-                <span className="font-medium">{currentCycle?.total_rwa_tokens || 0} {t("admin.bonusPoolPage.tokens")}</span>
+                <span className="font-medium">{currentCycle?.total_tokens || 0} {t("admin.bonusPoolPage.tokens")}</span>
               </div>
               <Button className="w-full" variant="outline" data-testid="button-edit-settings">
                 {t("admin.bonusPoolPage.editSettings")}
@@ -243,9 +247,9 @@ export default function AdminBonusPoolPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-secondary">RM {(cycle.total_pool / 100).toLocaleString()}</p>
+                      <p className="font-bold text-secondary">RM {(cycle.pool_amount / 100).toFixed(2)}</p>
                       <p className="text-sm text-muted-foreground">
-                        {t("admin.bonusPoolPage.perToken")} RM {(cycle.per_token_value / 100).toFixed(2)} · {cycle.participating_partners} {t("admin.bonusPoolPage.people")}
+                        {t("admin.bonusPoolPage.perToken")} RM {(cycle.per_token_value / 100).toFixed(2)} · {cycle.total_tokens} 令牌
                       </p>
                     </div>
                   </div>
