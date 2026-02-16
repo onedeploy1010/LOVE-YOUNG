@@ -6,8 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   LayoutDashboard,
-  Users,
-  FileText,
   Star,
   Wallet,
   PieChart,
@@ -30,8 +28,6 @@ interface PartnerLayoutProps {
 
 const getMenuItems = (t: (key: string) => string) => [
   { path: "/member/partner", label: t("member.center.sections.partner.dashboard"), icon: LayoutDashboard },
-  { path: "/member/partner/referrals", label: t("member.referrals.title"), icon: Users },
-  { path: "/member/partner/materials", label: t("member.materials.title"), icon: FileText },
   { path: "/member/partner/ly-points", label: t("member.lyPoints.title"), icon: Star },
   { path: "/member/partner/wallet", label: t("member.wallet.title"), icon: Wallet },
   { path: "/member/partner/rwa", label: t("member.rwa.title"), icon: PieChart },

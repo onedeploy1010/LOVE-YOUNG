@@ -47,7 +47,6 @@ import MemberReferralsPage from "@/pages/member/MemberReferralsPage";
 
 // Partner pages
 import PartnerDashboardPage from "@/pages/partner/PartnerDashboardPage";
-import PartnerReferralsPage from "@/pages/partner/PartnerReferralsPage";
 import PartnerMaterialsPage from "@/pages/partner/PartnerMaterialsPage";
 import PartnerLyPointsPage from "@/pages/partner/PartnerLyPointsPage";
 import PartnerWalletPage from "@/pages/partner/PartnerWalletPage";
@@ -138,12 +137,6 @@ function Router() {
         {/* Partner routes - require partner role */}
         <Route path="/member/partner">
           <PartnerRoute><PartnerDashboardPage /></PartnerRoute>
-        </Route>
-        <Route path="/member/partner/referrals">
-          <PartnerRoute><PartnerReferralsPage /></PartnerRoute>
-        </Route>
-        <Route path="/member/partner/materials">
-          <PartnerRoute><PartnerMaterialsPage /></PartnerRoute>
         </Route>
         <Route path="/member/partner/ly-points">
           <PartnerRoute><PartnerLyPointsPage /></PartnerRoute>
