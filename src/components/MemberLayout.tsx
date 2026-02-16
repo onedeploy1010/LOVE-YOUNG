@@ -45,6 +45,7 @@ const getMemberItems = (t: (key: string) => string) => [
   { path: "/member/payment", label: t("member.payment.title"), icon: CreditCard },
   { path: "/member/referrals", label: t("member.referrals.title"), icon: Share2 },
   { path: "/member/materials", label: t("member.materials.title"), icon: Image },
+  { path: "/member/partner-join", label: "参与经营人", icon: Crown },
 ];
 
 function RoleBadges({ role, t }: { role: string; t: (key: string) => string }) {

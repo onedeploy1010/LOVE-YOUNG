@@ -73,7 +73,7 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
 
 export function PartnerRoute({ children }: { children: React.ReactNode }) {
   return (
-    <ProtectedRoute requiredRole="partner" redirectTo="/partner/join">
+    <ProtectedRoute requiredRole="partner" redirectTo="/member/partner-join">
       {children}
     </ProtectedRoute>
   );

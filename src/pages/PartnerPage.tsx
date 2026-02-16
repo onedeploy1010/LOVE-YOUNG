@@ -412,7 +412,11 @@ export default function PartnerPage() {
   });
 
   const handleJoin = (tierId: string) => {
-    navigate("/partner/join");
+    if (user) {
+      navigate("/member/partner-join");
+    } else {
+      navigate("/partner/join");
+    }
   };
 
   const handleSubmitJoin = () => {

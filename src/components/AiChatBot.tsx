@@ -451,7 +451,7 @@ export function AiChatBot({ open, onClose }: AiChatBotProps) {
                                   className="h-6 text-[10px] px-2 shrink-0 gap-1"
                                   onClick={() => {
                                     onClose();
-                                    navigate(`/partner/join?tier=${pkg.id}`);
+                                    navigate(`/member/partner-join?tier=${pkg.id}`);
                                   }}
                                 >
                                   <Users className="w-3 h-3" />

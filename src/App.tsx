@@ -44,6 +44,7 @@ import MemberAddressesPage from "@/pages/member/MemberAddressesPage";
 import MemberPointsPage from "@/pages/member/MemberPointsPage";
 import MemberPaymentPage from "@/pages/member/MemberPaymentPage";
 import MemberReferralsPage from "@/pages/member/MemberReferralsPage";
+import MemberPartnerJoinPage from "@/pages/member/MemberPartnerJoinPage";
 
 // Partner pages
 import PartnerDashboardPage from "@/pages/partner/PartnerDashboardPage";
@@ -132,6 +133,9 @@ function Router() {
         </Route>
         <Route path="/member/materials">
           <MemberRoute><PartnerMaterialsPage /></MemberRoute>
+        </Route>
+        <Route path="/member/partner-join">
+          <MemberRoute><MemberPartnerJoinPage /></MemberRoute>
         </Route>
 
         {/* Partner routes - require partner role */}

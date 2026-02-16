@@ -132,6 +132,19 @@ export default function PartnerJoinPage() {
 
   const isLoading = authLoading || isQueryLoading;
 
+  // Redirect logged-in users with member profile to /member/partner-join
+  useEffect(() => {
+    if (userState?.member) {
+      // Preserve referral code and payment params in redirect
+      const params = new URLSearchParams(window.location.search);
+      const targetParams = new URLSearchParams();
+      if (params.get("ref")) targetParams.set("ref", params.get("ref")!);
+      if (params.get("payment")) targetParams.set("payment", params.get("payment")!);
+      const qs = targetParams.toString();
+      navigate(`/member/partner-join${qs ? `?${qs}` : ""}`, { replace: true });
+    }
+  }, [userState?.member, navigate]);
+
   // Auto-fill referral code from URL (?ref=CODE) or localStorage
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
