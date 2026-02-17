@@ -406,6 +406,30 @@ export default function AdminOrderSupplementPage() {
             );
             if (error) throw error;
 
+            // Create partner package order in orders table
+            const partnerItemsJson = JSON.stringify([{
+              product_name: TIER_LABELS[join.tier],
+              quantity: 1,
+              unit_price_cents: join.payment_amount_cents,
+            }]);
+            const { order: partnerOrder } = await createOrder({
+              userId: null, memberId: member.id,
+              customerName: join.customer_name, customerPhone: phone,
+              customerEmail: null, status: "confirmed",
+              totalAmount: join.payment_amount_cents, items: partnerItemsJson,
+              packageType: join.tier, shippingAddress: null, shippingCity: null,
+              shippingState: null, shippingPostcode: null,
+              preferredDeliveryDate: null, trackingNumber: null,
+              notes: `[经营人配套] ${TIER_LABELS[join.tier]} ${join.payment_reference || ""}`.trim(),
+              source: "bank_transfer", erpnextId: null, metaOrderId: null,
+              pointsEarned: null, pointsRedeemed: null,
+              sourceChannel: "admin_supplement", orderNumber: "",
+            });
+            if (partnerOrder) {
+              await updateOrderStatus(partnerOrder.id, "confirmed");
+              ordersCreated++;
+            }
+
             // Create bill record with receipt
             const receiptKey = `partner-${i}`;
             const receiptUrl = receiptMap[receiptKey] || null;
@@ -413,15 +437,15 @@ export default function AdminOrderSupplementPage() {
             await supabase.from("bills").insert({
               bill_number: billNumber,
               type: "operation",
-              category: "经营人加入",
+              category: "经营人配套",
               vendor: join.customer_name,
               amount: join.payment_amount_cents,
               description: `${TIER_LABELS[join.tier]} - ${join.customer_name} (${phone})`,
               status: "paid",
               paid_date: new Date().toISOString().slice(0, 10),
               due_date: new Date().toISOString().slice(0, 10),
-              reference_type: "order_supplement",
-              reference_id: activeSessionId,
+              reference_type: "order",
+              reference_id: partnerOrder?.id || activeSessionId,
               receipt_url: receiptUrl,
               created_by: adminUserId,
               notes: join.payment_reference || null,

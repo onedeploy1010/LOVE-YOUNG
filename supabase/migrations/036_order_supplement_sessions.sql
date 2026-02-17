@@ -30,7 +30,7 @@ CREATE POLICY "Admin can view all supplement sessions"
   USING (
     EXISTS (
       SELECT 1 FROM members
-      WHERE members.user_id = auth.uid()
+      WHERE members.user_id = auth.uid()::text
       AND members.role = 'admin'
     )
   );
@@ -40,7 +40,7 @@ CREATE POLICY "Admin can insert supplement sessions"
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM members
-      WHERE members.user_id = auth.uid()
+      WHERE members.user_id = auth.uid()::text
       AND members.role = 'admin'
     )
   );
@@ -50,7 +50,7 @@ CREATE POLICY "Admin can update supplement sessions"
   USING (
     EXISTS (
       SELECT 1 FROM members
-      WHERE members.user_id = auth.uid()
+      WHERE members.user_id = auth.uid()::text
       AND members.role = 'admin'
     )
   );
