@@ -58,6 +58,7 @@ import PartnerEarningsPage from "@/pages/partner/PartnerEarningsPage";
 import AdminDashboardPage from "@/pages/AdminDashboardPage";
 import AdminPartnersPage from "@/pages/admin/AdminPartnersPage";
 import AdminOrdersPage from "@/pages/admin/AdminOrdersPage";
+import AdminOrderSupplementPage from "@/pages/admin/AdminOrderSupplementPage";
 import AdminProductsPage from "@/pages/admin/AdminProductsPage";
 import AdminMembersPage from "@/pages/admin/AdminMembersPage";
 import AdminBonusPoolPage from "@/pages/admin/AdminBonusPoolPage";
@@ -167,6 +168,9 @@ function Router() {
         </Route>
         <Route path="/admin/orders">
           <AdminRoute><AdminOrdersPage /></AdminRoute>
+        </Route>
+        <Route path="/admin/order-supplement">
+          <AdminRoute><AdminOrderSupplementPage /></AdminRoute>
         </Route>
         <Route path="/admin/products">
           <AdminRoute><AdminProductsPage /></AdminRoute>

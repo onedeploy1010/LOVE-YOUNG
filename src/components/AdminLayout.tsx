@@ -45,6 +45,7 @@ import {
   Brain,
   GitBranch,
   Bell,
+  MessageSquarePlus,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -55,6 +56,7 @@ const getCoreItems = (t: (key: string) => string) => [
   { path: "/admin", label: t("admin.menu.dashboard"), icon: LayoutDashboard },
   { path: "/admin/partners", label: t("admin.menu.partners"), icon: Users },
   { path: "/admin/orders", label: t("admin.menu.orders"), icon: ShoppingCart },
+  { path: "/admin/order-supplement", label: t("admin.menu.orderSupplement"), icon: MessageSquarePlus },
   { path: "/admin/products", label: t("admin.menu.products"), icon: Package },
   { path: "/admin/members", label: t("admin.menu.members"), icon: Users },
   { path: "/admin/bonus-pool", label: t("admin.menu.bonusPool"), icon: PiggyBank },
