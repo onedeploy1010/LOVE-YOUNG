@@ -25,6 +25,12 @@ interface ChatMessage {
   image_url?: string;
 }
 
+interface Deduction {
+  type: string;
+  amount_cents: number;
+  description: string;
+}
+
 interface ParsedActions {
   member_registrations?: Array<{
     customer_name: string;
@@ -39,6 +45,8 @@ interface ParsedActions {
     tier: "phase1" | "phase2" | "phase3";
     referral_code?: string;
     payment_amount_cents: number;
+    actual_paid_cents?: number;
+    deductions?: Deduction[];
     payment_reference?: string;
     notes?: string;
   }>;
@@ -51,6 +59,8 @@ interface ParsedActions {
       unit_price_cents: number;
     }>;
     total_amount_cents: number;
+    actual_paid_cents?: number;
+    deductions?: Deduction[];
     box_count: number;
     referral_code?: string;
     payment_reference?: string;
@@ -406,6 +416,14 @@ export default function AdminOrderSupplementPage() {
             );
             if (error) throw error;
 
+            // Build deduction notes
+            const deductionNotes = join.deductions?.length
+              ? join.deductions.map((d) => `${d.description}: -RM${(d.amount_cents / 100).toFixed(2)}`).join("; ")
+              : "";
+            const actualPaidNote = join.actual_paid_cents != null && join.actual_paid_cents !== join.payment_amount_cents
+              ? ` | 实付RM${(join.actual_paid_cents / 100).toFixed(2)}`
+              : "";
+
             // Create partner package order in orders table
             const partnerItemsJson = JSON.stringify([{
               product_name: TIER_LABELS[join.tier],
@@ -420,7 +438,7 @@ export default function AdminOrderSupplementPage() {
               packageType: join.tier, shippingAddress: null, shippingCity: null,
               shippingState: null, shippingPostcode: null,
               preferredDeliveryDate: null, trackingNumber: null,
-              notes: `[经营人配套] ${TIER_LABELS[join.tier]} ${join.payment_reference || ""}`.trim(),
+              notes: `[经营人配套] ${TIER_LABELS[join.tier]}${actualPaidNote}${deductionNotes ? ` | 抵扣: ${deductionNotes}` : ""} ${join.payment_reference || ""}`.trim(),
               source: "bank_transfer", erpnextId: null, metaOrderId: null,
               pointsEarned: null, pointsRedeemed: null,
               sourceChannel: "admin_supplement", orderNumber: "",
@@ -434,13 +452,14 @@ export default function AdminOrderSupplementPage() {
             const receiptKey = `partner-${i}`;
             const receiptUrl = receiptMap[receiptKey] || null;
             const billNumber = generateBillNumber();
+            const billAmount = join.actual_paid_cents ?? join.payment_amount_cents;
             await supabase.from("bills").insert({
               bill_number: billNumber,
               type: "operation",
               category: "经营人配套",
               vendor: join.customer_name,
-              amount: join.payment_amount_cents,
-              description: `${TIER_LABELS[join.tier]} - ${join.customer_name} (${phone})`,
+              amount: billAmount,
+              description: `${TIER_LABELS[join.tier]} - ${join.customer_name} (${phone})${actualPaidNote}`,
               status: "paid",
               paid_date: new Date().toISOString().slice(0, 10),
               due_date: new Date().toISOString().slice(0, 10),
@@ -448,7 +467,7 @@ export default function AdminOrderSupplementPage() {
               reference_id: partnerOrder?.id || activeSessionId,
               receipt_url: receiptUrl,
               created_by: adminUserId,
-              notes: join.payment_reference || null,
+              notes: [join.payment_reference, deductionNotes].filter(Boolean).join(" | ") || null,
             });
 
             partnersCreated++;
@@ -490,6 +509,14 @@ export default function AdminOrderSupplementPage() {
               }
             }
 
+            // Build deduction notes
+            const orderDeductionNotes = order.deductions?.length
+              ? order.deductions.map((d) => `${d.description}: -RM${(d.amount_cents / 100).toFixed(2)}`).join("; ")
+              : "";
+            const orderActualPaidNote = order.actual_paid_cents != null && order.actual_paid_cents !== order.total_amount_cents
+              ? ` | 实付RM${(order.actual_paid_cents / 100).toFixed(2)}`
+              : "";
+
             const itemsJson = JSON.stringify(order.items);
             const { order: createdOrder, error: orderErr } = await createOrder({
               userId: null, memberId: member.id,
@@ -499,7 +526,7 @@ export default function AdminOrderSupplementPage() {
               packageType: null, shippingAddress: null, shippingCity: null,
               shippingState: null, shippingPostcode: null,
               preferredDeliveryDate: null, trackingNumber: null,
-              notes: `[订单补录] ${order.payment_reference || ""} ${order.notes || ""}`.trim(),
+              notes: `[订单补录]${orderActualPaidNote}${orderDeductionNotes ? ` | 抵扣: ${orderDeductionNotes}` : ""} ${order.payment_reference || ""} ${order.notes || ""}`.trim(),
               source: "bank_transfer", erpnextId: null, metaOrderId: null,
               pointsEarned: null, pointsRedeemed: null,
               sourceChannel: "admin_supplement", orderNumber: "",
@@ -518,13 +545,14 @@ export default function AdminOrderSupplementPage() {
             const receiptKey = `order-${i}`;
             const receiptUrl = receiptMap[receiptKey] || null;
             const billNumber = generateBillNumber();
+            const orderBillAmount = order.actual_paid_cents ?? order.total_amount_cents;
             await supabase.from("bills").insert({
               bill_number: billNumber,
               type: "operation",
               category: "产品订单",
               vendor: order.customer_name,
-              amount: order.total_amount_cents,
-              description: `订单补录 ${createdOrder.orderNumber} - ${order.customer_name} × ${order.box_count}盒`,
+              amount: orderBillAmount,
+              description: `订单补录 ${createdOrder.orderNumber} - ${order.customer_name} × ${order.box_count}盒${orderActualPaidNote}`,
               status: "paid",
               paid_date: new Date().toISOString().slice(0, 10),
               due_date: new Date().toISOString().slice(0, 10),
@@ -532,7 +560,7 @@ export default function AdminOrderSupplementPage() {
               reference_id: createdOrder.id,
               receipt_url: receiptUrl,
               created_by: adminUserId,
-              notes: order.payment_reference || null,
+              notes: [order.payment_reference, orderDeductionNotes].filter(Boolean).join(" | ") || null,
             });
 
             ordersCreated++;
@@ -746,6 +774,7 @@ export default function AdminOrderSupplementPage() {
 
                   {parsedActions.partner_joins?.map((join, i) => {
                     const key = `partner-${i}`;
+                    const hasDeductions = join.deductions && join.deductions.length > 0;
                     return (
                       <div key={key} className="bg-background rounded-lg p-2">
                         <div className="flex items-center gap-1.5 text-xs sm:text-sm">
@@ -761,6 +790,22 @@ export default function AdminOrderSupplementPage() {
                             RM {(join.payment_amount_cents / 100).toFixed(0)}
                           </Badge>
                         </div>
+                        {/* Deduction breakdown */}
+                        {hasDeductions && (
+                          <div className="ml-5 mt-1 space-y-0.5">
+                            {join.actual_paid_cents != null && join.actual_paid_cents !== join.payment_amount_cents && (
+                              <div className="text-[10px] text-blue-600 font-medium">
+                                {t("admin.orderSupplementPage.actualPaid")}: RM {(join.actual_paid_cents / 100).toFixed(2)}
+                              </div>
+                            )}
+                            {join.deductions!.map((d, di) => (
+                              <div key={di} className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <span className="text-amber-500">-</span>
+                                <span>{d.description}: RM {(d.amount_cents / 100).toFixed(2)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                         {/* Receipt upload */}
                         <div className="flex items-center gap-1.5 mt-1.5 ml-5">
                           {receiptMap[key] ? (
@@ -787,6 +832,7 @@ export default function AdminOrderSupplementPage() {
 
                   {parsedActions.product_orders?.map((order, i) => {
                     const key = `order-${i}`;
+                    const hasDeductions = order.deductions && order.deductions.length > 0;
                     return (
                       <div key={key} className="bg-background rounded-lg p-2">
                         <div className="flex items-center gap-1.5 text-xs sm:text-sm">
@@ -800,6 +846,22 @@ export default function AdminOrderSupplementPage() {
                             RM {(order.total_amount_cents / 100).toFixed(0)}
                           </Badge>
                         </div>
+                        {/* Deduction breakdown */}
+                        {hasDeductions && (
+                          <div className="ml-5 mt-1 space-y-0.5">
+                            {order.actual_paid_cents != null && order.actual_paid_cents !== order.total_amount_cents && (
+                              <div className="text-[10px] text-blue-600 font-medium">
+                                {t("admin.orderSupplementPage.actualPaid")}: RM {(order.actual_paid_cents / 100).toFixed(2)}
+                              </div>
+                            )}
+                            {order.deductions!.map((d, di) => (
+                              <div key={di} className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <span className="text-amber-500">-</span>
+                                <span>{d.description}: RM {(d.amount_cents / 100).toFixed(2)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                         {/* Receipt upload */}
                         <div className="flex items-center gap-1.5 mt-1.5 ml-5">
                           {receiptMap[key] ? (

@@ -2028,7 +2028,8 @@
       "imageTooLarge": "图片不能超过10MB",
       "attachReceipt": "附加单据",
       "receiptAttached": "单据已附加",
-      "receiptUploaded": "单据上传成功"
+      "receiptUploaded": "单据上传成功",
+      "actualPaid": "实付"
     },
     "adManagementPage": {
       "title": "广告投放管理",

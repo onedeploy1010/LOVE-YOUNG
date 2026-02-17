@@ -734,7 +734,8 @@
       "imageTooLarge": "Gambar tidak boleh melebihi 10MB",
       "attachReceipt": "Lampirkan resit",
       "receiptAttached": "Resit dilampirkan",
-      "receiptUploaded": "Resit dimuat naik"
+      "receiptUploaded": "Resit dimuat naik",
+      "actualPaid": "Bayaran Sebenar"
     },
     "productionPage": {
       "title": "Pengurusan Barisan Pengeluaran",
