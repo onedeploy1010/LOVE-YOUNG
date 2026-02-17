@@ -9,14 +9,10 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useAuthStore } from "@/stores/authStore";
-import { createPartner } from "@/lib/partner";
-import { createOrder, updateOrderStatus } from "@/lib/orders";
-import { processOrderCashback, addSalesToBonusPool } from "@/lib/partner";
 import {
   MessageSquarePlus, Send, Loader2, CheckCircle,
   Plus, History, ShoppingCart, Users, ArrowLeft,
-  AlertCircle, UserPlus, Paperclip, X, Receipt,
+  UserPlus, Paperclip, X, XCircle, Zap,
 } from "lucide-react";
 
 interface ChatMessage {
@@ -69,6 +65,12 @@ interface ParsedActions {
   }>;
 }
 
+interface ExecutionLogEntry {
+  action: string;
+  success: boolean;
+  details: string;
+}
+
 interface Session {
   id: string;
   status: string;
@@ -82,30 +84,26 @@ interface Session {
   updated_at: string;
 }
 
-// Track uploaded receipt URLs keyed by action index
-type ReceiptMap = Record<string, string>;
-
 const TIER_LABELS: Record<string, string> = {
   phase1: "Phase 1 启航经营人",
   phase2: "Phase 2 成长经营人",
   phase3: "Phase 3 卓越经营人",
 };
 
-function generateReferralCode(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "";
-  for (let i = 0; i < 8; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
-}
-
-function generateBillNumber(): string {
-  const now = new Date();
-  const datePart = now.toISOString().slice(0, 10).replace(/-/g, "");
-  const rand = Math.floor(1000 + Math.random() * 9000);
-  return `BILL-${datePart}-${rand}`;
-}
+const ACTION_LABELS: Record<string, string> = {
+  create_order: "创建订单",
+  update_order_status: "更新订单状态",
+  create_bill: "创建账单",
+  update_bill: "更新账单",
+  create_member: "注册会员",
+  update_member: "更新会员",
+  set_referrer: "设置推荐人",
+  create_partner: "创建经营人",
+  adjust_wallet: "调整钱包",
+  adjust_ly_points: "调整LY积分",
+  process_order_cashback: "处理返现",
+  add_to_bonus_pool: "奖金池",
+};
 
 export default function AdminOrderSupplementPage() {
   const { t } = useTranslation();
@@ -114,24 +112,19 @@ export default function AdminOrderSupplementPage() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [parsedActions, setParsedActions] = useState<ParsedActions | null>(null);
-  const [readyToConfirm, setReadyToConfirm] = useState(false);
+  const [executionLog, setExecutionLog] = useState<ExecutionLogEntry[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [isConfirming, setIsConfirming] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [pendingImage, setPendingImage] = useState<{ file: File; preview: string } | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [receiptMap, setReceiptMap] = useState<ReceiptMap>({});
-  const [uploadingReceipt, setUploadingReceipt] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const receiptInputRef = useRef<HTMLInputElement>(null);
-  const receiptTargetKey = useRef<string>("");
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, executionLog]);
 
   // Stats
   const { data: stats } = useQuery({
@@ -141,13 +134,12 @@ export default function AdminOrderSupplementPage() {
         .from("order_supplement_sessions")
         .select("status, total_orders_created, total_partners_created, total_members_created, total_amount_cents");
       const sessions = data || [];
-      const confirmed = sessions.filter((s) => s.status === "confirmed");
       return {
         totalSessions: sessions.length,
-        totalOrders: confirmed.reduce((sum, s) => sum + (s.total_orders_created || 0), 0),
-        totalPartners: confirmed.reduce((sum, s) => sum + (s.total_partners_created || 0), 0),
-        totalMembers: confirmed.reduce((sum, s) => sum + (s.total_members_created || 0), 0),
-        totalAmount: confirmed.reduce((sum, s) => sum + (s.total_amount_cents || 0), 0),
+        totalOrders: sessions.reduce((sum, s) => sum + (s.total_orders_created || 0), 0),
+        totalPartners: sessions.reduce((sum, s) => sum + (s.total_partners_created || 0), 0),
+        totalMembers: sessions.reduce((sum, s) => sum + (s.total_members_created || 0), 0),
+        totalAmount: sessions.reduce((sum, s) => sum + (s.total_amount_cents || 0), 0),
       };
     },
   });
@@ -165,7 +157,7 @@ export default function AdminOrderSupplementPage() {
     },
   });
 
-  // Upload image to storage and return public URL
+  // Upload image to storage
   const uploadImageToStorage = async (file: File): Promise<string> => {
     const ext = file.name.split(".").pop() || "jpg";
     const path = `receipts/supplement-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
@@ -179,7 +171,7 @@ export default function AdminOrderSupplementPage() {
     return publicUrl;
   };
 
-  // Send message (with optional image)
+  // Send message
   const sendMessage = useMutation({
     mutationFn: async ({ msg, imageUrl }: { msg: string; imageUrl?: string }) => {
       const { data: { session: authSession } } = await supabase.auth.getSession();
@@ -215,7 +207,13 @@ export default function AdminOrderSupplementPage() {
       }
       setMessages((prev) => [...prev, { role: "assistant", content: data.message }]);
       if (data.parsed_actions) setParsedActions(data.parsed_actions);
-      if (data.ready_to_confirm) setReadyToConfirm(true);
+      // Handle execution log from AI direct writes
+      if (data.execution_log && data.execution_log.length > 0) {
+        setExecutionLog((prev) => [...prev, ...data.execution_log]);
+        // Refresh stats when actions are executed
+        queryClient.invalidateQueries({ queryKey: ["order-supplement-stats"] });
+        queryClient.invalidateQueries({ queryKey: ["order-supplement-history"] });
+      }
     },
     onError: (error) => {
       toast({ title: t("admin.orderSupplementPage.error"), description: error.message, variant: "destructive" });
@@ -228,7 +226,6 @@ export default function AdminOrderSupplementPage() {
 
     let imageUrl: string | undefined;
 
-    // Upload pending image first
     if (pendingImage) {
       setUploadingImage(true);
       try {
@@ -246,7 +243,6 @@ export default function AdminOrderSupplementPage() {
     setInputValue("");
     setPendingImage(null);
 
-    // If image but no text, send a prompt for AI to analyze the image
     const finalMsg = msg || "请分析这张转账截图，提取付款信息。";
     sendMessage.mutate({ msg: finalMsg, imageUrl });
   }, [inputValue, pendingImage, sendMessage, uploadingImage]);
@@ -274,39 +270,14 @@ export default function AdminOrderSupplementPage() {
     e.target.value = "";
   };
 
-  // Receipt upload for individual action items
-  const handleReceiptSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    const key = receiptTargetKey.current;
-    if (!file || !key) return;
-    e.target.value = "";
-
-    setUploadingReceipt(key);
-    try {
-      const url = await uploadImageToStorage(file);
-      setReceiptMap((prev) => ({ ...prev, [key]: url }));
-      toast({ title: t("admin.orderSupplementPage.receiptUploaded") });
-    } catch (err) {
-      toast({ title: t("admin.orderSupplementPage.uploadFailed"), description: (err as Error).message, variant: "destructive" });
-    } finally {
-      setUploadingReceipt(null);
-    }
-  };
-
-  const triggerReceiptUpload = (key: string) => {
-    receiptTargetKey.current = key;
-    receiptInputRef.current?.click();
-  };
-
   const handleNewSession = () => {
     setActiveSessionId(null);
     setMessages([]);
     setParsedActions(null);
-    setReadyToConfirm(false);
+    setExecutionLog([]);
     setShowHistory(false);
     setInputValue("");
     setPendingImage(null);
-    setReceiptMap({});
     inputRef.current?.focus();
   };
 
@@ -314,297 +285,11 @@ export default function AdminOrderSupplementPage() {
     setActiveSessionId(s.id);
     setMessages(s.messages || []);
     setParsedActions(s.parsed_actions);
-    setReadyToConfirm(s.status === "in_progress" && !!s.parsed_actions);
+    setExecutionLog([]);
     setShowHistory(false);
-    setReceiptMap({});
   };
 
-  // Confirm & execute
-  const handleConfirm = async () => {
-    if (!parsedActions || !activeSessionId) return;
-    setIsConfirming(true);
-
-    try {
-      let ordersCreated = 0;
-      let partnersCreated = 0;
-      let membersCreated = 0;
-      let totalAmountCents = 0;
-      const results: Array<{ action: string; success: boolean; details: string }> = [];
-
-      // Get admin member for bill created_by
-      const { data: { session: authSession } } = await supabase.auth.getSession();
-      const adminUserId = authSession?.user?.id || null;
-
-      // Step 1: Register new members
-      if (parsedActions.member_registrations?.length) {
-        for (const reg of parsedActions.member_registrations) {
-          try {
-            const phone = reg.customer_phone.replace(/\s+/g, "");
-            const { data: existing } = await supabase
-              .from("members").select("id").eq("phone", phone).maybeSingle();
-
-            if (existing) {
-              results.push({ action: "member_register", success: true, details: `${reg.customer_name} already exists` });
-              continue;
-            }
-
-            let referrerId: string | null = null;
-            if (reg.referral_code) {
-              const code = reg.referral_code.toUpperCase();
-              const { data: referrer } = await supabase
-                .from("members").select("id").eq("referral_code", code).maybeSingle();
-              if (referrer) {
-                referrerId = referrer.id;
-              } else {
-                const { data: refByPhone } = await supabase
-                  .from("members").select("id").eq("phone", reg.referral_code).maybeSingle();
-                if (refByPhone) referrerId = refByPhone.id;
-              }
-            }
-
-            const newReferralCode = generateReferralCode();
-            const { error } = await supabase.from("members").insert({
-              user_id: null,
-              name: reg.customer_name,
-              phone, email: reg.customer_email || null,
-              role: "member", points_balance: 0,
-              referral_code: newReferralCode, referrer_id: referrerId,
-              created_at: new Date().toISOString(),
-            });
-            if (error) throw error;
-            membersCreated++;
-            results.push({ action: "member_register", success: true, details: `${reg.customer_name} (${phone})` });
-          } catch (err) {
-            results.push({ action: "member_register", success: false, details: `${reg.customer_name}: ${(err as Error).message}` });
-          }
-        }
-      }
-
-      // Step 2: Partner joins
-      if (parsedActions.partner_joins?.length) {
-        for (let i = 0; i < parsedActions.partner_joins.length; i++) {
-          const join = parsedActions.partner_joins[i];
-          try {
-            const phone = join.customer_phone.replace(/\s+/g, "");
-            let { data: member } = await supabase
-              .from("members").select("id, referrer_id, referral_code").eq("phone", phone).maybeSingle();
-
-            if (!member) {
-              const newReferralCode = generateReferralCode();
-              const { data: newMember, error: createErr } = await supabase
-                .from("members").insert({
-                  name: join.customer_name, phone, role: "member",
-                  points_balance: 0, referral_code: newReferralCode,
-                  created_at: new Date().toISOString(),
-                }).select("id, referrer_id, referral_code").single();
-              if (createErr) throw createErr;
-              member = newMember;
-              membersCreated++;
-            }
-
-            if (join.referral_code && !member.referrer_id) {
-              const { data: referrer } = await supabase
-                .from("members").select("id").eq("referral_code", join.referral_code.toUpperCase()).maybeSingle();
-              if (referrer) {
-                await supabase.from("members").update({ referrer_id: referrer.id }).eq("id", member.id);
-              }
-            }
-
-            const { error } = await createPartner(
-              member.id, join.tier, join.referral_code || null,
-              join.payment_reference || "bank_transfer"
-            );
-            if (error) throw error;
-
-            // Build deduction notes
-            const deductionNotes = join.deductions?.length
-              ? join.deductions.map((d) => `${d.description}: -RM${(d.amount_cents / 100).toFixed(2)}`).join("; ")
-              : "";
-            const actualPaidNote = join.actual_paid_cents != null && join.actual_paid_cents !== join.payment_amount_cents
-              ? ` | 实付RM${(join.actual_paid_cents / 100).toFixed(2)}`
-              : "";
-
-            // Create partner package order in orders table
-            const partnerItemsJson = JSON.stringify([{
-              product_name: TIER_LABELS[join.tier],
-              quantity: 1,
-              unit_price_cents: join.payment_amount_cents,
-            }]);
-            const { order: partnerOrder } = await createOrder({
-              userId: null, memberId: member.id,
-              customerName: join.customer_name, customerPhone: phone,
-              customerEmail: null, status: "confirmed",
-              totalAmount: join.payment_amount_cents, items: partnerItemsJson,
-              packageType: join.tier, shippingAddress: null, shippingCity: null,
-              shippingState: null, shippingPostcode: null,
-              preferredDeliveryDate: null, trackingNumber: null,
-              notes: `[经营人配套] ${TIER_LABELS[join.tier]}${actualPaidNote}${deductionNotes ? ` | 抵扣: ${deductionNotes}` : ""} ${join.payment_reference || ""}`.trim(),
-              source: "bank_transfer", erpnextId: null, metaOrderId: null,
-              pointsEarned: null, pointsRedeemed: null,
-              sourceChannel: "admin_supplement", orderNumber: "",
-            });
-            if (partnerOrder) {
-              await updateOrderStatus(partnerOrder.id, "confirmed");
-              ordersCreated++;
-            }
-
-            // Create bill record with receipt
-            const receiptKey = `partner-${i}`;
-            const receiptUrl = receiptMap[receiptKey] || null;
-            const billNumber = generateBillNumber();
-            const billAmount = join.actual_paid_cents ?? join.payment_amount_cents;
-            await supabase.from("bills").insert({
-              bill_number: billNumber,
-              type: "operation",
-              category: "经营人配套",
-              vendor: join.customer_name,
-              amount: billAmount,
-              description: `${TIER_LABELS[join.tier]} - ${join.customer_name} (${phone})${actualPaidNote}`,
-              status: "paid",
-              paid_date: new Date().toISOString().slice(0, 10),
-              due_date: new Date().toISOString().slice(0, 10),
-              reference_type: "order",
-              reference_id: partnerOrder?.id || activeSessionId,
-              receipt_url: receiptUrl,
-              created_by: adminUserId,
-              notes: [join.payment_reference, deductionNotes].filter(Boolean).join(" | ") || null,
-            });
-
-            partnersCreated++;
-            totalAmountCents += join.payment_amount_cents;
-            results.push({ action: "partner_join", success: true, details: `${join.customer_name} → ${TIER_LABELS[join.tier]}` });
-          } catch (err) {
-            results.push({ action: "partner_join", success: false, details: `${join.customer_name}: ${(err as Error).message}` });
-          }
-        }
-      }
-
-      // Step 3: Product orders
-      if (parsedActions.product_orders?.length) {
-        for (let i = 0; i < parsedActions.product_orders.length; i++) {
-          const order = parsedActions.product_orders[i];
-          try {
-            const phone = order.customer_phone.replace(/\s+/g, "");
-            let { data: member } = await supabase
-              .from("members").select("id, referrer_id").eq("phone", phone).maybeSingle();
-
-            if (!member) {
-              const newReferralCode = generateReferralCode();
-              const { data: newMember, error: createErr } = await supabase
-                .from("members").insert({
-                  name: order.customer_name, phone, role: "member",
-                  points_balance: 0, referral_code: newReferralCode,
-                  created_at: new Date().toISOString(),
-                }).select("id, referrer_id").single();
-              if (createErr) throw createErr;
-              member = newMember;
-              membersCreated++;
-            }
-
-            if (order.referral_code && !member.referrer_id) {
-              const { data: referrer } = await supabase
-                .from("members").select("id").eq("referral_code", order.referral_code.toUpperCase()).maybeSingle();
-              if (referrer) {
-                await supabase.from("members").update({ referrer_id: referrer.id }).eq("id", member.id);
-              }
-            }
-
-            // Build deduction notes
-            const orderDeductionNotes = order.deductions?.length
-              ? order.deductions.map((d) => `${d.description}: -RM${(d.amount_cents / 100).toFixed(2)}`).join("; ")
-              : "";
-            const orderActualPaidNote = order.actual_paid_cents != null && order.actual_paid_cents !== order.total_amount_cents
-              ? ` | 实付RM${(order.actual_paid_cents / 100).toFixed(2)}`
-              : "";
-
-            const itemsJson = JSON.stringify(order.items);
-            const { order: createdOrder, error: orderErr } = await createOrder({
-              userId: null, memberId: member.id,
-              customerName: order.customer_name, customerPhone: phone,
-              customerEmail: null, status: "confirmed",
-              totalAmount: order.total_amount_cents, items: itemsJson,
-              packageType: null, shippingAddress: null, shippingCity: null,
-              shippingState: null, shippingPostcode: null,
-              preferredDeliveryDate: null, trackingNumber: null,
-              notes: `[订单补录]${orderActualPaidNote}${orderDeductionNotes ? ` | 抵扣: ${orderDeductionNotes}` : ""} ${order.payment_reference || ""} ${order.notes || ""}`.trim(),
-              source: "bank_transfer", erpnextId: null, metaOrderId: null,
-              pointsEarned: null, pointsRedeemed: null,
-              sourceChannel: "admin_supplement", orderNumber: "",
-            });
-            if (orderErr) throw orderErr;
-            if (!createdOrder) throw new Error("Order creation returned null");
-
-            await updateOrderStatus(createdOrder.id, "confirmed");
-
-            if (!order.skip_cashback) {
-              await processOrderCashback(createdOrder.id, order.total_amount_cents, order.box_count, member.id);
-            }
-            await addSalesToBonusPool(createdOrder.id, order.total_amount_cents);
-
-            // Create bill record with receipt
-            const receiptKey = `order-${i}`;
-            const receiptUrl = receiptMap[receiptKey] || null;
-            const billNumber = generateBillNumber();
-            const orderBillAmount = order.actual_paid_cents ?? order.total_amount_cents;
-            await supabase.from("bills").insert({
-              bill_number: billNumber,
-              type: "operation",
-              category: "产品订单",
-              vendor: order.customer_name,
-              amount: orderBillAmount,
-              description: `订单补录 ${createdOrder.orderNumber} - ${order.customer_name} × ${order.box_count}盒${orderActualPaidNote}`,
-              status: "paid",
-              paid_date: new Date().toISOString().slice(0, 10),
-              due_date: new Date().toISOString().slice(0, 10),
-              reference_type: "order",
-              reference_id: createdOrder.id,
-              receipt_url: receiptUrl,
-              created_by: adminUserId,
-              notes: [order.payment_reference, orderDeductionNotes].filter(Boolean).join(" | ") || null,
-            });
-
-            ordersCreated++;
-            totalAmountCents += order.total_amount_cents;
-            results.push({ action: "product_order", success: true, details: `${order.customer_name} × ${order.box_count}盒 → RM ${(order.total_amount_cents / 100).toFixed(2)}` });
-          } catch (err) {
-            results.push({ action: "product_order", success: false, details: `${order.customer_name}: ${(err as Error).message}` });
-          }
-        }
-      }
-
-      // Update session
-      await supabase.from("order_supplement_sessions").update({
-        status: "confirmed", execution_results: results,
-        total_orders_created: ordersCreated, total_partners_created: partnersCreated,
-        total_members_created: membersCreated, total_amount_cents: totalAmountCents,
-        updated_at: new Date().toISOString(),
-      }).eq("id", activeSessionId);
-
-      const successCount = results.filter((r) => r.success).length;
-      const failCount = results.filter((r) => !r.success).length;
-      const resultMsg = [
-        `✅ ${t("admin.orderSupplementPage.executionComplete")}`,
-        membersCreated > 0 ? `${t("admin.orderSupplementPage.membersCreated")}: ${membersCreated}` : null,
-        partnersCreated > 0 ? `${t("admin.orderSupplementPage.partnersCreated")}: ${partnersCreated}` : null,
-        ordersCreated > 0 ? `${t("admin.orderSupplementPage.ordersCreated")}: ${ordersCreated}` : null,
-        `${t("admin.orderSupplementPage.totalAmount")}: RM ${(totalAmountCents / 100).toFixed(2)}`,
-        failCount > 0 ? `⚠️ ${failCount} ${t("admin.orderSupplementPage.failed")}` : null,
-      ].filter(Boolean).join("\n");
-
-      setMessages((prev) => [...prev, { role: "assistant", content: resultMsg }]);
-      setReadyToConfirm(false);
-      setReceiptMap({});
-      queryClient.invalidateQueries({ queryKey: ["order-supplement-stats"] });
-      queryClient.invalidateQueries({ queryKey: ["order-supplement-history"] });
-      toast({ title: t("admin.orderSupplementPage.confirmSuccess"), description: `${successCount} ${t("admin.orderSupplementPage.actionsCompleted")}` });
-    } catch (err) {
-      toast({ title: t("admin.orderSupplementPage.error"), description: (err as Error).message, variant: "destructive" });
-    } finally {
-      setIsConfirming(false);
-    }
-  };
-
-  // Count total actions
+  // Count total preview actions
   const totalActions =
     (parsedActions?.member_registrations?.length || 0) +
     (parsedActions?.partner_joins?.length || 0) +
@@ -612,37 +297,35 @@ export default function AdminOrderSupplementPage() {
 
   return (
     <AdminLayout>
-      {/* Hidden file inputs */}
       <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
-      <input ref={receiptInputRef} type="file" accept="image/*" className="hidden" onChange={handleReceiptSelect} />
 
-      <div className="flex flex-col h-[calc(100vh-4rem)] max-w-full overflow-hidden">
-        {/* Header - compact on mobile */}
-        <div className="flex-none px-3 sm:px-4 pt-3 sm:pt-4 pb-2">
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <div className="flex items-center gap-2 min-w-0">
+      <div className="-mx-4 -my-4 sm:mx-0 sm:my-0 flex flex-col h-[calc(100dvh-5.25rem)] sm:h-[calc(100vh-4rem)] max-w-full overflow-hidden">
+        {/* Header */}
+        <div className="flex-none px-2.5 sm:px-4 pt-2 sm:pt-4 pb-1.5 sm:pb-2">
+          <div className="flex items-center justify-between mb-1.5 sm:mb-3">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
               {showHistory && (
-                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setShowHistory(false)}>
+                <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 shrink-0" onClick={() => setShowHistory(false)}>
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
               )}
-              <MessageSquarePlus className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
-              <h1 className="text-base sm:text-xl font-bold truncate">{t("admin.orderSupplementPage.title")}</h1>
+              <MessageSquarePlus className="w-4 h-4 sm:w-6 sm:h-6 text-primary shrink-0" />
+              <h1 className="text-sm sm:text-xl font-bold truncate">{t("admin.orderSupplementPage.title")}</h1>
             </div>
-            <div className="flex gap-1.5 sm:gap-2 shrink-0">
-              <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 text-xs sm:text-sm" onClick={() => setShowHistory(!showHistory)}>
+            <div className="flex gap-1 sm:gap-2 shrink-0">
+              <Button variant="outline" size="sm" className="h-7 sm:h-8 px-1.5 sm:px-3 text-[11px] sm:text-sm" onClick={() => setShowHistory(!showHistory)}>
                 <History className="w-3.5 h-3.5 sm:mr-1" />
                 <span className="hidden sm:inline">{t("admin.orderSupplementPage.history")}</span>
               </Button>
-              <Button size="sm" className="h-8 px-2 sm:px-3 text-xs sm:text-sm" onClick={handleNewSession}>
+              <Button size="sm" className="h-7 sm:h-8 px-1.5 sm:px-3 text-[11px] sm:text-sm" onClick={handleNewSession}>
                 <Plus className="w-3.5 h-3.5 sm:mr-1" />
                 <span className="hidden sm:inline">{t("admin.orderSupplementPage.newSession")}</span>
               </Button>
             </div>
           </div>
 
-          {/* Stats - scrollable on mobile */}
-          <div className="flex gap-2 overflow-x-auto pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-5 sm:overflow-visible scrollbar-none">
+          {/* Stats - horizontal scroll on mobile, grid on desktop */}
+          <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1.5 sm:pb-2 -mx-2.5 px-2.5 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-5 sm:overflow-visible scrollbar-none">
             {[
               { label: t("admin.orderSupplementPage.statSessions"), value: stats?.totalSessions || 0 },
               { label: t("admin.orderSupplementPage.statOrders"), value: stats?.totalOrders || 0 },
@@ -650,10 +333,10 @@ export default function AdminOrderSupplementPage() {
               { label: t("admin.orderSupplementPage.statMembers"), value: stats?.totalMembers || 0 },
               { label: t("admin.orderSupplementPage.statAmount"), value: `RM ${((stats?.totalAmount || 0) / 100).toFixed(0)}` },
             ].map((stat, i) => (
-              <Card key={i} className="shrink-0 w-[120px] sm:w-auto">
-                <CardContent className="p-2 sm:p-3">
-                  <div className="text-[10px] sm:text-xs text-muted-foreground truncate">{stat.label}</div>
-                  <div className="text-sm sm:text-lg font-bold">{stat.value}</div>
+              <Card key={i} className="shrink-0 w-[100px] sm:w-auto">
+                <CardContent className="p-1.5 sm:p-3">
+                  <div className="text-[9px] sm:text-xs text-muted-foreground truncate">{stat.label}</div>
+                  <div className="text-xs sm:text-lg font-bold">{stat.value}</div>
                 </CardContent>
               </Card>
             ))}
@@ -709,26 +392,27 @@ export default function AdminOrderSupplementPage() {
         ) : (
           <>
             {/* Chat area */}
-            <div className="flex-1 overflow-y-auto px-3 sm:px-4">
+            <div className="flex-1 overflow-y-auto px-2.5 sm:px-4">
               {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground px-4">
-                  <MessageSquarePlus className="w-10 h-10 sm:w-12 sm:h-12 mb-3 opacity-30" />
-                  <p className="text-sm sm:text-lg font-medium mb-1">{t("admin.orderSupplementPage.welcomeTitle")}</p>
-                  <p className="text-xs sm:text-sm max-w-sm">{t("admin.orderSupplementPage.welcomeDesc")}</p>
-                  <div className="mt-4 sm:mt-6 space-y-2 text-xs sm:text-sm text-left w-full max-w-sm">
-                    <p className="font-medium">{t("admin.orderSupplementPage.exampleTitle")}</p>
-                    <div className="bg-muted/50 rounded-lg p-2.5 sm:p-3 space-y-1 text-[11px] sm:text-xs">
+                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground px-2">
+                  <MessageSquarePlus className="w-8 h-8 sm:w-12 sm:h-12 mb-2 sm:mb-3 opacity-30" />
+                  <p className="text-xs sm:text-lg font-medium mb-0.5 sm:mb-1">{t("admin.orderSupplementPage.welcomeTitle")}</p>
+                  <p className="text-[11px] sm:text-sm max-w-sm">{t("admin.orderSupplementPage.welcomeDesc")}</p>
+                  <div className="mt-3 sm:mt-6 space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-left w-full max-w-sm">
+                    <p className="font-medium text-[11px] sm:text-sm">{t("admin.orderSupplementPage.exampleTitle")}</p>
+                    <div className="bg-muted/50 rounded-lg p-2 sm:p-3 space-y-0.5 sm:space-y-1 text-[10px] sm:text-xs">
                       <p>"收到李明转账RM1000，Phase 1加入，手机0123456789"</p>
-                      <p>"王芳转账RM736，买了2盒燕窝，手机0187654321"</p>
+                      <p>"查一下 0123456789 的会员信息和订单"</p>
+                      <p>"帮王芳创建一个2盒燕窝的订单，手机0187654321"</p>
                       <p className="flex items-center gap-1"><Paperclip className="w-3 h-3" /> {t("admin.orderSupplementPage.sendImageTip")}</p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-2.5 sm:space-y-3 py-3 sm:py-4">
+                <div className="space-y-2 sm:space-y-3 py-2 sm:py-4">
                   {messages.map((msg, i) => (
                     <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-3 py-2 text-[13px] sm:text-sm ${
+                      <div className={`max-w-[88%] sm:max-w-[75%] rounded-2xl px-2.5 sm:px-3 py-1.5 sm:py-2 text-[12px] sm:text-sm ${
                         msg.role === "user"
                           ? "bg-primary text-primary-foreground rounded-br-md"
                           : "bg-muted rounded-bl-md"
@@ -737,11 +421,11 @@ export default function AdminOrderSupplementPage() {
                           <img
                             src={msg.image_url}
                             alt="receipt"
-                            className="rounded-lg mb-1.5 max-w-full max-h-48 sm:max-h-64 object-contain cursor-pointer"
+                            className="rounded-lg mb-1.5 max-w-full max-h-40 sm:max-h-64 object-contain cursor-pointer"
                             onClick={() => window.open(msg.image_url, "_blank")}
                           />
                         )}
-                        <div className="whitespace-pre-wrap break-words">{msg.content}</div>
+                        <div className="whitespace-pre-wrap break-words leading-relaxed">{msg.content}</div>
                       </div>
                     </div>
                   ))}
@@ -758,9 +442,41 @@ export default function AdminOrderSupplementPage() {
               )}
             </div>
 
-            {/* Parsed Actions Preview */}
-            {parsedActions && totalActions > 0 && (
-              <div className="flex-none px-3 sm:px-4 py-2 border-t bg-muted/30 max-h-[40vh] overflow-y-auto">
+            {/* Execution Log - shows AI-executed actions */}
+            {executionLog.length > 0 && (
+              <div className="flex-none px-2.5 sm:px-4 py-1.5 sm:py-2 border-t bg-muted/20 max-h-[20vh] sm:max-h-[30vh] overflow-y-auto">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary" />
+                  <span className="text-[11px] sm:text-xs font-medium">{t("admin.orderSupplementPage.executionLog")}</span>
+                  <Badge variant="secondary" className="text-[9px] sm:text-[10px] ml-auto">
+                    {executionLog.filter(e => e.success).length}/{executionLog.length}
+                  </Badge>
+                </div>
+                <div className="space-y-0.5 sm:space-y-1">
+                  {executionLog.map((entry, i) => (
+                    <div key={i} className={`flex items-start gap-1 sm:gap-1.5 text-[10px] sm:text-xs rounded-md px-1.5 sm:px-2 py-1 sm:py-1.5 ${
+                      entry.success ? "bg-green-50 dark:bg-green-950/30" : "bg-red-50 dark:bg-red-950/30"
+                    }`}>
+                      {entry.success ? (
+                        <CheckCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-green-600 shrink-0 mt-0.5" />
+                      ) : (
+                        <XCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-500 shrink-0 mt-0.5" />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <span className={`font-medium ${entry.success ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                          {ACTION_LABELS[entry.action] || entry.action}
+                        </span>
+                        <span className="text-muted-foreground ml-1 break-words">{entry.details}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Parsed Actions Preview (optional - for visual context) */}
+            {parsedActions && totalActions > 0 && executionLog.length === 0 && (
+              <div className="flex-none px-2.5 sm:px-4 py-1.5 sm:py-2 border-t bg-muted/30 max-h-[20vh] sm:max-h-[30vh] overflow-y-auto">
                 <div className="space-y-1.5">
                   {parsedActions.member_registrations?.map((reg, i) => (
                     <div key={`reg-${i}`} className="flex items-center gap-1.5 text-xs sm:text-sm bg-background rounded-lg p-2">
@@ -773,10 +489,9 @@ export default function AdminOrderSupplementPage() {
                   ))}
 
                   {parsedActions.partner_joins?.map((join, i) => {
-                    const key = `partner-${i}`;
                     const hasDeductions = join.deductions && join.deductions.length > 0;
                     return (
-                      <div key={key} className="bg-background rounded-lg p-2">
+                      <div key={`partner-${i}`} className="bg-background rounded-lg p-2">
                         <div className="flex items-center gap-1.5 text-xs sm:text-sm">
                           <Users className="w-3.5 h-3.5 text-green-500 shrink-0" />
                           <div className="min-w-0 flex-1">
@@ -790,7 +505,6 @@ export default function AdminOrderSupplementPage() {
                             RM {(join.payment_amount_cents / 100).toFixed(0)}
                           </Badge>
                         </div>
-                        {/* Deduction breakdown */}
                         {hasDeductions && (
                           <div className="ml-5 mt-1 space-y-0.5">
                             {join.actual_paid_cents != null && join.actual_paid_cents !== join.payment_amount_cents && (
@@ -806,35 +520,14 @@ export default function AdminOrderSupplementPage() {
                             ))}
                           </div>
                         )}
-                        {/* Receipt upload */}
-                        <div className="flex items-center gap-1.5 mt-1.5 ml-5">
-                          {receiptMap[key] ? (
-                            <div className="flex items-center gap-1 text-[10px] text-green-600">
-                              <CheckCircle className="w-3 h-3" />
-                              <span>{t("admin.orderSupplementPage.receiptAttached")}</span>
-                              <img src={receiptMap[key]} className="w-8 h-8 rounded object-cover ml-1 cursor-pointer" onClick={() => window.open(receiptMap[key], "_blank")} />
-                            </div>
-                          ) : (
-                            <Button
-                              variant="ghost" size="sm"
-                              className="h-6 px-2 text-[10px] text-muted-foreground"
-                              onClick={() => triggerReceiptUpload(key)}
-                              disabled={uploadingReceipt === key}
-                            >
-                              {uploadingReceipt === key ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Receipt className="w-3 h-3 mr-1" />}
-                              {t("admin.orderSupplementPage.attachReceipt")}
-                            </Button>
-                          )}
-                        </div>
                       </div>
                     );
                   })}
 
                   {parsedActions.product_orders?.map((order, i) => {
-                    const key = `order-${i}`;
                     const hasDeductions = order.deductions && order.deductions.length > 0;
                     return (
-                      <div key={key} className="bg-background rounded-lg p-2">
+                      <div key={`order-${i}`} className="bg-background rounded-lg p-2">
                         <div className="flex items-center gap-1.5 text-xs sm:text-sm">
                           <ShoppingCart className="w-3.5 h-3.5 text-orange-500 shrink-0" />
                           <div className="min-w-0 flex-1">
@@ -846,7 +539,6 @@ export default function AdminOrderSupplementPage() {
                             RM {(order.total_amount_cents / 100).toFixed(0)}
                           </Badge>
                         </div>
-                        {/* Deduction breakdown */}
                         {hasDeductions && (
                           <div className="ml-5 mt-1 space-y-0.5">
                             {order.actual_paid_cents != null && order.actual_paid_cents !== order.total_amount_cents && (
@@ -862,51 +554,18 @@ export default function AdminOrderSupplementPage() {
                             ))}
                           </div>
                         )}
-                        {/* Receipt upload */}
-                        <div className="flex items-center gap-1.5 mt-1.5 ml-5">
-                          {receiptMap[key] ? (
-                            <div className="flex items-center gap-1 text-[10px] text-green-600">
-                              <CheckCircle className="w-3 h-3" />
-                              <span>{t("admin.orderSupplementPage.receiptAttached")}</span>
-                              <img src={receiptMap[key]} className="w-8 h-8 rounded object-cover ml-1 cursor-pointer" onClick={() => window.open(receiptMap[key], "_blank")} />
-                            </div>
-                          ) : (
-                            <Button
-                              variant="ghost" size="sm"
-                              className="h-6 px-2 text-[10px] text-muted-foreground"
-                              onClick={() => triggerReceiptUpload(key)}
-                              disabled={uploadingReceipt === key}
-                            >
-                              {uploadingReceipt === key ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Receipt className="w-3 h-3 mr-1" />}
-                              {t("admin.orderSupplementPage.attachReceipt")}
-                            </Button>
-                          )}
-                        </div>
                       </div>
                     );
                   })}
-
-                  {readyToConfirm && (
-                    <div className="flex items-center gap-2 pt-1 pb-0.5">
-                      <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
-                      <span className="text-xs sm:text-sm font-medium text-amber-600 flex-1">
-                        {t("admin.orderSupplementPage.readyToConfirm")}
-                      </span>
-                      <Button size="sm" onClick={handleConfirm} disabled={isConfirming} className="h-8 text-xs sm:text-sm shrink-0">
-                        {isConfirming ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <CheckCircle className="w-3.5 h-3.5 mr-1" />}
-                        {t("admin.orderSupplementPage.confirmExecute")}
-                      </Button>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
 
             {/* Image preview bar */}
             {pendingImage && (
-              <div className="flex-none px-3 sm:px-4 pt-2 border-t bg-muted/20">
+              <div className="flex-none px-2.5 sm:px-4 pt-1.5 sm:pt-2 border-t bg-muted/20">
                 <div className="relative inline-block">
-                  <img src={pendingImage.preview} alt="preview" className="h-16 sm:h-20 rounded-lg object-cover" />
+                  <img src={pendingImage.preview} alt="preview" className="h-14 sm:h-20 rounded-lg object-cover" />
                   <button
                     className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center"
                     onClick={() => { URL.revokeObjectURL(pendingImage.preview); setPendingImage(null); }}
@@ -917,16 +576,16 @@ export default function AdminOrderSupplementPage() {
               </div>
             )}
 
-            {/* Input bar - WhatsApp style */}
-            <div className="flex-none px-2 sm:px-4 py-2 sm:py-3 border-t bg-background">
-              <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Input bar - with safe area for iOS */}
+            <div className="flex-none px-2 sm:px-4 py-1.5 sm:py-3 border-t bg-background" style={{ paddingBottom: 'max(0.375rem, env(safe-area-inset-bottom))' }}>
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Button
                   variant="ghost" size="icon"
-                  className="h-9 w-9 shrink-0 text-muted-foreground"
+                  className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-muted-foreground"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={sendMessage.isPending || uploadingImage}
                 >
-                  <Paperclip className="w-5 h-5" />
+                  <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
                 <Input
                   ref={inputRef}
@@ -935,13 +594,13 @@ export default function AdminOrderSupplementPage() {
                   onKeyDown={handleKeyDown}
                   placeholder={t("admin.orderSupplementPage.inputPlaceholder")}
                   disabled={sendMessage.isPending || uploadingImage}
-                  className="flex-1 h-9 sm:h-10 text-sm rounded-full bg-muted/50 border-0 focus-visible:ring-1"
+                  className="flex-1 h-8 sm:h-10 text-[13px] sm:text-sm rounded-full bg-muted/50 border-0 focus-visible:ring-1"
                 />
                 <Button
                   onClick={handleSend}
                   disabled={(!inputValue.trim() && !pendingImage) || sendMessage.isPending || uploadingImage}
                   size="icon"
-                  className="h-9 w-9 rounded-full shrink-0"
+                  className="h-8 w-8 sm:h-9 sm:w-9 rounded-full shrink-0"
                 >
                   {(sendMessage.isPending || uploadingImage) ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
