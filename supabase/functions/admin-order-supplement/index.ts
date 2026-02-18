@@ -8,171 +8,331 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const SYSTEM_PROMPT = `你是 LOVE YOUNG 订单补录助手。管理员会告诉你线下银行转账的支付信息，你需要帮助整理成结构化的数据记录。
+// ============ Business Constants (mirrored from partner.ts) ============
+const PARTNER_TIERS: Record<string, { name: string; price: number; initialLyPoints: number; initialRwaTokens: number }> = {
+  phase1: { name: "Phase 1 - 启航经营人", price: 100000, initialLyPoints: 2000, initialRwaTokens: 1 },
+  phase2: { name: "Phase 2 - 成长经营人", price: 130000, initialLyPoints: 2600, initialRwaTokens: 1 },
+  phase3: { name: "Phase 3 - 卓越经营人", price: 150000, initialLyPoints: 3000, initialRwaTokens: 1 },
+};
+const REFERRAL_BONUS = { directRate: 0.10, indirectRate: 0.05 };
+const ORDER_CASHBACK_CONFIG = { first5Rate: 0.50, afterRate: 0.30, sameLevelRate: 0.10, sameLevelMaxGen: 2 };
+const LY_NETWORK_LEVELS = [20, 15, 10, 10, 10, 5, 5, 5, 5, 5];
+const BONUS_POOL_CONFIG = { salesContributionRate: 0.30, cycleDays: 10 };
+
+// ============ Helper functions ============
+function generateReferralCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 8; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+function generateOrderNumber(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `LY${y}${m}${day}${rand}`;
+}
+
+function generateBillNumber(): string {
+  const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `BILL-${datePart}-${rand}`;
+}
+
+function normalizePhone(phone: string): string {
+  return phone.replace(/\s+/g, "").replace(/^(\+?60)/, "0");
+}
+
+function phoneVariants(phone: string): string[] {
+  const p = normalizePhone(phone);
+  const variants = [p];
+  if (p.startsWith("0")) {
+    variants.push("+6" + p);
+    variants.push("6" + p);
+  }
+  return variants;
+}
+
+// deno-lint-ignore no-explicit-any
+type SupabaseClient = any;
+
+// ============ DB Helper functions (replicated from partner.ts for edge fn) ============
+
+async function addLyPoints(
+  supabase: SupabaseClient, partnerId: string, points: number,
+  type: string, referenceId: string | null, tier: number | null, description: string
+) {
+  await supabase.from("ly_points_ledger").insert({
+    partner_id: partnerId, type, points, reference_id: referenceId,
+    reference_type: type, tier, description, created_at: new Date().toISOString(),
+  });
+  // Increment balance
+  const { error: rpcErr } = await supabase.rpc("increment_ly_balance", { partner_id: partnerId, amount: points });
+  if (rpcErr) {
+    const { data: partner } = await supabase.from("partners").select("ly_balance").eq("id", partnerId).single();
+    await supabase.from("partners").update({
+      ly_balance: (partner?.ly_balance || 0) + points, updated_at: new Date().toISOString(),
+    }).eq("id", partnerId);
+  }
+}
+
+async function deductLyPoints(
+  supabase: SupabaseClient, partnerId: string, points: number,
+  type: string, referenceId: string | null, description: string
+): Promise<boolean> {
+  const { data: partner } = await supabase.from("partners").select("ly_balance").eq("id", partnerId).single();
+  if (!partner || (partner.ly_balance || 0) < points) return false;
+  await supabase.from("ly_points_ledger").insert({
+    partner_id: partnerId, type, points: -points, reference_id: referenceId,
+    reference_type: type, description, created_at: new Date().toISOString(),
+  });
+  await supabase.from("partners").update({
+    ly_balance: (partner.ly_balance || 0) - points, updated_at: new Date().toISOString(),
+  }).eq("id", partnerId);
+  return true;
+}
+
+async function addToCashWallet(
+  supabase: SupabaseClient, partnerId: string, amount: number,
+  type: string, referenceId: string | null, description: string
+) {
+  await supabase.from("cash_wallet_ledger").insert({
+    partner_id: partnerId, type: "income", amount, reference_id: referenceId,
+    reference_type: type, status: "completed", description, created_at: new Date().toISOString(),
+  });
+  const { data: partner } = await supabase.from("partners").select("cash_wallet_balance").eq("id", partnerId).single();
+  await supabase.from("partners").update({
+    cash_wallet_balance: (partner?.cash_wallet_balance || 0) + amount, updated_at: new Date().toISOString(),
+  }).eq("id", partnerId);
+}
+
+async function addRwaTokens(supabase: SupabaseClient, partnerId: string, tokens: number, source: string, orderId: string | null) {
+  // Get current cycle
+  const { data: activeCycle } = await supabase.from("bonus_pool_cycles").select("id").eq("status", "active").limit(1).maybeSingle();
+  await supabase.from("rwa_token_ledger").insert({
+    partner_id: partnerId, cycle_id: activeCycle?.id || null, tokens, source, order_id: orderId,
+    created_at: new Date().toISOString(),
+  });
+  const { data: partner } = await supabase.from("partners").select("rwa_tokens").eq("id", partnerId).single();
+  await supabase.from("partners").update({
+    rwa_tokens: (partner?.rwa_tokens || 0) + tokens, updated_at: new Date().toISOString(),
+  }).eq("id", partnerId);
+}
+
+async function processPartnerReferralBonus(supabase: SupabaseClient, referrerId: string, newPartnerId: string, paymentAmount: number) {
+  const directBonus = Math.floor(paymentAmount * REFERRAL_BONUS.directRate);
+  await addToCashWallet(supabase, referrerId, directBonus, "referral_bonus", newPartnerId, "Direct referral bonus");
+  const { data: directReferrer } = await supabase.from("partners").select("referrer_id").eq("id", referrerId).single();
+  if (directReferrer?.referrer_id) {
+    const indirectBonus = Math.floor(paymentAmount * REFERRAL_BONUS.indirectRate);
+    await addToCashWallet(supabase, directReferrer.referrer_id, indirectBonus, "referral_bonus", newPartnerId, "Indirect referral bonus");
+  }
+}
+
+async function findNearestUplinePartner(supabase: SupabaseClient, memberId: string) {
+  let currentMemberId = memberId;
+  for (let depth = 0; depth < 10; depth++) {
+    const { data: member } = await supabase.from("members").select("referrer_id").eq("id", currentMemberId).single();
+    if (!member?.referrer_id) break;
+    const { data: partner } = await supabase.from("partners")
+      .select("id, member_id, total_boxes_processed, packages_purchased, ly_balance")
+      .eq("member_id", member.referrer_id).eq("status", "active").single();
+    if (partner) {
+      return {
+        partnerId: partner.id, memberId: partner.member_id,
+        totalBoxesProcessed: partner.total_boxes_processed || 0,
+        packagesPurchased: partner.packages_purchased || 1,
+        lyBalance: partner.ly_balance || 0,
+      };
+    }
+    currentMemberId = member.referrer_id;
+  }
+  return null;
+}
+
+async function findPartnerReferrers(supabase: SupabaseClient, partnerId: string, maxGen: number) {
+  const result: Array<{ partnerId: string; lyBalance: number }> = [];
+  let currentPartnerId = partnerId;
+  for (let gen = 0; gen < maxGen; gen++) {
+    const { data: current } = await supabase.from("partners").select("referrer_id").eq("id", currentPartnerId).single();
+    if (!current?.referrer_id) break;
+    const { data: parent } = await supabase.from("partners").select("id, ly_balance").eq("id", current.referrer_id).eq("status", "active").single();
+    if (!parent) break;
+    result.push({ partnerId: parent.id, lyBalance: parent.ly_balance || 0 });
+    currentPartnerId = parent.id;
+  }
+  return result;
+}
+
+function getPartnerCashbackRate(totalBoxesProcessed: number, packagesPurchased: number = 1): number {
+  const fiftyPctLimit = packagesPurchased * 5;
+  return totalBoxesProcessed < fiftyPctLimit ? ORDER_CASHBACK_CONFIG.first5Rate : ORDER_CASHBACK_CONFIG.afterRate;
+}
+
+async function replenishLyFromNetwork(supabase: SupabaseClient, orderId: string, orderAmount: number, buyerMemberId: string) {
+  const orderAmountRm = orderAmount / 100;
+  let currentMemberId = buyerMemberId;
+  for (let layer = 0; layer < LY_NETWORK_LEVELS.length; layer++) {
+    const { data: member } = await supabase.from("members").select("referrer_id").eq("id", currentMemberId).single();
+    if (!member?.referrer_id) break;
+    const { data: partner } = await supabase.from("partners").select("id").eq("member_id", member.referrer_id).eq("status", "active").single();
+    if (partner) {
+      const lyReplenish = Math.floor(orderAmountRm * LY_NETWORK_LEVELS[layer] / 100);
+      if (lyReplenish > 0) {
+        await addLyPoints(supabase, partner.id, lyReplenish, "replenish", orderId, layer + 1,
+          `Network LY replenishment (Layer ${layer + 1}, ${LY_NETWORK_LEVELS[layer]}%)`);
+      }
+    }
+    currentMemberId = member.referrer_id;
+  }
+}
+
+async function lookupMemberByPhone(supabase: SupabaseClient, phone: string) {
+  const variants = phoneVariants(phone);
+  const { data: member } = await supabase.from("members")
+    .select("id, name, phone, email, role, referral_code, referrer_id, points_balance")
+    .or(variants.map((p: string) => `phone.eq.${p}`).join(","))
+    .limit(1).maybeSingle();
+  return member;
+}
+
+// ============ System Prompt ============
+const SYSTEM_PROMPT = `你是 LOVE YOUNG 智能管理助手。你拥有完整的数据库读写权限，可以直接查询和修改数据。
+
+【你的能力】
+1. **数据查询**：查询会员、产品、订单、账单、推荐网络、奖金池等所有数据
+2. **直接执行**：创建订单、账单、注册会员、调整余额等操作可以直接执行，无需等待确认
+3. **需要确认的操作**：只有"创建经营人"（角色升级）需要管理员确认后才执行
+4. **知识积累**：分析中发现重要模式时，保存到知识库
+
+【可用工具】
+- check_member_exists: 检查手机号是否已注册会员
+- query_member_data: 查询会员详细数据（钱包、订单、LY积分等）
+- query_products: 查询产品和套餐价格
+- query_referral_network: 查询推荐网络（上线链+下线列表）
+- search_orders: 搜索订单记录
+- search_bills: 搜索账单记录
+- query_bonus_data: 查询奖金池和RWA数据
+- update_parsed_actions: 更新结构化数据预览卡片（仅用于前端展示）
+- execute_db_write: 直接执行数据库写入操作
+- save_to_memory: 保存重要发现到知识库
+
+【execute_db_write 支持的操作】
+- create_order: 创建订单（直接执行）
+- update_order_status: 更新订单状态（直接执行）
+- create_bill: 创建账单（直接执行）
+- update_bill: 更新账单（直接执行）
+- create_member: 注册新会员（直接执行）
+- update_member: 更新会员信息（直接执行）
+- set_referrer: 设置推荐人（直接执行）
+- create_partner: 创建经营人 ⚠️ 需要确认！先预览，管理员回复"确认"后再执行
+- adjust_wallet: 调整现金钱包余额（直接执行）
+- adjust_ly_points: 调整LY积分（直接执行）
+- process_order_cashback: 处理订单返现（直接执行）
+- add_to_bonus_pool: 添加到奖金池（直接执行）
+
+【工作流程】
+1. 管理员提出需求后，主动查询相关数据
+2. 分析数据，判断需要执行什么操作
+3. 对于一般操作，直接调用 execute_db_write 执行
+4. 对于创建经营人，先告知管理员详细信息和预计产生的操作（LY积分、RWA代币、推荐奖金等），等管理员回复"确认"后再执行
+5. 执行完成后，清晰告知管理员结果
+6. 同时调用 update_parsed_actions 更新预览卡片
 
 【业务规则】
-1. 经营人加入配套（原价/应付）：
-   - Phase 1 启航经营人: RM1,000 (100000 cents)
-   - Phase 2 成长经营人: RM1,300 (130000 cents)
-   - Phase 3 卓越经营人: RM1,500 (150000 cents)
-
-2. 产品价格：
-   - 燕窝/Bird's Nest: RM368/盒 (36800 cents)
-
-3. 奖励体系（客户可能自己扣除的金额来源）：
-   - 推荐奖金/Referral Bonus：直推10%、间推5%（例如推荐Phase1可获RM100）
-   - 现金钱包余额/Cash Wallet：经营人钱包里的返现余额
-   - 订单返现/Order Cashback：产品订单的50%或30%返现
-   - 同级奖金/Same-level Bonus：下级返现的10%
-   - 其他折扣/优惠
-
-4. 支付来源：银行转账 (bank_transfer)
-
-【重要：金额分析智能推理】
-当转账金额与标准价格不一致时，你必须主动分析原因：
-
-例子1：转账RM900，但Phase1是RM1000
-→ 推理：可能扣除了RM100推荐奖金
-→ 询问管理员："转账RM900比Phase1原价RM1000少了RM100，是否客户用了推荐奖金/现金钱包抵扣？请确认抵扣明细。"
-
-例子2：转账RM600，买了2盒燕窝（应付RM736）
-→ 推理：少了RM136，可能用了返现抵扣
-→ 询问确认
-
-例子3：转账RM1800，可能是Phase1 RM1000 + 2盒燕窝RM736 = RM1736，多出RM64需要确认
-→ 或者是Phase2 RM1300 + 1盒RM368 + 扣除了什么
-
-你的分析步骤：
-1. 先算出最可能的组合（配套+产品）
-2. 如果金额完全匹配，直接记录
-3. 如果有差额，列出可能的抵扣原因（推荐奖金、现金钱包、返现等），主动询问管理员确认
-4. 确认后记录：原价(order_amount)、实际转账(actual_paid)、抵扣明细(deductions)
-
-【你的工作流程】
-1. 接收管理员描述的支付信息（文字或转账截图）
-2. 分析金额，判断是"经营人加入"还是"产品订单"还是两者都有
-3. **如果金额与标准价格有差异，主动推理并询问确认抵扣明细**
-4. 主动思考并补充信息：
-   - 根据金额自动推断类型
-   - 如果提到推荐人/推荐码，记录下来
-   - 计算总金额和数量
-5. **重要：主动检查会员注册状态** - 每当提到一个客户时，先调用check_member_exists检查。如果客户尚未注册，询问：
-   - 是否需要帮她注册？
-   - 如果需要，请提供 email 地址
-   - 推荐人是谁？（推荐码或推荐人手机号）
-6. **金额差异分析** - 当转账金额与标准价格不一致时，调用query_member_data查询该会员的钱包余额、奖金记录等，智能分析抵扣来源
-7. 当所有信息确认后，调用 confirm_actions 工具
-8. **知识积累** - 分析过程中发现重要的数据模式、异常、或业务规律时，调用save_to_memory保存到知识库
+1. 经营人配套价格：Phase1 RM1,000 / Phase2 RM1,300 / Phase3 RM1,500
+2. 产品：燕窝/Bird's Nest RM368/盒
+3. 推荐奖金：直推10%、间推5%
+4. 订单返现：前5盒50%，之后30%（需扣除等量LY积分）
+5. 同级奖金：直接返现的10%，最多2代
+6. LY网络补充：10层 [20%, 15%, 10%, 10%, 10%, 5%, 5%, 5%, 5%, 5%]
+7. 金额单位：数据库存储为分(cents)，显示为 RM
 
 【注意事项】
 - 手机号格式：马来西亚号码，如 0123456789 或 +60123456789
-- 如果信息不完整，主动询问缺少的字段
-- 每次管理员提供新信息，更新 parsed_actions
-- 金额记录：payment_amount_cents = 原价（系统按原价计算奖励），actual_paid_cents = 实际转账金额
-- 抵扣明细记录在 deductions 数组中，每项包含类型和金额
-- 用中文回复，简洁友好`;
+- 所有金额以分为单位存储
+- 用中文回复，简洁友好
+- 执行操作后报告结果，包括成功/失败详情`;
 
-// Tool definitions for OpenAI function calling
+// ============ Tool Definitions ============
 const tools = [
   {
     type: "function" as const,
     function: {
       name: "update_parsed_actions",
-      description:
-        "Update the structured data parsed from the conversation. Call this whenever new payment info is provided or updated.",
+      description: "Update the structured data preview cards shown to admin. Call this to display a visual summary of planned or completed actions.",
       parameters: {
         type: "object",
         properties: {
           member_registrations: {
             type: "array",
-            description: "New members to register before processing orders/partner joins",
             items: {
               type: "object",
               properties: {
-                customer_name: { type: "string", description: "Customer full name" },
-                customer_phone: { type: "string", description: "Phone number" },
-                customer_email: { type: "string", description: "Email for registration" },
-                referral_code: { type: "string", description: "Referrer's referral code or phone number" },
-                notes: { type: "string" },
+                customer_name: { type: "string" }, customer_phone: { type: "string" },
+                customer_email: { type: "string" }, referral_code: { type: "string" }, notes: { type: "string" },
               },
               required: ["customer_name", "customer_phone"],
             },
           },
           partner_joins: {
             type: "array",
-            description: "Partner join records from bank transfer payments",
             items: {
               type: "object",
               properties: {
-                customer_name: { type: "string", description: "Customer full name" },
-                customer_phone: { type: "string", description: "Phone number" },
-                tier: {
-                  type: "string",
-                  enum: ["phase1", "phase2", "phase3"],
-                  description: "Partner tier based on payment amount",
-                },
-                referral_code: { type: "string", description: "Referrer's referral code" },
-                payment_amount_cents: { type: "number", description: "Original full price in cents (e.g. Phase1=100000)" },
-                actual_paid_cents: { type: "number", description: "Actual bank transfer amount in cents (may be less than full price if deductions applied)" },
+                customer_name: { type: "string" }, customer_phone: { type: "string" },
+                tier: { type: "string", enum: ["phase1", "phase2", "phase3"] },
+                referral_code: { type: "string" },
+                payment_amount_cents: { type: "number" }, actual_paid_cents: { type: "number" },
                 deductions: {
                   type: "array",
-                  description: "Breakdown of deductions/offsets applied by customer",
                   items: {
                     type: "object",
                     properties: {
-                      type: { type: "string", description: "Type: referral_bonus, cash_wallet, cashback, same_level_bonus, discount, other" },
-                      amount_cents: { type: "number", description: "Deduction amount in cents" },
-                      description: { type: "string", description: "Human-readable description" },
+                      type: { type: "string" }, amount_cents: { type: "number" }, description: { type: "string" },
                     },
                     required: ["type", "amount_cents", "description"],
                   },
                 },
-                payment_reference: { type: "string", description: "Bank transfer reference or receipt info" },
-                notes: { type: "string" },
+                payment_reference: { type: "string" }, notes: { type: "string" },
               },
               required: ["customer_name", "customer_phone", "tier", "payment_amount_cents"],
             },
           },
           product_orders: {
             type: "array",
-            description: "Product order records from bank transfer payments",
             items: {
               type: "object",
               properties: {
-                customer_name: { type: "string", description: "Customer full name" },
-                customer_phone: { type: "string", description: "Phone number" },
+                customer_name: { type: "string" }, customer_phone: { type: "string" },
                 items: {
                   type: "array",
                   items: {
                     type: "object",
                     properties: {
-                      product_name: { type: "string" },
-                      quantity: { type: "number" },
-                      unit_price_cents: { type: "number" },
+                      product_name: { type: "string" }, quantity: { type: "number" }, unit_price_cents: { type: "number" },
                     },
                     required: ["product_name", "quantity", "unit_price_cents"],
                   },
                 },
-                total_amount_cents: { type: "number", description: "Original full price in cents (quantity * unit_price)" },
-                actual_paid_cents: { type: "number", description: "Actual bank transfer amount in cents" },
+                total_amount_cents: { type: "number" }, actual_paid_cents: { type: "number" },
                 deductions: {
                   type: "array",
-                  description: "Breakdown of deductions/offsets applied",
                   items: {
                     type: "object",
                     properties: {
-                      type: { type: "string", description: "Type: referral_bonus, cash_wallet, cashback, same_level_bonus, discount, other" },
-                      amount_cents: { type: "number", description: "Deduction amount in cents" },
-                      description: { type: "string", description: "Human-readable description" },
+                      type: { type: "string" }, amount_cents: { type: "number" }, description: { type: "string" },
                     },
                     required: ["type", "amount_cents", "description"],
                   },
                 },
-                box_count: { type: "number", description: "Total number of boxes" },
-                referral_code: { type: "string" },
-                payment_reference: { type: "string" },
-                skip_cashback: { type: "boolean", description: "Whether to skip cashback calculation" },
-                notes: { type: "string" },
+                box_count: { type: "number" }, referral_code: { type: "string" },
+                payment_reference: { type: "string" }, skip_cashback: { type: "boolean" }, notes: { type: "string" },
               },
               required: ["customer_name", "customer_phone", "items", "total_amount_cents", "box_count"],
             },
@@ -185,32 +345,11 @@ const tools = [
   {
     type: "function" as const,
     function: {
-      name: "confirm_actions",
-      description:
-        "Signal that all information has been collected and is ready for admin confirmation. Call this when the admin agrees to proceed.",
-      parameters: {
-        type: "object",
-        properties: {
-          summary: {
-            type: "string",
-            description: "Human-readable summary of all actions to be taken",
-          },
-        },
-        required: ["summary"],
-      },
-    },
-  },
-  {
-    type: "function" as const,
-    function: {
       name: "check_member_exists",
-      description:
-        "Check if a customer is already registered as a member by phone number. Always call this when a new customer is mentioned.",
+      description: "Check if a customer is already registered as a member by phone number.",
       parameters: {
         type: "object",
-        properties: {
-          phone: { type: "string", description: "Customer phone number to check" },
-        },
+        properties: { phone: { type: "string", description: "Customer phone number" } },
         required: ["phone"],
       },
     },
@@ -219,14 +358,13 @@ const tools = [
     type: "function" as const,
     function: {
       name: "query_member_data",
-      description:
-        "Query detailed financial data for a member: wallet balance, partner tier, recent bonuses, orders, LY points. Use this to analyze payment discrepancies by checking what bonuses/wallet balance a member has.",
+      description: "Query detailed member data: wallet balance, partner info, recent orders, LY points, referrer.",
       parameters: {
         type: "object",
         properties: {
-          phone: { type: "string", description: "Member phone number to look up" },
-          include_orders: { type: "boolean", description: "Include recent orders (default true)" },
-          include_wallet_history: { type: "boolean", description: "Include wallet transaction history (default true)" },
+          phone: { type: "string" },
+          include_orders: { type: "boolean" },
+          include_wallet_history: { type: "boolean" },
         },
         required: ["phone"],
       },
@@ -235,24 +373,130 @@ const tools = [
   {
     type: "function" as const,
     function: {
-      name: "save_to_memory",
-      description:
-        "Save important data relationships, patterns, or insights you discover during analysis to a persistent knowledge base. This helps you understand the backend better in future sessions. Save things like: data anomalies found, common deduction patterns, member behavior patterns, data relationships that are important.",
+      name: "query_products",
+      description: "Query products table for product names, prices, categories. Also queries product_bundles for bundle pricing.",
       parameters: {
         type: "object",
         properties: {
-          category: {
+          name_filter: { type: "string", description: "Optional partial name filter" },
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "query_referral_network",
+      description: "Query a member's referral network: upline chain (up to 10 levels) and direct downline list. Shows name, phone, role, partner tier, balances for each person.",
+      parameters: {
+        type: "object",
+        properties: {
+          phone: { type: "string", description: "Member phone number" },
+          member_id: { type: "string", description: "Or member UUID directly" },
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "search_orders",
+      description: "Search orders with optional filters (phone, name, status, date range, source).",
+      parameters: {
+        type: "object",
+        properties: {
+          phone: { type: "string" }, name: { type: "string" },
+          status: { type: "string" }, date_from: { type: "string" }, date_to: { type: "string" },
+          source: { type: "string" }, limit: { type: "number" },
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "search_bills",
+      description: "Search bills with optional filters (vendor, status, type, category, date range).",
+      parameters: {
+        type: "object",
+        properties: {
+          vendor: { type: "string" }, status: { type: "string" }, type: { type: "string" },
+          category: { type: "string" }, date_from: { type: "string" }, date_to: { type: "string" },
+          limit: { type: "number" },
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "query_bonus_data",
+      description: "Query bonus pool data: active cycle, partner's RWA tokens, recent LY ledger entries, blocked cashback records.",
+      parameters: {
+        type: "object",
+        properties: {
+          partner_id: { type: "string" }, phone: { type: "string" },
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "execute_db_write",
+      description: `Execute a database write operation directly. Supported actions:
+- create_order: Create an order record
+- update_order_status: Update order status
+- create_bill: Create a bill record
+- update_bill: Update bill fields
+- create_member: Register a new member
+- update_member: Update member fields
+- set_referrer: Set a member's referrer
+- create_partner: Create partner (REQUIRES CONFIRMATION - set confirmed=true after admin confirms)
+- adjust_wallet: Adjust partner cash wallet balance (+/-)
+- adjust_ly_points: Adjust partner LY points (+/-)
+- process_order_cashback: Run full cashback flow for an order
+- add_to_bonus_pool: Add order amount to bonus pool`,
+      parameters: {
+        type: "object",
+        properties: {
+          action: {
             type: "string",
-            enum: ["data_pattern", "member_insight", "pricing_rule", "deduction_pattern", "data_fix", "business_rule"],
-            description: "Category of the knowledge being saved",
+            enum: [
+              "create_order", "update_order_status", "create_bill", "update_bill",
+              "create_member", "update_member", "set_referrer", "create_partner",
+              "adjust_wallet", "adjust_ly_points", "process_order_cashback", "add_to_bonus_pool",
+            ],
           },
-          title: { type: "string", description: "Short title for this knowledge entry" },
-          content: { type: "string", description: "Detailed description of the insight or pattern" },
-          importance: {
-            type: "string",
-            enum: ["low", "medium", "high"],
-            description: "How important this knowledge is for future reference",
+          params: {
+            type: "object",
+            description: "Action-specific parameters",
           },
+          confirmed: {
+            type: "boolean",
+            description: "For create_partner: set to true after admin confirms",
+          },
+        },
+        required: ["action", "params"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "save_to_memory",
+      description: "Save important data patterns or insights to persistent knowledge base.",
+      parameters: {
+        type: "object",
+        properties: {
+          category: { type: "string", enum: ["data_pattern", "member_insight", "pricing_rule", "deduction_pattern", "data_fix", "business_rule"] },
+          title: { type: "string" }, content: { type: "string" },
+          importance: { type: "string", enum: ["low", "medium", "high"] },
         },
         required: ["category", "title", "content"],
       },
@@ -260,6 +504,773 @@ const tools = [
   },
 ];
 
+// ============ Tool Handlers ============
+
+async function handleCheckMemberExists(supabase: SupabaseClient, args: { phone: string }) {
+  const member = await lookupMemberByPhone(supabase, args.phone);
+  if (member) {
+    const { data: partner } = await supabase.from("partners")
+      .select("id, tier, status, cash_wallet_balance, ly_balance, rwa_tokens")
+      .eq("member_id", member.id).eq("status", "active").maybeSingle();
+    return JSON.stringify({
+      exists: true, member_id: member.id, name: member.name, phone: member.phone,
+      email: member.email, role: member.role, referral_code: member.referral_code,
+      has_referrer: !!member.referrer_id, is_partner: !!partner,
+      partner_tier: partner?.tier || null,
+      cash_wallet_balance: partner?.cash_wallet_balance || 0,
+      ly_balance: partner?.ly_balance || 0,
+    });
+  }
+  return JSON.stringify({ exists: false, message: "该手机号未注册为会员。" });
+}
+
+async function handleQueryMemberData(supabase: SupabaseClient, args: { phone: string; include_orders?: boolean; include_wallet_history?: boolean }) {
+  const member = await lookupMemberByPhone(supabase, args.phone);
+  if (!member) return JSON.stringify({ exists: false, message: "会员不存在" });
+
+  // deno-lint-ignore no-explicit-any
+  const result: Record<string, any> = {
+    member: {
+      id: member.id, name: member.name, phone: member.phone, email: member.email,
+      role: member.role, referral_code: member.referral_code,
+      has_referrer: !!member.referrer_id, points_balance: member.points_balance,
+    },
+  };
+
+  const { data: partner } = await supabase.from("partners")
+    .select("id, tier, status, cash_wallet_balance, ly_balance, rwa_tokens, total_sales, total_cashback, total_boxes_processed, payment_amount, payment_date, created_at")
+    .eq("member_id", member.id).maybeSingle();
+
+  if (partner) {
+    result.partner = {
+      id: partner.id, tier: partner.tier, status: partner.status,
+      cash_wallet_balance_cents: partner.cash_wallet_balance,
+      cash_wallet_balance_rm: `RM ${((partner.cash_wallet_balance || 0) / 100).toFixed(2)}`,
+      ly_balance: partner.ly_balance, rwa_tokens: partner.rwa_tokens,
+      total_sales_cents: partner.total_sales, total_cashback_cents: partner.total_cashback,
+      total_boxes: partner.total_boxes_processed,
+      joined_amount_cents: partner.payment_amount,
+      joined_date: partner.payment_date || partner.created_at,
+    };
+    if (member.referrer_id) {
+      const { data: referrer } = await supabase.from("members").select("name, phone, referral_code").eq("id", member.referrer_id).maybeSingle();
+      if (referrer) result.referrer = referrer;
+    }
+    if (args.include_wallet_history !== false) {
+      const { data: walletHistory } = await supabase.from("cash_wallet_ledger")
+        .select("type, amount, description, reference_type, status, created_at")
+        .eq("partner_id", partner.id).order("created_at", { ascending: false }).limit(10);
+      // deno-lint-ignore no-explicit-any
+      result.recent_wallet_transactions = (walletHistory || []).map((t: any) => ({
+        type: t.type, amount_cents: t.amount,
+        amount_rm: `RM ${(Math.abs(Number(t.amount) || 0) / 100).toFixed(2)}`,
+        description: t.description, reference_type: t.reference_type, status: t.status, date: t.created_at,
+      }));
+    }
+  }
+
+  if (args.include_orders !== false) {
+    const { data: orders } = await supabase.from("orders")
+      .select("id, order_number, status, total_amount, items, source, source_channel, notes, created_at")
+      .eq("member_id", member.id).order("created_at", { ascending: false }).limit(10);
+    // deno-lint-ignore no-explicit-any
+    result.recent_orders = (orders || []).map((o: any) => ({
+      id: o.id, order_number: o.order_number, status: o.status,
+      total_amount_cents: o.total_amount, total_amount_rm: `RM ${((Number(o.total_amount) || 0) / 100).toFixed(2)}`,
+      source: o.source, notes: o.notes, date: o.created_at,
+    }));
+  }
+
+  const { count: downlineCount } = await supabase.from("members")
+    .select("id", { count: "exact", head: true }).eq("referrer_id", member.id);
+  result.downline_count = downlineCount || 0;
+
+  return JSON.stringify(result);
+}
+
+async function handleQueryProducts(supabase: SupabaseClient, args: { name_filter?: string }) {
+  let query = supabase.from("products").select("id, name, price, category, featured, status");
+  if (args.name_filter) {
+    query = query.ilike("name", `%${args.name_filter}%`);
+  }
+  const { data: products } = await query.order("name");
+
+  const { data: bundles } = await supabase.from("product_bundles")
+    .select("id, name, price, items, status").order("name");
+
+  return JSON.stringify({
+    products: (products || []).map((p: { id: string; name: string; price: number; category: string; featured: boolean; status: string }) => ({
+      id: p.id, name: p.name, price_cents: p.price,
+      price_rm: `RM ${((p.price || 0) / 100).toFixed(2)}`,
+      category: p.category, featured: p.featured, status: p.status,
+    })),
+    bundles: (bundles || []).map((b: { id: string; name: string; price: number; items: unknown; status: string }) => ({
+      id: b.id, name: b.name, price_cents: b.price,
+      price_rm: `RM ${((b.price || 0) / 100).toFixed(2)}`,
+      items: b.items, status: b.status,
+    })),
+    partner_tiers: Object.entries(PARTNER_TIERS).map(([key, t]) => ({
+      tier: key, name: t.name, price_cents: t.price,
+      price_rm: `RM ${(t.price / 100).toFixed(2)}`,
+      initial_ly: t.initialLyPoints, initial_rwa: t.initialRwaTokens,
+    })),
+  });
+}
+
+async function handleQueryReferralNetwork(supabase: SupabaseClient, args: { phone?: string; member_id?: string }) {
+  let memberId = args.member_id;
+  if (!memberId && args.phone) {
+    const member = await lookupMemberByPhone(supabase, args.phone);
+    if (!member) return JSON.stringify({ error: "会员不存在" });
+    memberId = member.id;
+  }
+  if (!memberId) return JSON.stringify({ error: "请提供手机号或会员ID" });
+
+  // Walk upline chain (up to 10 levels)
+  // deno-lint-ignore no-explicit-any
+  const uplineChain: any[] = [];
+  let currentId = memberId;
+  for (let i = 0; i < 10; i++) {
+    const { data: m } = await supabase.from("members")
+      .select("referrer_id").eq("id", currentId).single();
+    if (!m?.referrer_id) break;
+    const { data: upMember } = await supabase.from("members")
+      .select("id, name, phone, role, referral_code").eq("id", m.referrer_id).single();
+    if (!upMember) break;
+    const { data: upPartner } = await supabase.from("partners")
+      .select("tier, cash_wallet_balance, ly_balance, status")
+      .eq("member_id", upMember.id).eq("status", "active").maybeSingle();
+    uplineChain.push({
+      level: i + 1, member_id: upMember.id, name: upMember.name, phone: upMember.phone,
+      role: upMember.role, referral_code: upMember.referral_code,
+      is_partner: !!upPartner, partner_tier: upPartner?.tier,
+      cash_wallet_rm: upPartner ? `RM ${((upPartner.cash_wallet_balance || 0) / 100).toFixed(2)}` : null,
+      ly_balance: upPartner?.ly_balance,
+    });
+    currentId = upMember.id;
+  }
+
+  // Direct downline
+  const { data: downlineMembers } = await supabase.from("members")
+    .select("id, name, phone, role, referral_code").eq("referrer_id", memberId).order("created_at", { ascending: false }).limit(50);
+
+  // deno-lint-ignore no-explicit-any
+  const downline: any[] = [];
+  for (const dm of (downlineMembers || [])) {
+    const { data: dmPartner } = await supabase.from("partners")
+      .select("tier, cash_wallet_balance, ly_balance, status")
+      .eq("member_id", dm.id).eq("status", "active").maybeSingle();
+    downline.push({
+      member_id: dm.id, name: dm.name, phone: dm.phone, role: dm.role,
+      referral_code: dm.referral_code, is_partner: !!dmPartner,
+      partner_tier: dmPartner?.tier, ly_balance: dmPartner?.ly_balance,
+    });
+  }
+
+  return JSON.stringify({ upline_chain: uplineChain, direct_downline: downline, downline_count: downline.length });
+}
+
+async function handleSearchOrders(supabase: SupabaseClient, args: { phone?: string; name?: string; status?: string; date_from?: string; date_to?: string; source?: string; limit?: number }) {
+  let query = supabase.from("orders")
+    .select("id, order_number, status, total_amount, items, source, source_channel, notes, customer_name, customer_phone, created_at")
+    .order("created_at", { ascending: false }).limit(args.limit || 20);
+
+  if (args.phone) {
+    const variants = phoneVariants(args.phone);
+    query = query.or(variants.map((p: string) => `customer_phone.eq.${p}`).join(","));
+  }
+  if (args.name) query = query.ilike("customer_name", `%${args.name}%`);
+  if (args.status) query = query.eq("status", args.status);
+  if (args.date_from) query = query.gte("created_at", args.date_from);
+  if (args.date_to) query = query.lte("created_at", args.date_to);
+  if (args.source) query = query.eq("source", args.source);
+
+  const { data: orders } = await query;
+  // deno-lint-ignore no-explicit-any
+  return JSON.stringify((orders || []).map((o: any) => ({
+    id: o.id, order_number: o.order_number, status: o.status,
+    total_amount_cents: o.total_amount, total_amount_rm: `RM ${((Number(o.total_amount) || 0) / 100).toFixed(2)}`,
+    items: o.items, source: o.source, source_channel: o.source_channel,
+    customer_name: o.customer_name, customer_phone: o.customer_phone,
+    notes: o.notes, date: o.created_at,
+  })));
+}
+
+async function handleSearchBills(supabase: SupabaseClient, args: { vendor?: string; status?: string; type?: string; category?: string; date_from?: string; date_to?: string; limit?: number }) {
+  let query = supabase.from("bills")
+    .select("id, bill_number, vendor, amount, status, type, category, description, paid_date, due_date, notes, created_at")
+    .order("created_at", { ascending: false }).limit(args.limit || 20);
+
+  if (args.vendor) query = query.ilike("vendor", `%${args.vendor}%`);
+  if (args.status) query = query.eq("status", args.status);
+  if (args.type) query = query.eq("type", args.type);
+  if (args.category) query = query.ilike("category", `%${args.category}%`);
+  if (args.date_from) query = query.gte("created_at", args.date_from);
+  if (args.date_to) query = query.lte("created_at", args.date_to);
+
+  const { data: bills } = await query;
+  // deno-lint-ignore no-explicit-any
+  return JSON.stringify((bills || []).map((b: any) => ({
+    id: b.id, bill_number: b.bill_number, vendor: b.vendor,
+    amount_cents: b.amount, amount_rm: `RM ${((Number(b.amount) || 0) / 100).toFixed(2)}`,
+    status: b.status, type: b.type, category: b.category,
+    description: b.description, paid_date: b.paid_date, due_date: b.due_date,
+    notes: b.notes, date: b.created_at,
+  })));
+}
+
+async function handleQueryBonusData(supabase: SupabaseClient, args: { partner_id?: string; phone?: string }) {
+  let partnerId = args.partner_id;
+  if (!partnerId && args.phone) {
+    const member = await lookupMemberByPhone(supabase, args.phone);
+    if (member) {
+      const { data: partner } = await supabase.from("partners").select("id").eq("member_id", member.id).eq("status", "active").maybeSingle();
+      partnerId = partner?.id;
+    }
+  }
+
+  // Active bonus pool cycle
+  const { data: activeCycle } = await supabase.from("bonus_pool_cycles")
+    .select("*").eq("status", "active").limit(1).maybeSingle();
+
+  // deno-lint-ignore no-explicit-any
+  const result: Record<string, any> = {
+    active_cycle: activeCycle ? {
+      id: activeCycle.id, cycle_number: activeCycle.cycle_number,
+      total_sales_rm: `RM ${((activeCycle.total_sales || 0) / 100).toFixed(2)}`,
+      pool_amount_rm: `RM ${((activeCycle.pool_amount || 0) / 100).toFixed(2)}`,
+      total_tokens: activeCycle.total_tokens,
+      start_date: activeCycle.start_date, end_date: activeCycle.end_date,
+    } : null,
+  };
+
+  if (partnerId) {
+    const { data: partner } = await supabase.from("partners")
+      .select("rwa_tokens, ly_balance").eq("id", partnerId).single();
+    result.partner_rwa_tokens = partner?.rwa_tokens || 0;
+    result.partner_ly_balance = partner?.ly_balance || 0;
+
+    // Total RWA tokens (for dividend estimation)
+    const { data: allPartners } = await supabase.from("partners")
+      .select("rwa_tokens").eq("status", "active").gt("rwa_tokens", 0);
+    const totalTokens = (allPartners || []).reduce((s: number, p: { rwa_tokens: number }) => s + (p.rwa_tokens || 0), 0);
+    if (activeCycle && totalTokens > 0 && partner?.rwa_tokens) {
+      const estimatedDividend = Math.floor((partner.rwa_tokens / totalTokens) * (activeCycle.pool_amount || 0));
+      result.estimated_dividend_rm = `RM ${(estimatedDividend / 100).toFixed(2)}`;
+    }
+
+    // Recent LY ledger
+    const { data: lyLedger } = await supabase.from("ly_points_ledger")
+      .select("type, points, description, tier, created_at")
+      .eq("partner_id", partnerId).order("created_at", { ascending: false }).limit(10);
+    result.recent_ly_ledger = lyLedger || [];
+
+    // Blocked cashback records
+    const { data: blocked } = await supabase.from("cashback_blocked_records")
+      .select("blocked_amount, reason, ly_balance_at_time, ly_required, created_at")
+      .eq("partner_id", partnerId).order("created_at", { ascending: false }).limit(5);
+    result.blocked_cashback_records = blocked || [];
+  }
+
+  return JSON.stringify(result);
+}
+
+async function handleSaveToMemory(supabase: SupabaseClient, args: { category: string; title: string; content: string; importance?: string }, sessionId: string) {
+  const { data: existing } = await supabase.from("system_config")
+    .select("config_value").eq("category", "ai_knowledge").eq("config_key", "memory_entries").maybeSingle();
+
+  const entries = existing?.config_value
+    ? (typeof existing.config_value === "string" ? JSON.parse(existing.config_value) : existing.config_value)
+    : [];
+
+  entries.push({
+    id: crypto.randomUUID(), category: args.category, title: args.title,
+    content: args.content, importance: args.importance || "medium",
+    created_at: new Date().toISOString(), session_id: sessionId,
+  });
+
+  const trimmed = entries.slice(-50);
+  await supabase.from("system_config").upsert({
+    category: "ai_knowledge", config_key: "memory_entries", config_value: JSON.stringify(trimmed),
+  }, { onConflict: "category,config_key" });
+
+  return JSON.stringify({ success: true, message: `已保存: ${args.title}`, total_entries: trimmed.length });
+}
+
+// ============ execute_db_write handler ============
+// deno-lint-ignore no-explicit-any
+async function handleExecuteDbWrite(supabase: SupabaseClient, args: { action: string; params: any; confirmed?: boolean }, sessionId: string) {
+  const { action, params, confirmed } = args;
+  // deno-lint-ignore no-explicit-any
+  const log: { action: string; success: boolean; details: string; data?: any } = { action, success: false, details: "" };
+
+  try {
+    switch (action) {
+      // ---- CREATE ORDER ----
+      case "create_order": {
+        const phone = normalizePhone(params.customer_phone || "");
+        const member = await lookupMemberByPhone(supabase, phone);
+        const orderNumber = generateOrderNumber();
+        const orderId = crypto.randomUUID();
+        const itemsJson = typeof params.items === "string" ? params.items : JSON.stringify(params.items || []);
+
+        const { error } = await supabase.from("orders").insert({
+          id: orderId, order_number: orderNumber,
+          user_id: null, member_id: member?.id || null,
+          customer_name: params.customer_name, customer_phone: phone,
+          customer_email: params.customer_email || null,
+          status: params.status || "confirmed",
+          total_amount: params.total_amount_cents,
+          items: itemsJson,
+          package_type: params.package_type || null,
+          notes: params.notes || null,
+          source: params.source || "bank_transfer",
+          source_channel: "admin_supplement",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+        if (error) throw new Error(error.message);
+        log.success = true;
+        log.details = `订单 ${orderNumber} 已创建，金额 RM ${(params.total_amount_cents / 100).toFixed(2)}`;
+        log.data = { order_id: orderId, order_number: orderNumber };
+        break;
+      }
+
+      // ---- UPDATE ORDER STATUS ----
+      case "update_order_status": {
+        const filter = params.order_id
+          ? supabase.from("orders").update({ status: params.new_status, updated_at: new Date().toISOString() }).eq("id", params.order_id)
+          : supabase.from("orders").update({ status: params.new_status, updated_at: new Date().toISOString() }).eq("order_number", params.order_number);
+        const { error } = await filter;
+        if (error) throw new Error(error.message);
+        log.success = true;
+        log.details = `订单状态已更新为 ${params.new_status}`;
+        break;
+      }
+
+      // ---- CREATE BILL ----
+      case "create_bill": {
+        const billNumber = generateBillNumber();
+        const { error } = await supabase.from("bills").insert({
+          bill_number: billNumber,
+          vendor: params.vendor,
+          amount: params.amount_cents,
+          type: params.type || "operation",
+          category: params.category || null,
+          description: params.description || null,
+          status: params.status || "pending",
+          due_date: params.due_date || null,
+          paid_date: params.paid_date || null,
+          notes: params.notes || null,
+          created_at: new Date().toISOString(),
+        });
+        if (error) throw new Error(error.message);
+        log.success = true;
+        log.details = `账单 ${billNumber} 已创建，金额 RM ${(params.amount_cents / 100).toFixed(2)}`;
+        log.data = { bill_number: billNumber };
+        break;
+      }
+
+      // ---- UPDATE BILL ----
+      case "update_bill": {
+        const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+        if (params.status !== undefined) updates.status = params.status;
+        if (params.paid_date !== undefined) updates.paid_date = params.paid_date;
+        if (params.notes !== undefined) updates.notes = params.notes;
+        if (params.amount_cents !== undefined) updates.amount = params.amount_cents;
+        const { error } = await supabase.from("bills").update(updates).eq("id", params.bill_id);
+        if (error) throw new Error(error.message);
+        log.success = true;
+        log.details = `账单已更新`;
+        break;
+      }
+
+      // ---- CREATE MEMBER ----
+      case "create_member": {
+        const phone = normalizePhone(params.phone || "");
+        const existing = await lookupMemberByPhone(supabase, phone);
+        if (existing) {
+          log.success = true;
+          log.details = `会员 ${existing.name} (${phone}) 已存在，无需重复注册`;
+          log.data = { member_id: existing.id, already_exists: true };
+          break;
+        }
+        let referrerId: string | null = null;
+        if (params.referral_code) {
+          const code = params.referral_code.toUpperCase();
+          const { data: referrer } = await supabase.from("members").select("id").eq("referral_code", code).maybeSingle();
+          if (referrer) { referrerId = referrer.id; }
+          else {
+            const refMember = await lookupMemberByPhone(supabase, params.referral_code);
+            if (refMember) referrerId = refMember.id;
+          }
+        }
+        const newCode = generateReferralCode();
+        const memberId = crypto.randomUUID();
+        const { error } = await supabase.from("members").insert({
+          id: memberId, user_id: null, name: params.name, phone,
+          email: params.email || null, role: "member", points_balance: 0,
+          referral_code: newCode, referrer_id: referrerId,
+          created_at: new Date().toISOString(),
+        });
+        if (error) throw new Error(error.message);
+        log.success = true;
+        log.details = `会员 ${params.name} (${phone}) 已注册，推荐码 ${newCode}`;
+        log.data = { member_id: memberId, referral_code: newCode };
+        break;
+      }
+
+      // ---- UPDATE MEMBER ----
+      case "update_member": {
+        let memberId = params.member_id;
+        if (!memberId && params.phone) {
+          const m = await lookupMemberByPhone(supabase, params.phone);
+          memberId = m?.id;
+        }
+        if (!memberId) throw new Error("找不到会员");
+        const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+        if (params.name !== undefined) updates.name = params.name;
+        if (params.email !== undefined) updates.email = params.email;
+        if (params.new_phone !== undefined) updates.phone = normalizePhone(params.new_phone);
+        const { error } = await supabase.from("members").update(updates).eq("id", memberId);
+        if (error) throw new Error(error.message);
+        log.success = true;
+        log.details = `会员信息已更新`;
+        break;
+      }
+
+      // ---- SET REFERRER ----
+      case "set_referrer": {
+        let memberId = params.member_id;
+        if (!memberId && params.phone) {
+          const m = await lookupMemberByPhone(supabase, params.phone);
+          memberId = m?.id;
+        }
+        if (!memberId) throw new Error("找不到会员");
+
+        let referrerId: string | null = null;
+        if (params.referrer_code) {
+          const { data: ref } = await supabase.from("members").select("id").eq("referral_code", params.referrer_code.toUpperCase()).maybeSingle();
+          referrerId = ref?.id || null;
+        }
+        if (!referrerId && params.referrer_phone) {
+          const refMember = await lookupMemberByPhone(supabase, params.referrer_phone);
+          referrerId = refMember?.id || null;
+        }
+        if (!referrerId) throw new Error("找不到推荐人");
+
+        const { error } = await supabase.from("members").update({ referrer_id: referrerId, updated_at: new Date().toISOString() }).eq("id", memberId);
+        if (error) throw new Error(error.message);
+        log.success = true;
+        log.details = `推荐人已设置`;
+        break;
+      }
+
+      // ---- CREATE PARTNER (requires confirmation) ----
+      case "create_partner": {
+        const phone = normalizePhone(params.phone || "");
+        const member = await lookupMemberByPhone(supabase, phone);
+        if (!member) throw new Error(`会员 ${phone} 不存在，请先注册`);
+
+        const { data: existingPartner } = await supabase.from("partners")
+          .select("id, tier").eq("member_id", member.id).eq("status", "active").maybeSingle();
+        if (existingPartner) throw new Error(`${member.name} 已经是 ${existingPartner.tier} 经营人`);
+
+        const tier = params.tier as string;
+        const tierConfig = PARTNER_TIERS[tier];
+        if (!tierConfig) throw new Error(`无效的配套: ${tier}`);
+
+        // If not confirmed, return preview
+        if (!confirmed) {
+          // Calculate what will happen
+          let referrerInfo = null;
+          if (params.referral_code || member.referrer_id) {
+            let refMemberId = member.referrer_id;
+            if (params.referral_code && !refMemberId) {
+              const { data: refByCode } = await supabase.from("members").select("id").eq("referral_code", params.referral_code.toUpperCase()).maybeSingle();
+              refMemberId = refByCode?.id;
+            }
+            if (refMemberId) {
+              const { data: refMember } = await supabase.from("members").select("name, phone").eq("id", refMemberId).single();
+              const { data: refPartner } = await supabase.from("partners").select("id, referrer_id").eq("member_id", refMemberId).eq("status", "active").maybeSingle();
+              if (refMember && refPartner) {
+                const directBonus = Math.floor(tierConfig.price * REFERRAL_BONUS.directRate);
+                referrerInfo = {
+                  name: refMember.name, phone: refMember.phone,
+                  direct_bonus_rm: `RM ${(directBonus / 100).toFixed(2)}`,
+                };
+                // Check for indirect referrer
+                if (refPartner.referrer_id) {
+                  const { data: indirectPartner } = await supabase.from("partners")
+                    .select("member_id").eq("id", refPartner.referrer_id).eq("status", "active").maybeSingle();
+                  if (indirectPartner) {
+                    const { data: indirectMember } = await supabase.from("members").select("name").eq("id", indirectPartner.member_id).single();
+                    const indirectBonus = Math.floor(tierConfig.price * REFERRAL_BONUS.indirectRate);
+                    referrerInfo.indirect_referrer = indirectMember?.name;
+                    referrerInfo.indirect_bonus_rm = `RM ${(indirectBonus / 100).toFixed(2)}`;
+                  }
+                }
+              }
+            }
+          }
+
+          log.success = true;
+          log.details = "requires_confirmation";
+          log.data = {
+            requires_confirmation: true,
+            preview: {
+              member_name: member.name, phone: member.phone, tier, tier_name: tierConfig.name,
+              price_rm: `RM ${(tierConfig.price / 100).toFixed(2)}`,
+              initial_ly: tierConfig.initialLyPoints, initial_rwa: tierConfig.initialRwaTokens,
+              referrer: referrerInfo,
+            },
+          };
+          break;
+        }
+
+        // Confirmed - execute the full partner creation flow
+        // Find referrer partner
+        let referrerId: string | null = null;
+        if (params.referral_code) {
+          const { data: refMember } = await supabase.from("members").select("id").eq("referral_code", params.referral_code.toUpperCase()).maybeSingle();
+          if (refMember) {
+            const { data: refPartner } = await supabase.from("partners").select("id").eq("member_id", refMember.id).eq("status", "active").maybeSingle();
+            if (refPartner) referrerId = refPartner.id;
+          }
+        }
+        // If member has a referrer_id set, use that to find partner referrer
+        if (!referrerId && member.referrer_id) {
+          const { data: refPartner } = await supabase.from("partners").select("id").eq("member_id", member.referrer_id).eq("status", "active").maybeSingle();
+          if (refPartner) referrerId = refPartner.id;
+        }
+
+        const partnerReferralCode = member.referral_code || generateReferralCode();
+        const partnerId = crypto.randomUUID();
+
+        const { error: createErr } = await supabase.from("partners").insert({
+          id: partnerId, member_id: member.id, referral_code: partnerReferralCode,
+          tier, status: "active", referrer_id: referrerId,
+          ly_balance: tierConfig.initialLyPoints, cash_wallet_balance: 0,
+          rwa_tokens: tierConfig.initialRwaTokens, total_sales: 0, total_cashback: 0,
+          payment_amount: tierConfig.price,
+          payment_date: new Date().toISOString(),
+          payment_reference: params.payment_ref || "bank_transfer",
+          created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+        });
+        if (createErr) throw new Error(createErr.message);
+
+        // Record initial LY and RWA
+        await addLyPoints(supabase, partnerId, tierConfig.initialLyPoints, "bonus", null, null, `Initial ${tier} package bonus`);
+        await addRwaTokens(supabase, partnerId, tierConfig.initialRwaTokens, "package", null);
+
+        // Process referral bonuses
+        if (referrerId) {
+          await processPartnerReferralBonus(supabase, referrerId, partnerId, tierConfig.price);
+        }
+
+        // Update member role
+        await supabase.from("members").update({ role: "partner", updated_at: new Date().toISOString() }).eq("id", member.id);
+
+        // Create order record for the partner package
+        const orderNumber = generateOrderNumber();
+        const packageOrderId = crypto.randomUUID();
+        await supabase.from("orders").insert({
+          id: packageOrderId, order_number: orderNumber,
+          member_id: member.id, customer_name: member.name, customer_phone: member.phone,
+          status: "confirmed", total_amount: tierConfig.price,
+          items: JSON.stringify([{ product_name: tierConfig.name, quantity: 1, unit_price_cents: tierConfig.price }]),
+          package_type: tier, source: "bank_transfer", source_channel: "admin_supplement",
+          notes: `[经营人配套] ${tierConfig.name}`,
+          created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+        });
+
+        log.success = true;
+        log.details = `${member.name} 已成功升级为 ${tierConfig.name}！LY +${tierConfig.initialLyPoints}，RWA +${tierConfig.initialRwaTokens}${referrerId ? "，推荐奖金已发放" : ""}`;
+        log.data = { partner_id: partnerId, order_number: orderNumber };
+        break;
+      }
+
+      // ---- ADJUST WALLET ----
+      case "adjust_wallet": {
+        let partnerId = params.partner_id;
+        if (!partnerId && params.phone) {
+          const member = await lookupMemberByPhone(supabase, params.phone);
+          if (member) {
+            const { data: p } = await supabase.from("partners").select("id").eq("member_id", member.id).eq("status", "active").maybeSingle();
+            partnerId = p?.id;
+          }
+        }
+        if (!partnerId) throw new Error("找不到经营人");
+
+        const amount = params.amount_cents; // can be positive or negative
+        if (amount > 0) {
+          await addToCashWallet(supabase, partnerId, amount, params.type || "adjustment", null, params.description || "Manual adjustment");
+        } else {
+          // Deduct from wallet
+          const { data: partner } = await supabase.from("partners").select("cash_wallet_balance").eq("id", partnerId).single();
+          const newBalance = (partner?.cash_wallet_balance || 0) + amount;
+          if (newBalance < 0) throw new Error("余额不足");
+          await supabase.from("cash_wallet_ledger").insert({
+            partner_id: partnerId, type: "deduction", amount,
+            reference_type: params.type || "adjustment", status: "completed",
+            description: params.description || "Manual deduction",
+            created_at: new Date().toISOString(),
+          });
+          await supabase.from("partners").update({ cash_wallet_balance: newBalance, updated_at: new Date().toISOString() }).eq("id", partnerId);
+        }
+        log.success = true;
+        log.details = `钱包余额已调整 ${amount > 0 ? "+" : ""}RM ${(amount / 100).toFixed(2)}`;
+        break;
+      }
+
+      // ---- ADJUST LY POINTS ----
+      case "adjust_ly_points": {
+        let partnerId = params.partner_id;
+        if (!partnerId && params.phone) {
+          const member = await lookupMemberByPhone(supabase, params.phone);
+          if (member) {
+            const { data: p } = await supabase.from("partners").select("id").eq("member_id", member.id).eq("status", "active").maybeSingle();
+            partnerId = p?.id;
+          }
+        }
+        if (!partnerId) throw new Error("找不到经营人");
+
+        const points = params.points; // can be positive or negative
+        if (points > 0) {
+          await addLyPoints(supabase, partnerId, points, params.type || "adjustment", null, null, params.description || "Manual adjustment");
+        } else {
+          const ok = await deductLyPoints(supabase, partnerId, Math.abs(points), params.type || "adjustment", null, params.description || "Manual deduction");
+          if (!ok) throw new Error("LY积分不足");
+        }
+        log.success = true;
+        log.details = `LY积分已调整 ${points > 0 ? "+" : ""}${points}`;
+        break;
+      }
+
+      // ---- PROCESS ORDER CASHBACK ----
+      case "process_order_cashback": {
+        const orderId = params.order_id;
+        const totalAmountCents = params.total_amount_cents;
+        const boxCount = params.box_count;
+        const buyerMemberId = params.buyer_member_id;
+
+        if (!orderId || !totalAmountCents || !boxCount || !buyerMemberId) {
+          throw new Error("缺少参数: order_id, total_amount_cents, box_count, buyer_member_id");
+        }
+
+        const rewards: string[] = [];
+        const directPartner = await findNearestUplinePartner(supabase, buyerMemberId);
+
+        if (directPartner) {
+          const rate = getPartnerCashbackRate(directPartner.totalBoxesProcessed, directPartner.packagesPurchased);
+          const cashbackAmount = Math.floor(totalAmountCents * rate);
+          const lyRequired = Math.ceil(cashbackAmount / 100);
+
+          if (directPartner.lyBalance < lyRequired) {
+            // Block
+            await supabase.from("cashback_blocked_records").insert({
+              partner_id: directPartner.partnerId, order_id: orderId,
+              blocked_amount: cashbackAmount, reason: "insufficient_ly",
+              ly_balance_at_time: directPartner.lyBalance, ly_required: lyRequired,
+            });
+            rewards.push(`直接返现 RM ${(cashbackAmount / 100).toFixed(2)} 被阻止（LY不足：需要${lyRequired}，当前${directPartner.lyBalance}）`);
+          } else {
+            await deductLyPoints(supabase, directPartner.partnerId, lyRequired, "cashback", orderId, `Cashback LY deduction`);
+            await addToCashWallet(supabase, directPartner.partnerId, cashbackAmount, "order_cashback", orderId, `Order cashback (Direct, Rate: ${rate * 100}%)`);
+            await supabase.from("partners").update({
+              total_boxes_processed: directPartner.totalBoxesProcessed + boxCount,
+              updated_at: new Date().toISOString(),
+            }).eq("id", directPartner.partnerId);
+            rewards.push(`直接返现 RM ${(cashbackAmount / 100).toFixed(2)} (${rate * 100}%)，LY -${lyRequired}`);
+
+            // Same-level
+            const sameLevelAmount = Math.floor(cashbackAmount * ORDER_CASHBACK_CONFIG.sameLevelRate);
+            if (sameLevelAmount > 0) {
+              const refs = await findPartnerReferrers(supabase, directPartner.partnerId, ORDER_CASHBACK_CONFIG.sameLevelMaxGen);
+              for (let i = 0; i < refs.length; i++) {
+                const ref = refs[i];
+                const lyReq = Math.ceil(sameLevelAmount / 100);
+                if (ref.lyBalance < lyReq) {
+                  rewards.push(`同级奖金(Gen${i + 1}) RM ${(sameLevelAmount / 100).toFixed(2)} 被阻止（LY不足）`);
+                } else {
+                  await deductLyPoints(supabase, ref.partnerId, lyReq, "cashback", orderId, `Same-level LY deduction (Gen ${i + 1})`);
+                  await addToCashWallet(supabase, ref.partnerId, sameLevelAmount, "order_cashback", orderId, `Same-level cashback (Gen ${i + 1})`);
+                  rewards.push(`同级奖金(Gen${i + 1}) RM ${(sameLevelAmount / 100).toFixed(2)}，LY -${lyReq}`);
+                }
+              }
+            }
+          }
+        } else {
+          rewards.push("未找到上线经营人，无返现");
+        }
+
+        // LY Replenishment
+        await replenishLyFromNetwork(supabase, orderId, totalAmountCents, buyerMemberId);
+        rewards.push("LY网络补充已处理");
+
+        log.success = true;
+        log.details = rewards.join("；");
+        break;
+      }
+
+      // ---- ADD TO BONUS POOL ----
+      case "add_to_bonus_pool": {
+        const { data: activeCycle } = await supabase.from("bonus_pool_cycles")
+          .select("*").eq("status", "active").limit(1).maybeSingle();
+
+        if (!activeCycle) {
+          // Create a new cycle
+          const { data: lastCycle } = await supabase.from("bonus_pool_cycles")
+            .select("cycle_number").order("cycle_number", { ascending: false }).limit(1).maybeSingle();
+          const newCycleNumber = (lastCycle?.cycle_number || 0) + 1;
+          const start = new Date();
+          const end = new Date(start);
+          end.setDate(end.getDate() + BONUS_POOL_CONFIG.cycleDays);
+
+          await supabase.from("bonus_pool_cycles").insert({
+            cycle_number: newCycleNumber, start_date: start.toISOString(),
+            end_date: end.toISOString(), total_sales: 0, pool_amount: 0,
+            total_tokens: 0, status: "active", created_at: new Date().toISOString(),
+          });
+        }
+
+        const poolContribution = Math.floor((params.amount_cents || 0) * BONUS_POOL_CONFIG.salesContributionRate);
+        const { data: cycle } = await supabase.from("bonus_pool_cycles")
+          .select("id, total_sales, pool_amount").eq("status", "active").limit(1).single();
+
+        await supabase.from("bonus_pool_cycles").update({
+          total_sales: (cycle.total_sales || 0) + (params.amount_cents || 0),
+          pool_amount: (cycle.pool_amount || 0) + poolContribution,
+        }).eq("id", cycle.id);
+
+        log.success = true;
+        log.details = `已添加到奖金池：销售额 RM ${((params.amount_cents || 0) / 100).toFixed(2)}，池贡献 RM ${(poolContribution / 100).toFixed(2)}`;
+        break;
+      }
+
+      default:
+        throw new Error(`未知操作: ${action}`);
+    }
+  } catch (err) {
+    log.success = false;
+    log.details = `${action} 失败: ${(err as Error).message}`;
+  }
+
+  // Save execution log to session
+  try {
+    const { data: session } = await supabase.from("order_supplement_sessions")
+      .select("execution_results").eq("id", sessionId).single();
+    const existingResults = session?.execution_results || [];
+    existingResults.push(log);
+    await supabase.from("order_supplement_sessions")
+      .update({ execution_results: existingResults, updated_at: new Date().toISOString() })
+      .eq("id", sessionId);
+  } catch { /* ignore logging errors */ }
+
+  return JSON.stringify(log);
+}
+
+// ============ Main Handler ============
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -272,129 +1283,91 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get OpenAI API key from system_config
+    // Get OpenAI API key
     const { data: configData } = await supabase
-      .from("system_config")
-      .select("config_value")
-      .eq("category", "openai")
-      .eq("config_key", "api_key")
-      .single();
-
+      .from("system_config").select("config_value")
+      .eq("category", "openai").eq("config_key", "api_key").single();
     const openaiKey = configData?.config_value;
     if (!openaiKey) {
-      return new Response(
-        JSON.stringify({ error: "OpenAI API key not configured" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "OpenAI API key not configured" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // Get or create session
     let session;
     if (session_id) {
-      const { data } = await supabase
-        .from("order_supplement_sessions")
-        .select("*")
-        .eq("id", session_id)
-        .single();
+      const { data } = await supabase.from("order_supplement_sessions").select("*").eq("id", session_id).single();
       session = data;
     }
 
-    // Get auth user from authorization header
+    // Verify auth
     const authHeader = req.headers.get("authorization") || "";
     const token = authHeader.replace("Bearer ", "");
-    const {
-      data: { user },
-    } = await supabase.auth.getUser(token);
-
+    const { data: { user } } = await supabase.auth.getUser(token);
     if (!user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     if (!session) {
-      const { data: newSession } = await supabase
-        .from("order_supplement_sessions")
-        .insert({
-          admin_user_id: user.id,
-          status: "in_progress",
-          messages: [],
-        })
-        .select()
-        .single();
+      const { data: newSession } = await supabase.from("order_supplement_sessions")
+        .insert({ admin_user_id: user.id, status: "in_progress", messages: [] })
+        .select().single();
       session = newSession;
     }
-
     if (!session) {
-      return new Response(
-        JSON.stringify({ error: "Failed to create session" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Failed to create session" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // Load AI knowledge memory
     let memoryContext = "";
     try {
-      const { data: memoryData } = await supabase
-        .from("system_config")
-        .select("config_value")
-        .eq("category", "ai_knowledge")
-        .eq("config_key", "memory_entries")
-        .maybeSingle();
-
+      const { data: memoryData } = await supabase.from("system_config")
+        .select("config_value").eq("category", "ai_knowledge").eq("config_key", "memory_entries").maybeSingle();
       if (memoryData?.config_value) {
         const entries = typeof memoryData.config_value === "string"
-          ? JSON.parse(memoryData.config_value)
-          : memoryData.config_value;
+          ? JSON.parse(memoryData.config_value) : memoryData.config_value;
         if (entries.length > 0) {
-          // Sort by importance, show high importance first
           const sorted = [...entries].sort((a: { importance: string }, b: { importance: string }) => {
             const order: Record<string, number> = { high: 0, medium: 1, low: 2 };
             return (order[a.importance] ?? 1) - (order[b.importance] ?? 1);
           });
-          const memoryLines = sorted.map((e: { category: string; title: string; content: string; importance: string }) =>
-            `[${e.importance?.toUpperCase()}][${e.category}] ${e.title}: ${e.content}`
-          );
-          memoryContext = `\n\n【知识库 - 历史分析记忆】\n以下是你之前分析中保存的重要发现和模式，请参考：\n${memoryLines.join("\n")}`;
+          const lines = sorted.map((e: { importance: string; category: string; title: string; content: string }) =>
+            `[${e.importance?.toUpperCase()}][${e.category}] ${e.title}: ${e.content}`);
+          memoryContext = `\n\n【知识库】\n${lines.join("\n")}`;
         }
       }
-    } catch { /* ignore memory load errors */ }
+    } catch { /* ignore */ }
 
-    // Build messages for OpenAI
+    // Build messages
     const existingMessages = (session.messages || []) as Array<{
-      role: string;
-      content: string;
+      role: string; content: string;
       tool_calls?: Array<{ id: string; function: { name: string; arguments: string } }>;
       tool_call_id?: string;
     }>;
 
-    // Add new user message
     const updatedMessages = [...existingMessages];
     if (message) {
-      // Store text-only version for session persistence
       updatedMessages.push({ role: "user", content: message });
     }
 
-    // Build OpenAI messages - use multimodal content for image messages
     const fullSystemPrompt = SYSTEM_PROMPT + memoryContext;
     const openaiMessages: Array<Record<string, unknown>> = [
       { role: "system", content: fullSystemPrompt },
     ];
 
-    // Add all previous messages as text
     for (const msg of existingMessages) {
       openaiMessages.push(msg);
     }
 
-    // Add current message with optional image (GPT-4o vision)
     if (message) {
       if (image_url) {
         openaiMessages.push({
           role: "user",
           content: [
             { type: "text", text: message },
-            { type: "image_url", image_url: { url: image_url, detail: "high" } },
+            { type: "image_url", image_url: { url: image_url, detail: "low" } },
           ],
         });
       } else {
@@ -402,32 +1375,25 @@ serve(async (req) => {
       }
     }
 
-    // Call OpenAI with tool calling - loop to handle multiple tool calls
+    // Call OpenAI with tool calling - loop for multi-step tool use
     let assistantMessage = null;
     let parsedActions = session.parsed_actions || null;
-    let readyToConfirm = false;
-    let confirmSummary = "";
+    const executionLog: Array<{ action: string; success: boolean; details: string }> = [];
     const allToolMessages: typeof updatedMessages = [];
 
     let currentMessages = openaiMessages;
     let loopCount = 0;
-    const maxLoops = 5; // Prevent infinite loops
+    const maxLoops = 10; // Allow more loops for complex multi-step operations
 
     while (loopCount < maxLoops) {
       loopCount++;
 
       const chatRes = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${openaiKey}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "gpt-4o",
-          messages: currentMessages,
-          tools,
-          temperature: 0.3,
-          max_tokens: 2000,
+          model: "gpt-4o", messages: currentMessages, tools,
+          temperature: 0.3, max_tokens: 3000,
         }),
       });
 
@@ -440,312 +1406,95 @@ serve(async (req) => {
       const choice = chatData.choices[0];
       const responseMessage = choice.message;
 
-      // If the model wants to call tools
       if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
-        // Add assistant message with tool calls to conversation
         allToolMessages.push({
-          role: "assistant",
-          content: responseMessage.content || "",
+          role: "assistant", content: responseMessage.content || "",
           tool_calls: responseMessage.tool_calls,
         });
 
-        // Process each tool call
         for (const toolCall of responseMessage.tool_calls) {
           const fnName = toolCall.function.name;
           const fnArgs = JSON.parse(toolCall.function.arguments);
-
           let toolResult = "";
 
           if (fnName === "update_parsed_actions") {
             parsedActions = fnArgs;
-            toolResult = JSON.stringify({ success: true, message: "Actions updated" });
-          } else if (fnName === "confirm_actions") {
-            readyToConfirm = true;
-            confirmSummary = fnArgs.summary;
-            toolResult = JSON.stringify({
-              success: true,
-              status: "ready_to_confirm",
-              summary: fnArgs.summary,
-            });
+            toolResult = JSON.stringify({ success: true, message: "Preview updated" });
           } else if (fnName === "check_member_exists") {
-            // Actually check the database
-            const phone = fnArgs.phone.replace(/\s+/g, "").replace(/^(\+?60)/, "0");
-            const phoneVariants = [phone];
-            if (phone.startsWith("0")) {
-              phoneVariants.push("+6" + phone);
-              phoneVariants.push("6" + phone);
-            }
-
-            const { data: member } = await supabase
-              .from("members")
-              .select("id, name, phone, email, role, referral_code, referrer_id")
-              .or(phoneVariants.map((p) => `phone.eq.${p}`).join(","))
-              .limit(1)
-              .maybeSingle();
-
-            if (member) {
-              // Check if already a partner
-              const { data: partner } = await supabase
-                .from("partners")
-                .select("id, tier, status, cash_wallet_balance, ly_balance, rwa_tokens")
-                .eq("member_id", member.id)
-                .eq("status", "active")
-                .maybeSingle();
-
-              toolResult = JSON.stringify({
-                exists: true,
-                member_id: member.id,
-                name: member.name,
-                phone: member.phone,
-                email: member.email,
-                role: member.role,
-                referral_code: member.referral_code,
-                has_referrer: !!member.referrer_id,
-                is_partner: !!partner,
-                partner_tier: partner?.tier || null,
-                cash_wallet_balance: partner?.cash_wallet_balance || 0,
-                ly_balance: partner?.ly_balance || 0,
-              });
-            } else {
-              toolResult = JSON.stringify({
-                exists: false,
-                message: "该手机号未注册为会员。需要先注册会员才能处理订单或经营人加入。请询问管理员是否需要注册，如需注册请提供email和推荐人信息。",
-              });
-            }
+            toolResult = await handleCheckMemberExists(supabase, fnArgs);
           } else if (fnName === "query_member_data") {
-            // Deep member data query for payment analysis
-            const phone = fnArgs.phone.replace(/\s+/g, "").replace(/^(\+?60)/, "0");
-            const phoneVariants = [phone];
-            if (phone.startsWith("0")) {
-              phoneVariants.push("+6" + phone);
-              phoneVariants.push("6" + phone);
-            }
-
-            const { data: member } = await supabase
-              .from("members")
-              .select("id, name, phone, email, role, referral_code, referrer_id, points_balance")
-              .or(phoneVariants.map((p) => `phone.eq.${p}`).join(","))
-              .limit(1)
-              .maybeSingle();
-
-            if (!member) {
-              toolResult = JSON.stringify({ exists: false, message: "会员不存在" });
-            } else {
-              const result: Record<string, unknown> = {
-                member: {
-                  id: member.id, name: member.name, phone: member.phone,
-                  email: member.email, role: member.role,
-                  referral_code: member.referral_code,
-                  has_referrer: !!member.referrer_id,
-                  points_balance: member.points_balance,
-                },
-              };
-
-              // Get partner data
-              const { data: partner } = await supabase
-                .from("partners")
-                .select("id, tier, status, cash_wallet_balance, ly_balance, rwa_tokens, total_sales, total_cashback, total_boxes_processed, payment_amount, payment_date, created_at")
-                .eq("member_id", member.id)
-                .maybeSingle();
-
-              if (partner) {
-                result.partner = {
-                  tier: partner.tier,
-                  status: partner.status,
-                  cash_wallet_balance_cents: partner.cash_wallet_balance,
-                  cash_wallet_balance_rm: `RM ${((partner.cash_wallet_balance || 0) / 100).toFixed(2)}`,
-                  ly_balance: partner.ly_balance,
-                  rwa_tokens: partner.rwa_tokens,
-                  total_sales_cents: partner.total_sales,
-                  total_cashback_cents: partner.total_cashback,
-                  total_boxes: partner.total_boxes_processed,
-                  joined_amount_cents: partner.payment_amount,
-                  joined_date: partner.payment_date || partner.created_at,
-                };
-
-                // Get referrer info
-                if (member.referrer_id) {
-                  const { data: referrer } = await supabase
-                    .from("members")
-                    .select("name, phone, referral_code")
-                    .eq("id", member.referrer_id)
-                    .maybeSingle();
-                  if (referrer) {
-                    result.referrer = { name: referrer.name, phone: referrer.phone, referral_code: referrer.referral_code };
-                  }
-                }
-
-                // Get wallet transaction history (recent 10)
-                if (fnArgs.include_wallet_history !== false) {
-                  const { data: walletHistory } = await supabase
-                    .from("cash_wallet_ledger")
-                    .select("type, amount, description, reference_type, status, created_at")
-                    .eq("partner_id", partner.id)
-                    .order("created_at", { ascending: false })
-                    .limit(10);
-                  result.recent_wallet_transactions = (walletHistory || []).map((t: Record<string, unknown>) => ({
-                    type: t.type,
-                    amount_cents: t.amount,
-                    amount_rm: `RM ${(Math.abs(Number(t.amount) || 0) / 100).toFixed(2)}`,
-                    description: t.description,
-                    reference_type: t.reference_type,
-                    status: t.status,
-                    date: t.created_at,
-                  }));
-                }
-              }
-
-              // Get recent orders
-              if (fnArgs.include_orders !== false) {
-                const { data: orders } = await supabase
-                  .from("orders")
-                  .select("id, order_number, status, total_amount, items, source, source_channel, notes, created_at")
-                  .eq("member_id", member.id)
-                  .order("created_at", { ascending: false })
-                  .limit(10);
-                result.recent_orders = (orders || []).map((o: Record<string, unknown>) => ({
-                  order_number: o.order_number,
-                  status: o.status,
-                  total_amount_cents: o.total_amount,
-                  total_amount_rm: `RM ${((Number(o.total_amount) || 0) / 100).toFixed(2)}`,
-                  source: o.source,
-                  notes: o.notes,
-                  date: o.created_at,
-                }));
-              }
-
-              // Get downline count (people this member referred)
-              const { count: downlineCount } = await supabase
-                .from("members")
-                .select("id", { count: "exact", head: true })
-                .eq("referrer_id", member.id);
-              result.downline_count = downlineCount || 0;
-
-              toolResult = JSON.stringify(result);
-            }
+            toolResult = await handleQueryMemberData(supabase, fnArgs);
+          } else if (fnName === "query_products") {
+            toolResult = await handleQueryProducts(supabase, fnArgs);
+          } else if (fnName === "query_referral_network") {
+            toolResult = await handleQueryReferralNetwork(supabase, fnArgs);
+          } else if (fnName === "search_orders") {
+            toolResult = await handleSearchOrders(supabase, fnArgs);
+          } else if (fnName === "search_bills") {
+            toolResult = await handleSearchBills(supabase, fnArgs);
+          } else if (fnName === "query_bonus_data") {
+            toolResult = await handleQueryBonusData(supabase, fnArgs);
+          } else if (fnName === "execute_db_write") {
+            toolResult = await handleExecuteDbWrite(supabase, fnArgs, session.id);
+            // Track in execution log
+            try {
+              const parsed = JSON.parse(toolResult);
+              executionLog.push({ action: parsed.action, success: parsed.success, details: parsed.details });
+            } catch { /* ignore */ }
           } else if (fnName === "save_to_memory") {
-            // Save AI insights to persistent knowledge base
-            const { data: existing } = await supabase
-              .from("system_config")
-              .select("config_value")
-              .eq("category", "ai_knowledge")
-              .eq("config_key", "memory_entries")
-              .maybeSingle();
-
-            const entries = existing?.config_value
-              ? (typeof existing.config_value === "string" ? JSON.parse(existing.config_value) : existing.config_value)
-              : [];
-
-            entries.push({
-              id: crypto.randomUUID(),
-              category: fnArgs.category,
-              title: fnArgs.title,
-              content: fnArgs.content,
-              importance: fnArgs.importance || "medium",
-              created_at: new Date().toISOString(),
-              session_id: session.id,
-            });
-
-            // Keep last 50 entries
-            const trimmedEntries = entries.slice(-50);
-
-            await supabase.from("system_config").upsert({
-              category: "ai_knowledge",
-              config_key: "memory_entries",
-              config_value: JSON.stringify(trimmedEntries),
-            }, { onConflict: "category,config_key" });
-
-            toolResult = JSON.stringify({ success: true, message: `已保存到知识库: ${fnArgs.title}`, total_entries: trimmedEntries.length });
+            toolResult = await handleSaveToMemory(supabase, fnArgs, session.id);
           }
 
-          allToolMessages.push({
-            role: "tool",
-            content: toolResult,
-            tool_call_id: toolCall.id,
-          });
+          allToolMessages.push({ role: "tool", content: toolResult, tool_call_id: toolCall.id });
         }
 
-        // Continue the loop with updated messages
         currentMessages = [
           { role: "system", content: fullSystemPrompt },
           ...updatedMessages,
           ...allToolMessages,
         ];
 
-        // If ready to confirm, we still want the final text response
-        if (readyToConfirm && !responseMessage.content) {
-          continue;
-        }
-
-        // If there's no text content yet, continue to get final response
-        if (!responseMessage.content) {
-          continue;
-        }
-
+        if (!responseMessage.content) continue;
         assistantMessage = responseMessage.content;
         break;
       } else {
-        // No tool calls - just a text response
         assistantMessage = responseMessage.content || "";
         break;
       }
     }
 
-    // If we exited the loop without a text response, make one more call
+    // Final text response if loop exhausted
     if (!assistantMessage) {
-      const finalMessages = [
-        { role: "system", content: fullSystemPrompt },
-        ...updatedMessages,
-        ...allToolMessages,
-      ];
-
       const finalRes = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${openaiKey}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "gpt-4o",
-          messages: finalMessages,
-          temperature: 0.3,
-          max_tokens: 2000,
+          messages: [{ role: "system", content: fullSystemPrompt }, ...updatedMessages, ...allToolMessages],
+          temperature: 0.3, max_tokens: 3000,
         }),
       });
-
       if (finalRes.ok) {
         const finalData = await finalRes.json();
         assistantMessage = finalData.choices[0]?.message?.content || "操作已处理。";
       } else {
-        assistantMessage = readyToConfirm
-          ? confirmSummary
-          : "抱歉，处理时遇到问题，请重试。";
+        assistantMessage = "操作已处理，请查看执行日志。";
       }
     }
 
-    // Save messages to session (only user + assistant text, not tool calls)
-    const savedMessages = [
-      ...updatedMessages,
-      { role: "assistant", content: assistantMessage },
-    ];
-
-    await supabase
-      .from("order_supplement_sessions")
-      .update({
-        messages: savedMessages,
-        parsed_actions: parsedActions,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", session.id);
+    // Save messages to session
+    const savedMessages = [...updatedMessages, { role: "assistant", content: assistantMessage }];
+    await supabase.from("order_supplement_sessions").update({
+      messages: savedMessages, parsed_actions: parsedActions,
+      updated_at: new Date().toISOString(),
+    }).eq("id", session.id);
 
     return new Response(
       JSON.stringify({
-        success: true,
-        session_id: session.id,
+        success: true, session_id: session.id,
         message: assistantMessage,
         parsed_actions: parsedActions,
-        ready_to_confirm: readyToConfirm,
-        confirm_summary: confirmSummary || null,
+        execution_log: executionLog.length > 0 ? executionLog : null,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

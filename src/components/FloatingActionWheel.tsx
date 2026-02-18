@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, type CSSProperties } from "react";
+import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/lib/i18n";
 import { MessageCircle, Share2, X } from "lucide-react";
@@ -8,11 +9,15 @@ import { FloatingReferralButton } from "./FloatingReferralButton";
 
 const WHATSAPP_PHONE = "60178228658";
 
+// Pages where FAB should be hidden (has its own input bar)
+const HIDDEN_ON_PAGES = ["/admin/order-supplement"];
+
 type PanelType = "chat" | "referral" | null;
 
 export function FloatingActionWheel() {
   const { user, member } = useAuth();
   const { t } = useTranslation();
+  const [location] = useLocation();
   const [expanded, setExpanded] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelType>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
@@ -96,7 +101,11 @@ export function FloatingActionWheel() {
     return { ...base, transform: "scale(0.82)", filter: "blur(3px)", opacity: 0.35 };
   };
 
+  const isHidden = HIDDEN_ON_PAGES.some((p) => location.startsWith(p));
   const isActive = expanded || !!activePanel;
+
+  // Don't render on pages with their own input bar
+  if (isHidden) return null;
 
   const subItems = [
     { id: "chat", icon: MessageCircle, label: t("chatbot.title"), bg: "bg-gradient-to-r from-blue-500 to-indigo-500" },
