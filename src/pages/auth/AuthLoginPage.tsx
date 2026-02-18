@@ -92,11 +92,14 @@ export default function AuthLoginPage() {
         if (cachedRef && member && !member.referrerId) {
           try {
             const { data } = await supabase.rpc("validate_referral_code", { code: cachedRef });
-            if (data?.valid && data.referrer_member_id) {
+            if (data?.valid && data.referrer_member_id && data.referrer_member_id !== member.id) {
               await supabase
                 .from("members")
                 .update({ referrer_id: data.referrer_member_id })
                 .eq("id", member.id);
+              clearCachedReferralCode();
+            } else if (data?.referrer_member_id === member.id) {
+              // Self-referral detected, clear invalid cached code
               clearCachedReferralCode();
             }
           } catch (err) {
@@ -108,7 +111,7 @@ export default function AuthLoginPage() {
           navigate("/admin");
         } else if (role === 'partner') {
           navigate("/member/partner");
-        } else if (role === 'member') {
+        } else if (role === 'member' || role === 'user') {
           navigate("/member");
         } else {
           navigate("/");
@@ -239,7 +242,7 @@ export default function AuthLoginPage() {
           first_name: firstName,
           last_name: lastName,
           phone: phone,
-          ...(keepRole ? {} : { role: 'member' }),
+          ...(keepRole ? {} : { role: 'user' }),
         })
         .eq('id', authUser.id);
 
@@ -272,7 +275,7 @@ export default function AuthLoginPage() {
           name: `${firstName} ${lastName}`.trim(),
           phone: phone,
           email: authUser.email,
-          role: 'member',
+          role: 'user',
           points_balance: 0,
           referral_code: generateCode(),
           referrer_id: referrerId,

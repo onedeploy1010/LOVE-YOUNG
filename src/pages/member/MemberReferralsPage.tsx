@@ -65,10 +65,11 @@ async function fetchDirectReferrals(parentId: string, roleFilter?: string) {
 
 const getRoleBadge = (role: string) => {
   switch (role) {
-    case "member": return { label: "会员", icon: Star, variant: "secondary" as const };
-    case "partner": return { label: "合伙人", icon: Crown, variant: "default" as const };
+    case "user": return { label: "未激活会员", icon: Users, variant: "outline" as const };
+    case "member": return { label: "激活会员", icon: Star, variant: "secondary" as const };
+    case "partner": return { label: "经营人", icon: Crown, variant: "default" as const };
     case "admin": return { label: "管理员", icon: Shield, variant: "destructive" as const };
-    default: return { label: "用户", icon: Users, variant: "outline" as const };
+    default: return { label: "未激活会员", icon: Users, variant: "outline" as const };
   }
 };
 
@@ -302,7 +303,7 @@ export default function MemberReferralsPage() {
             <CardContent className="p-3 sm:p-4 text-center">
               <Crown className="w-6 h-6 sm:w-8 sm:h-8 mx-auto text-primary mb-1 sm:mb-2" />
               <p className="text-lg sm:text-2xl font-bold text-primary">{stats?.partners_in_network || 0}</p>
-              <p className="text-xs sm:text-sm text-muted-foreground">合伙人</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">经营人</p>
             </CardContent>
           </Card>
           <Card>
@@ -361,8 +362,9 @@ export default function MemberReferralsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">全部</SelectItem>
-                  <SelectItem value="partner">合伙人</SelectItem>
-                  <SelectItem value="member">会员</SelectItem>
+                  <SelectItem value="partner">经营人</SelectItem>
+                  <SelectItem value="member">激活会员</SelectItem>
+                  <SelectItem value="user">未激活会员</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -445,10 +447,10 @@ export default function MemberReferralsPage() {
           <CardContent className="p-4">
             <h3 className="font-semibold mb-3">推荐规则</h3>
             <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
-              <li>推荐好友注册并完成首单，您将获得积分奖励</li>
-              <li>被推荐人使用您的推荐码注册，也会获得新用户优惠</li>
-              <li>推荐关系一经建立，永久有效</li>
-              <li>升级为合伙人后，可享受更多推荐奖励</li>
+              <li>推荐好友注册，建立永久推荐关系</li>
+              <li>首单送达后自动从未激活会员升级为激活会员</li>
+              <li>升级为经营人后，可享受返现、推荐奖金和RWA奖励</li>
+              <li>推荐奖金穿透非经营人节点，确保经营人获得应得奖励</li>
             </ul>
           </CardContent>
         </Card>

@@ -88,6 +88,22 @@ export function BundleOrderModal({ open, onOpenChange, bundle }: BundleOrderModa
   const { t, language } = useLanguage();
   const { user, isAuthenticated } = useAuth();
   const [step, setStep] = useState<"summary" | "delivery" | "confirm" | "payment" | "success">("summary");
+
+  // Fetch variant images for this bundle
+  const { data: bundleVariants = [] } = useQuery({
+    queryKey: ["bundle-variants", bundle.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bundle_variants")
+        .select("id, name, image, sort_order")
+        .eq("bundle_id", bundle.id)
+        .order("sort_order", { ascending: true });
+      if (error) return [];
+      return data as { id: string; name: string; image: string | null; sort_order: number }[];
+    },
+    enabled: open,
+  });
+  const variantImgs = bundleVariants.filter(v => v.image);
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [orderId, setOrderId] = useState<string>("");
   const [useGuestCheckout, setUseGuestCheckout] = useState(false);
@@ -422,15 +438,24 @@ export function BundleOrderModal({ open, onOpenChange, bundle }: BundleOrderModa
             <div className="space-y-4">
               {/* Bundle info card */}
               <Card className="overflow-hidden">
-                {bundle.image && (
-                  <div className="h-40 overflow-hidden bg-muted">
-                    <img
-                      src={bundle.image}
-                      alt={getBundleName()}
-                      className="w-full h-full object-cover"
-                    />
+                {variantImgs.length >= 2 ? (
+                  <div className="h-40 overflow-hidden bg-muted grid grid-cols-2">
+                    {variantImgs.slice(0, 2).map((v, i) => (
+                      <div key={i} className="relative overflow-hidden">
+                        <img src={v.image!} alt={v.name} className="w-full h-full object-cover" />
+                        <span className="absolute bottom-1 left-1 text-[9px] bg-black/60 text-white px-1.5 py-0.5 rounded">{v.name}</span>
+                      </div>
+                    ))}
                   </div>
-                )}
+                ) : variantImgs.length === 1 ? (
+                  <div className="h-40 overflow-hidden bg-muted">
+                    <img src={variantImgs[0].image!} alt={variantImgs[0].name} className="w-full h-full object-cover" />
+                  </div>
+                ) : bundle.image ? (
+                  <div className="h-40 overflow-hidden bg-muted">
+                    <img src={bundle.image} alt={getBundleName()} className="w-full h-full object-cover" />
+                  </div>
+                ) : null}
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <h3 className="font-semibold text-lg">{getBundleName()}</h3>

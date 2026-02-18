@@ -2412,7 +2412,11 @@
       "attachReceipt": "Attach receipt",
       "receiptAttached": "Receipt attached",
       "receiptUploaded": "Receipt uploaded",
-      "actualPaid": "Actual Paid"
+      "actualPaid": "Actual Paid",
+      "executionLog": "Execution Log",
+      "actionSuccess": "Success",
+      "actionFailed": "Failed",
+      "autoExecuted": "AI auto-executed"
     }
   },
   "member": {

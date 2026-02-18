@@ -194,6 +194,24 @@ export default function AdminProductsPage() {
     },
   });
 
+  // Fetch all bundle variants for list display (first variant image)
+  const { data: allVariants = [] } = useQuery<BundleVariant[]>({
+    queryKey: ["admin-bundle-variants-all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bundle_variants")
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) return [];
+      return data as BundleVariant[];
+    },
+  });
+  const variantsByBundle = allVariants.reduce<Record<string, BundleVariant[]>>((acc, v) => {
+    if (!acc[v.bundle_id]) acc[v.bundle_id] = [];
+    acc[v.bundle_id].push(v);
+    return acc;
+  }, {});
+
   const filteredBundles = bundles.filter(b =>
     searchQuery === "" ||
     b.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -896,14 +914,17 @@ export default function AdminProductsPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {filteredBundles.map((bundle) => (
+                {filteredBundles.map((bundle) => {
+                  const bundleVars = variantsByBundle[bundle.id] || [];
+                  const firstVarImage = bundleVars.find(v => v.image)?.image;
+                  return (
                   <Card key={bundle.id} className={!bundle.is_active ? "opacity-60" : ""}>
                     <CardContent className="p-3 sm:p-4">
                       <div className="flex items-start gap-3">
-                        {/* Image */}
+                        {/* Image from variants */}
                         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-muted flex items-center justify-center shrink-0 overflow-hidden">
-                          {bundle.image ? (
-                            <img src={bundle.image} alt={bundle.name} className="w-full h-full object-cover" />
+                          {firstVarImage ? (
+                            <img src={firstVarImage} alt={bundle.name} className="w-full h-full object-cover" />
                           ) : (
                             <Package className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground/50" />
                           )}
@@ -980,7 +1001,8 @@ export default function AdminProductsPage() {
                       </div>
                     </CardContent>
                   </Card>
-                ))}
+                  );
+                })}
               </div>
             )}
           </TabsContent>
@@ -1320,33 +1342,6 @@ export default function AdminProductsPage() {
                     value={selectedBundle.original_price || ""}
                     onChange={(e) => setSelectedBundle({ ...selectedBundle, original_price: parseInt(e.target.value) || null })}
                   />
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium">封面图片</label>
-                <div className="mt-1 border-2 border-dashed rounded-lg p-4 text-center">
-                  {selectedBundle.image ? (
-                    <img src={selectedBundle.image} alt="" className="w-24 h-24 object-cover mx-auto rounded-lg mb-2" />
-                  ) : (
-                    <ImageIcon className="w-10 h-10 mx-auto text-muted-foreground/50 mb-2" />
-                  )}
-                  <input
-                    type="file"
-                    ref={bundleFileInputRef}
-                    className="hidden"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={(e) => handleBundleImageUpload(e, true)}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={bundleUploading}
-                    onClick={() => bundleFileInputRef.current?.click()}
-                  >
-                    {bundleUploading ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-1" />}
-                    {bundleUploading ? "上传中..." : "上传图片"}
-                  </Button>
                 </div>
               </div>
               <div className="space-y-2">
@@ -1711,33 +1706,6 @@ export default function AdminProductsPage() {
                   value={newBundle.original_price || ""}
                   onChange={(e) => setNewBundle({ ...newBundle, original_price: parseInt(e.target.value) || null })}
                 />
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium">封面图片</label>
-              <div className="mt-1 border-2 border-dashed rounded-lg p-4 text-center">
-                {newBundle.image ? (
-                  <img src={newBundle.image} alt="" className="w-24 h-24 object-cover mx-auto rounded-lg mb-2" />
-                ) : (
-                  <ImageIcon className="w-10 h-10 mx-auto text-muted-foreground/50 mb-2" />
-                )}
-                <input
-                  type="file"
-                  ref={bundleFileInputRef}
-                  className="hidden"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(e) => handleBundleImageUpload(e, false)}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={bundleUploading}
-                  onClick={() => bundleFileInputRef.current?.click()}
-                >
-                  {bundleUploading ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-1" />}
-                  {bundleUploading ? "上传中..." : "上传图片"}
-                </Button>
               </div>
             </div>
             <div className="space-y-2">

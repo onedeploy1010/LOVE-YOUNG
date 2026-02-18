@@ -2029,7 +2029,11 @@
       "attachReceipt": "附加单据",
       "receiptAttached": "单据已附加",
       "receiptUploaded": "单据上传成功",
-      "actualPaid": "实付"
+      "actualPaid": "实付",
+      "executionLog": "执行日志",
+      "actionSuccess": "成功",
+      "actionFailed": "失败",
+      "autoExecuted": "AI已自动执行"
     },
     "adManagementPage": {
       "title": "广告投放管理",

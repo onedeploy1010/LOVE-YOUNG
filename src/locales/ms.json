@@ -735,7 +735,11 @@
       "attachReceipt": "Lampirkan resit",
       "receiptAttached": "Resit dilampirkan",
       "receiptUploaded": "Resit dimuat naik",
-      "actualPaid": "Bayaran Sebenar"
+      "actualPaid": "Bayaran Sebenar",
+      "executionLog": "Log Pelaksanaan",
+      "actionSuccess": "Berjaya",
+      "actionFailed": "Gagal",
+      "autoExecuted": "AI auto-laksana"
     },
     "productionPage": {
       "title": "Pengurusan Barisan Pengeluaran",

@@ -103,6 +103,25 @@ export default function LandingPage() {
   const [fortuneModalOpen, setFortuneModalOpen] = useState(false);
   const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(null);
 
+  // Fetch all bundle variant images (for displaying on bundle cards)
+  const { data: bundleVariantImages = {} } = useQuery<Record<string, { image: string; name: string }[]>>({
+    queryKey: ["bundle-variant-images"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bundle_variants")
+        .select("bundle_id, name, image")
+        .order("sort_order", { ascending: true });
+      if (error) return {};
+      const map: Record<string, { image: string; name: string }[]> = {};
+      for (const v of data || []) {
+        if (!v.image) continue;
+        if (!map[v.bundle_id]) map[v.bundle_id] = [];
+        map[v.bundle_id].push({ image: v.image, name: v.name });
+      }
+      return map;
+    },
+  });
+
   // Fetch hero settings
   const { data: heroSettings } = useQuery({
     queryKey: ["site-settings-hero"],
@@ -430,12 +449,32 @@ export default function LandingPage() {
                 const bundleName = getLocalizedText(bundle.name, bundle.name_en, bundle.name_ms);
                 const bundleTarget = getLocalizedText(bundle.target_audience, bundle.target_audience_en, bundle.target_audience_ms);
                 const bundleKeywords = getLocalizedText(bundle.keywords, bundle.keywords_en, bundle.keywords_ms);
+                const variantImgs = bundleVariantImages[bundle.id] || [];
 
                 return (
                   <motion.div key={bundle.id} variants={fadeInUp}>
                     <Card className="bg-white/5 border border-white/10 hover:border-amber-400/50 transition-all duration-500 group overflow-hidden h-full flex flex-col">
                       <div className="relative h-48 sm:h-56 overflow-hidden bg-emerald-800/50">
-                        {bundle.image ? (
+                        {variantImgs.length >= 2 ? (
+                          <div className="w-full h-full grid grid-cols-2">
+                            {variantImgs.slice(0, 2).map((v, i) => (
+                              <div key={i} className="relative overflow-hidden">
+                                <img
+                                  src={v.image}
+                                  alt={v.name}
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                />
+                                <span className="absolute bottom-1 left-1 text-[9px] bg-black/60 text-white px-1.5 py-0.5 rounded">{v.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : variantImgs.length === 1 ? (
+                          <img
+                            src={variantImgs[0].image}
+                            alt={variantImgs[0].name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                          />
+                        ) : bundle.image ? (
                           <img
                             src={bundle.image}
                             alt={bundleName}
