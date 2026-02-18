@@ -211,8 +211,8 @@ const SYSTEM_PROMPT = `你是 LOVE YOUNG 智能管理助手。你拥有完整的
 4. **知识积累**：分析中发现重要模式时，保存到知识库
 
 【可用工具】
-- check_member_exists: 检查手机号是否已注册会员
-- query_member_data: 查询会员详细数据（钱包、订单、LY积分等）
+- check_member_exists: 通过手机号、姓名或邮箱搜索会员
+- query_member_data: 查询会员详细数据（钱包、订单、LY积分等），支持手机号/姓名/邮箱搜索
 - query_products: 查询产品和套餐价格
 - query_referral_network: 查询推荐网络（上线链+下线列表）
 - search_orders: 搜索订单记录
@@ -346,11 +346,15 @@ const tools = [
     type: "function" as const,
     function: {
       name: "check_member_exists",
-      description: "Check if a customer is already registered as a member by phone number.",
+      description: "Check if a customer is registered as a member. Search by phone, name, or email.",
       parameters: {
         type: "object",
-        properties: { phone: { type: "string", description: "Customer phone number" } },
-        required: ["phone"],
+        properties: {
+          phone: { type: "string", description: "Customer phone number" },
+          name: { type: "string", description: "Customer name (partial match)" },
+          email: { type: "string", description: "Customer email (partial match)" },
+        },
+        required: [],
       },
     },
   },
@@ -358,15 +362,18 @@ const tools = [
     type: "function" as const,
     function: {
       name: "query_member_data",
-      description: "Query detailed member data: wallet balance, partner info, recent orders, LY points, referrer.",
+      description: "Query detailed member data: wallet balance, partner info, recent orders, LY points, referrer. Search by phone, name, or email.",
       parameters: {
         type: "object",
         properties: {
           phone: { type: "string" },
+          name: { type: "string", description: "Member name (partial match)" },
+          email: { type: "string", description: "Member email (partial match)" },
+          member_id: { type: "string", description: "Member UUID directly" },
           include_orders: { type: "boolean" },
           include_wallet_history: { type: "boolean" },
         },
-        required: ["phone"],
+        required: [],
       },
     },
   },
@@ -506,14 +513,31 @@ const tools = [
 
 // ============ Tool Handlers ============
 
-async function handleCheckMemberExists(supabase: SupabaseClient, args: { phone: string }) {
-  const member = await lookupMemberByPhone(supabase, args.phone);
-  if (member) {
+async function handleCheckMemberExists(supabase: SupabaseClient, args: { phone?: string; name?: string; email?: string }) {
+  // Search by phone, name, or email
+  let members: any[] = [];
+  if (args.phone) {
+    const member = await lookupMemberByPhone(supabase, args.phone);
+    if (member) members = [member];
+  } else if (args.email) {
+    const { data } = await supabase.from("members").select("*").ilike("email", `%${args.email}%`).limit(10);
+    members = data || [];
+  } else if (args.name) {
+    const { data } = await supabase.from("members").select("*").ilike("name", `%${args.name}%`).limit(10);
+    members = data || [];
+  }
+
+  if (members.length === 0) {
+    return JSON.stringify({ exists: false, message: "未找到匹配的会员。" });
+  }
+
+  const results = [];
+  for (const member of members) {
     const { data: partner } = await supabase.from("partners")
       .select("id, tier, status, cash_wallet_balance, ly_balance, rwa_tokens")
       .eq("member_id", member.id).eq("status", "active").maybeSingle();
-    return JSON.stringify({
-      exists: true, member_id: member.id, name: member.name, phone: member.phone,
+    results.push({
+      member_id: member.id, name: member.name, phone: member.phone,
       email: member.email, role: member.role, referral_code: member.referral_code,
       has_referrer: !!member.referrer_id, is_partner: !!partner,
       partner_tier: partner?.tier || null,
@@ -521,11 +545,24 @@ async function handleCheckMemberExists(supabase: SupabaseClient, args: { phone: 
       ly_balance: partner?.ly_balance || 0,
     });
   }
-  return JSON.stringify({ exists: false, message: "该手机号未注册为会员。" });
+  return JSON.stringify({ exists: true, count: results.length, members: results.length === 1 ? results[0] : results });
 }
 
-async function handleQueryMemberData(supabase: SupabaseClient, args: { phone: string; include_orders?: boolean; include_wallet_history?: boolean }) {
-  const member = await lookupMemberByPhone(supabase, args.phone);
+async function handleQueryMemberData(supabase: SupabaseClient, args: { phone?: string; name?: string; email?: string; member_id?: string; include_orders?: boolean; include_wallet_history?: boolean }) {
+  // deno-lint-ignore no-explicit-any
+  let member: any = null;
+  if (args.member_id) {
+    const { data } = await supabase.from("members").select("*").eq("id", args.member_id).maybeSingle();
+    member = data;
+  } else if (args.phone) {
+    member = await lookupMemberByPhone(supabase, args.phone);
+  } else if (args.email) {
+    const { data } = await supabase.from("members").select("*").ilike("email", `%${args.email}%`).maybeSingle();
+    member = data;
+  } else if (args.name) {
+    const { data } = await supabase.from("members").select("*").ilike("name", `%${args.name}%`).limit(1).maybeSingle();
+    member = data;
+  }
   if (!member) return JSON.stringify({ exists: false, message: "会员不存在" });
 
   // deno-lint-ignore no-explicit-any
@@ -1383,19 +1420,25 @@ serve(async (req) => {
 
     let currentMessages = openaiMessages;
     let loopCount = 0;
-    const maxLoops = 10; // Allow more loops for complex multi-step operations
+    const maxLoops = 5;
+    // Use gpt-4o for image analysis, gpt-4o-mini for text (much faster)
+    const model = image_url ? "gpt-4o" : "gpt-4o-mini";
 
     while (loopCount < maxLoops) {
       loopCount++;
 
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 50000); // 50s timeout per call
       const chatRes = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "gpt-4o", messages: currentMessages, tools,
-          temperature: 0.3, max_tokens: 3000,
+          model, messages: currentMessages, tools,
+          temperature: 0.3, max_tokens: 2000,
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
 
       if (!chatRes.ok) {
         const errText = await chatRes.text();
@@ -1465,15 +1508,19 @@ serve(async (req) => {
 
     // Final text response if loop exhausted
     if (!assistantMessage) {
+      const fc = new AbortController();
+      const ft = setTimeout(() => fc.abort(), 50000);
       const finalRes = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "gpt-4o",
+          model: "gpt-4o-mini",
           messages: [{ role: "system", content: fullSystemPrompt }, ...updatedMessages, ...allToolMessages],
-          temperature: 0.3, max_tokens: 3000,
+          temperature: 0.3, max_tokens: 2000,
         }),
+        signal: fc.signal,
       });
+      clearTimeout(ft);
       if (finalRes.ok) {
         const finalData = await finalRes.json();
         assistantMessage = finalData.choices[0]?.message?.content || "操作已处理。";
