@@ -159,54 +159,36 @@ export default function AdminOrderSupplementPage() {
     },
   });
 
-  // Upload image to storage (with optional compression)
-  const uploadImageToStorage = async (file: File): Promise<string> => {
-    let uploadData: Blob | File = file;
-    let contentType = file.type || "image/jpeg";
-    let ext = file.name.split(".").pop() || "jpg";
-
-    // Try to compress, but fall back to original if compression fails
-    try {
-      const compressed = await new Promise<Blob>((resolve, reject) => {
-        const img = new Image();
-        const blobUrl = URL.createObjectURL(file);
-        img.onload = () => {
-          URL.revokeObjectURL(blobUrl);
-          const maxSize = 1200;
-          let { width, height } = img;
-          if (width > maxSize || height > maxSize) {
-            const ratio = Math.min(maxSize / width, maxSize / height);
-            width = Math.round(width * ratio);
-            height = Math.round(height * ratio);
-          }
-          const canvas = document.createElement("canvas");
-          canvas.width = width;
-          canvas.height = height;
-          canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
-          canvas.toBlob(
-            (blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))),
-            "image/jpeg", 0.7
-          );
-        };
-        img.onerror = () => { URL.revokeObjectURL(blobUrl); reject(new Error("img load failed")); };
-        img.src = blobUrl;
-      });
-      uploadData = compressed;
-      contentType = "image/jpeg";
-      ext = "jpg";
-    } catch {
-      // Use original file if compression fails
-    }
-
-    const path = `receipts/supplement-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
-    const { error: uploadError } = await supabase.storage
-      .from("purchase-docs")
-      .upload(path, uploadData, { contentType });
-    if (uploadError) throw uploadError;
-    const { data: { publicUrl } } = supabase.storage
-      .from("purchase-docs")
-      .getPublicUrl(path);
-    return publicUrl;
+  // Convert image to base64 data URL (with compression)
+  const imageToBase64 = async (file: File): Promise<string> => {
+    return new Promise<string>((resolve, reject) => {
+      const img = new Image();
+      const blobUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+        const maxSize = 800; // Keep small for fast AI processing
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          const ratio = Math.min(maxSize / width, maxSize / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.6));
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(blobUrl);
+        // Fallback: read file as base64 directly
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error("Failed to read image"));
+        reader.readAsDataURL(file);
+      };
+      img.src = blobUrl;
+    });
   };
 
   // Send message with SSE streaming
@@ -335,7 +317,7 @@ export default function AdminOrderSupplementPage() {
     if (pendingImage) {
       setUploadingImage(true);
       try {
-        imageUrl = await uploadImageToStorage(pendingImage.file);
+        imageUrl = await imageToBase64(pendingImage.file);
       } catch (err) {
         toast({ title: t("admin.orderSupplementPage.uploadFailed"), description: (err as Error).message, variant: "destructive" });
         setUploadingImage(false);
