@@ -1419,166 +1419,231 @@ serve(async (req) => {
       }
     }
 
-    // Call OpenAI with tool calling - loop for multi-step tool use
-    let assistantMessage = null;
+    // ============ Streaming SSE Response ============
     let parsedActions = session.parsed_actions || null;
     const executionLog: Array<{ action: string; success: boolean; details: string }> = [];
     const allToolMessages: typeof updatedMessages = [];
-
-    let currentMessages = openaiMessages;
-    let loopCount = 0;
-    const maxLoops = 3; // Keep low to avoid timeout
-    // Use gpt-4o-mini for everything (fast); gpt-4o only for images
     const model = image_url ? "gpt-4o" : "gpt-4o-mini";
 
-    console.log(`[AI] Starting. model=${model}, history=${existingMessages.length} msgs`);
+    console.log(`[AI] Starting stream. model=${model}, history=${existingMessages.length} msgs`);
 
-    while (loopCount < maxLoops) {
-      loopCount++;
-      const t0 = Date.now();
-
-      try {
-        const chatRes = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model, messages: currentMessages, tools,
-            temperature: 0.3, max_tokens: 1500,
-          }),
-        });
-
-        console.log(`[AI] Loop ${loopCount}: OpenAI ${Date.now() - t0}ms, status=${chatRes.status}`);
-
-        if (!chatRes.ok) {
-          const errText = await chatRes.text();
-          console.error(`[AI] OpenAI error: ${errText.slice(0, 300)}`);
-          throw new Error(`OpenAI error ${chatRes.status}`);
-        }
-
-        const chatData = await chatRes.json();
-        const choice = chatData.choices?.[0];
-        if (!choice) throw new Error("No choices returned");
-        const responseMessage = choice.message;
-
-        if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
-          allToolMessages.push({
-            role: "assistant", content: responseMessage.content || "",
-            tool_calls: responseMessage.tool_calls,
-          });
-
-          for (const toolCall of responseMessage.tool_calls) {
-            const fnName = toolCall.function.name;
-            let fnArgs;
-            try { fnArgs = JSON.parse(toolCall.function.arguments); } catch { fnArgs = {}; }
-            let toolResult = "";
-            const tt0 = Date.now();
-
+    // Helper: run tool calls (non-streaming phase)
+    async function processToolCalls(toolCalls: Array<{ id: string; function: { name: string; arguments: string } }>) {
+      for (const toolCall of toolCalls) {
+        const fnName = toolCall.function.name;
+        let fnArgs;
+        try { fnArgs = JSON.parse(toolCall.function.arguments); } catch { fnArgs = {}; }
+        let toolResult = "";
+        try {
+          if (fnName === "update_parsed_actions") {
+            parsedActions = fnArgs;
+            toolResult = JSON.stringify({ success: true });
+          } else if (fnName === "check_member_exists") {
+            toolResult = await handleCheckMemberExists(supabase, fnArgs);
+          } else if (fnName === "query_member_data") {
+            toolResult = await handleQueryMemberData(supabase, fnArgs);
+          } else if (fnName === "query_products") {
+            toolResult = await handleQueryProducts(supabase, fnArgs);
+          } else if (fnName === "query_referral_network") {
+            toolResult = await handleQueryReferralNetwork(supabase, fnArgs);
+          } else if (fnName === "search_orders") {
+            toolResult = await handleSearchOrders(supabase, fnArgs);
+          } else if (fnName === "search_bills") {
+            toolResult = await handleSearchBills(supabase, fnArgs);
+          } else if (fnName === "query_bonus_data") {
+            toolResult = await handleQueryBonusData(supabase, fnArgs);
+          } else if (fnName === "execute_db_write") {
+            toolResult = await handleExecuteDbWrite(supabase, fnArgs, session.id);
             try {
-              if (fnName === "update_parsed_actions") {
-                parsedActions = fnArgs;
-                toolResult = JSON.stringify({ success: true });
-              } else if (fnName === "check_member_exists") {
-                toolResult = await handleCheckMemberExists(supabase, fnArgs);
-              } else if (fnName === "query_member_data") {
-                toolResult = await handleQueryMemberData(supabase, fnArgs);
-              } else if (fnName === "query_products") {
-                toolResult = await handleQueryProducts(supabase, fnArgs);
-              } else if (fnName === "query_referral_network") {
-                toolResult = await handleQueryReferralNetwork(supabase, fnArgs);
-              } else if (fnName === "search_orders") {
-                toolResult = await handleSearchOrders(supabase, fnArgs);
-              } else if (fnName === "search_bills") {
-                toolResult = await handleSearchBills(supabase, fnArgs);
-              } else if (fnName === "query_bonus_data") {
-                toolResult = await handleQueryBonusData(supabase, fnArgs);
-              } else if (fnName === "execute_db_write") {
-                toolResult = await handleExecuteDbWrite(supabase, fnArgs, session.id);
-                try {
-                  const parsed = JSON.parse(toolResult);
-                  executionLog.push({ action: parsed.action, success: parsed.success, details: parsed.details });
-                } catch { /* ignore */ }
-              } else if (fnName === "save_to_memory") {
-                toolResult = await handleSaveToMemory(supabase, fnArgs, session.id);
-              } else {
-                toolResult = JSON.stringify({ error: `Unknown tool: ${fnName}` });
-              }
-            } catch (toolErr) {
-              console.error(`[AI] Tool ${fnName} error:`, toolErr);
-              toolResult = JSON.stringify({ error: `Tool error: ${(toolErr as Error).message}` });
+              const parsed = JSON.parse(toolResult);
+              executionLog.push({ action: parsed.action, success: parsed.success, details: parsed.details });
+            } catch { /* ignore */ }
+          } else if (fnName === "save_to_memory") {
+            toolResult = await handleSaveToMemory(supabase, fnArgs, session.id);
+          } else {
+            toolResult = JSON.stringify({ error: `Unknown tool: ${fnName}` });
+          }
+        } catch (toolErr) {
+          console.error(`[AI] Tool ${fnName} error:`, toolErr);
+          toolResult = JSON.stringify({ error: `Tool error: ${(toolErr as Error).message}` });
+        }
+        console.log(`[AI] Tool ${fnName}: result=${toolResult.slice(0, 100)}`);
+        allToolMessages.push({ role: "tool", content: toolResult, tool_call_id: toolCall.id });
+      }
+    }
+
+    // Create a streaming response
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        const send = (event: string, data: unknown) => {
+          controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+        };
+
+        try {
+          // Send session_id immediately
+          send("meta", { session_id: session.id });
+
+          // Tool-calling loop (non-streaming)
+          let currentMessages = openaiMessages;
+          let loopCount = 0;
+          const maxLoops = 3;
+          let needsFinalStream = true;
+
+          while (loopCount < maxLoops) {
+            loopCount++;
+            send("status", { step: "thinking", loop: loopCount });
+
+            const chatRes = await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
+              body: JSON.stringify({ model, messages: currentMessages, tools, temperature: 0.3, max_tokens: 1500 }),
+            });
+
+            if (!chatRes.ok) {
+              const errText = await chatRes.text();
+              console.error(`[AI] OpenAI error: ${errText.slice(0, 300)}`);
+              send("error", { message: `OpenAI error ${chatRes.status}` });
+              break;
             }
 
-            console.log(`[AI] Tool ${fnName}: ${Date.now() - tt0}ms, result=${toolResult.slice(0, 100)}`);
-            allToolMessages.push({ role: "tool", content: toolResult, tool_call_id: toolCall.id });
+            const chatData = await chatRes.json();
+            const choice = chatData.choices?.[0];
+            if (!choice) { send("error", { message: "No choices" }); break; }
+            const msg = choice.message;
+
+            if (msg.tool_calls && msg.tool_calls.length > 0) {
+              // Show which tools are being called
+              const toolNames = msg.tool_calls.map((tc: { function: { name: string } }) => tc.function.name);
+              send("status", { step: "tools", tools: toolNames });
+
+              allToolMessages.push({ role: "assistant", content: msg.content || "", tool_calls: msg.tool_calls });
+              await processToolCalls(msg.tool_calls);
+
+              // Send execution log updates in real-time
+              if (executionLog.length > 0) {
+                send("execution_log", executionLog);
+              }
+              if (parsedActions) {
+                send("parsed_actions", parsedActions);
+              }
+
+              currentMessages = [
+                { role: "system", content: fullSystemPrompt },
+                ...updatedMessages,
+                ...allToolMessages,
+              ];
+
+              if (msg.content) {
+                // Model returned text alongside tool calls - use it directly
+                send("token", { content: msg.content });
+                needsFinalStream = false;
+                // Save
+                const savedMessages = [...updatedMessages, { role: "assistant", content: msg.content }];
+                await supabase.from("order_supplement_sessions").update({
+                  messages: savedMessages, parsed_actions: parsedActions,
+                  updated_at: new Date().toISOString(),
+                }).eq("id", session.id);
+                break;
+              }
+              continue;
+            } else if (msg.content) {
+              // Direct text response (no tools) - send as tokens for instant display
+              send("token", { content: msg.content });
+              needsFinalStream = false;
+              const savedMessages = [...updatedMessages, { role: "assistant", content: msg.content }];
+              await supabase.from("order_supplement_sessions").update({
+                messages: savedMessages, parsed_actions: parsedActions,
+                updated_at: new Date().toISOString(),
+              }).eq("id", session.id);
+              break;
+            }
           }
 
-          currentMessages = [
-            { role: "system", content: fullSystemPrompt },
-            ...updatedMessages,
-            ...allToolMessages,
-          ];
+          // If loop exhausted, do a final streaming call
+          if (needsFinalStream && allToolMessages.length > 0) {
+            send("status", { step: "summarizing" });
+            const streamRes = await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                model: "gpt-4o-mini", stream: true,
+                messages: [
+                  { role: "system", content: fullSystemPrompt },
+                  ...updatedMessages, ...allToolMessages,
+                ],
+                temperature: 0.3, max_tokens: 1500,
+              }),
+            });
 
-          // If model also returned text content alongside tool calls, use it
-          if (responseMessage.content) {
-            assistantMessage = responseMessage.content;
-            break;
+            if (streamRes.ok && streamRes.body) {
+              let fullText = "";
+              const reader = streamRes.body.getReader();
+              const decoder = new TextDecoder();
+              let buf = "";
+
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buf += decoder.decode(value, { stream: true });
+                const lines = buf.split("\n");
+                buf = lines.pop() || "";
+                for (const line of lines) {
+                  if (!line.startsWith("data: ") || line === "data: [DONE]") continue;
+                  try {
+                    const chunk = JSON.parse(line.slice(6));
+                    const delta = chunk.choices?.[0]?.delta?.content;
+                    if (delta) {
+                      fullText += delta;
+                      send("token", { content: delta });
+                    }
+                  } catch { /* skip bad chunks */ }
+                }
+              }
+
+              const savedMessages = [...updatedMessages, { role: "assistant", content: fullText || "操作已处理。" }];
+              await supabase.from("order_supplement_sessions").update({
+                messages: savedMessages, parsed_actions: parsedActions,
+                updated_at: new Date().toISOString(),
+              }).eq("id", session.id);
+            } else {
+              send("token", { content: "操作已处理，请查看执行日志。" });
+              const savedMessages = [...updatedMessages, { role: "assistant", content: "操作已处理，请查看执行日志。" }];
+              await supabase.from("order_supplement_sessions").update({
+                messages: savedMessages, parsed_actions: parsedActions,
+                updated_at: new Date().toISOString(),
+              }).eq("id", session.id);
+            }
+          } else if (needsFinalStream) {
+            send("token", { content: "抱歉，AI未能生成回复，请重试。" });
           }
-          continue;
-        } else {
-          assistantMessage = responseMessage.content || "";
-          break;
+
+          // Send final done event
+          send("done", {
+            execution_log: executionLog.length > 0 ? executionLog : null,
+            parsed_actions: parsedActions,
+          });
+
+        } catch (err) {
+          console.error("[AI] Stream error:", err);
+          const send2 = (event: string, data: unknown) => {
+            controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+          };
+          send2("error", { message: (err as Error).message });
+        } finally {
+          controller.close();
         }
-      } catch (loopErr) {
-        console.error(`[AI] Loop ${loopCount} error:`, loopErr);
-        if (loopCount >= maxLoops) {
-          assistantMessage = `抱歉，AI处理遇到问题: ${(loopErr as Error).message}`;
-        }
-        break;
-      }
-    }
+      },
+    });
 
-    // Final text response if loop exhausted without a message
-    if (!assistantMessage && allToolMessages.length > 0) {
-      try {
-        const finalRes = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "gpt-4o-mini",
-            messages: [{ role: "system", content: "用中文简洁总结已执行的操作结果。" }, ...allToolMessages.slice(-6)],
-            temperature: 0.3, max_tokens: 500,
-          }),
-        });
-        if (finalRes.ok) {
-          const finalData = await finalRes.json();
-          assistantMessage = finalData.choices[0]?.message?.content || "操作已处理。";
-        } else {
-          assistantMessage = "操作已处理，请查看执行日志。";
-        }
-      } catch {
-        assistantMessage = "操作已处理，请查看执行日志。";
-      }
-    } else if (!assistantMessage) {
-      assistantMessage = "抱歉，AI未能生成回复，请重试。";
-    }
-
-    console.log(`[AI] Done. loops=${loopCount}, execLog=${executionLog.length}`);
-
-    // Save messages to session
-    const savedMessages = [...updatedMessages, { role: "assistant", content: assistantMessage }];
-    await supabase.from("order_supplement_sessions").update({
-      messages: savedMessages, parsed_actions: parsedActions,
-      updated_at: new Date().toISOString(),
-    }).eq("id", session.id);
-
-    return new Response(
-      JSON.stringify({
-        success: true, session_id: session.id,
-        message: assistantMessage,
-        parsed_actions: parsedActions,
-        execution_log: executionLog.length > 0 ? executionLog : null,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(stream, {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
   } catch (error) {
     console.error("Order supplement error:", error);
     return new Response(

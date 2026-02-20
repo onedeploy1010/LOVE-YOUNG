@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "@/lib/i18n";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -115,6 +115,8 @@ export default function AdminOrderSupplementPage() {
   const [executionLog, setExecutionLog] = useState<ExecutionLogEntry[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [showHistory, setShowHistory] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingStatus, setStreamingStatus] = useState<string>("");
   const [pendingImage, setPendingImage] = useState<{ file: File; preview: string } | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -207,13 +209,19 @@ export default function AdminOrderSupplementPage() {
     return publicUrl;
   };
 
-  // Send message
-  const sendMessage = useMutation({
-    mutationFn: async ({ msg, imageUrl }: { msg: string; imageUrl?: string }) => {
-      const { data: { session: authSession } } = await supabase.auth.getSession();
-      const token = authSession?.access_token;
-      if (!token) throw new Error("Not authenticated");
+  // Send message with SSE streaming
+  const sendMessageStream = useCallback(async (msg: string, imageUrl?: string) => {
+    const { data: { session: authSession } } = await supabase.auth.getSession();
+    const token = authSession?.access_token;
+    if (!token) throw new Error("Not authenticated");
 
+    setIsStreaming(true);
+    setStreamingStatus("thinking");
+
+    // Add empty assistant message placeholder for streaming
+    setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+    try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://vpzmhglfwomgrashheol.supabase.co";
       const res = await fetch(
         `${supabaseUrl}/functions/v1/admin-order-supplement`,
@@ -235,30 +243,92 @@ export default function AdminOrderSupplementPage() {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.error || `HTTP ${res.status}`);
       }
-      return res.json();
-    },
-    onSuccess: (data) => {
-      if (!activeSessionId && data.session_id) {
-        setActiveSessionId(data.session_id);
+
+      if (!res.body) throw new Error("No stream body");
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      let fullText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() || "";
+
+        for (const line of lines) {
+          if (line.startsWith("event: ")) {
+            const eventType = line.slice(7).trim();
+            // Next line should be data:
+            const dataIdx = lines.indexOf(line) + 1;
+            if (dataIdx < lines.length && lines[dataIdx].startsWith("data: ")) {
+              // handled below
+            }
+            continue;
+          }
+          if (!line.startsWith("data: ")) continue;
+
+          try {
+            const data = JSON.parse(line.slice(6));
+            // Find the event type from the previous line
+            const lineIdx = lines.indexOf(line);
+            let eventType = "unknown";
+            if (lineIdx > 0 && lines[lineIdx - 1].startsWith("event: ")) {
+              eventType = lines[lineIdx - 1].slice(7).trim();
+            }
+
+            if (eventType === "meta" && data.session_id) {
+              if (!activeSessionId) setActiveSessionId(data.session_id);
+            } else if (eventType === "status") {
+              if (data.step === "thinking") setStreamingStatus("thinking");
+              else if (data.step === "tools") setStreamingStatus(`tools: ${data.tools?.join(", ") || ""}`);
+              else if (data.step === "summarizing") setStreamingStatus("summarizing");
+            } else if (eventType === "token" && data.content) {
+              fullText += data.content;
+              setMessages((prev) => {
+                const updated = [...prev];
+                if (updated.length > 0 && updated[updated.length - 1].role === "assistant") {
+                  updated[updated.length - 1] = { ...updated[updated.length - 1], content: fullText };
+                }
+                return updated;
+              });
+            } else if (eventType === "execution_log" && Array.isArray(data)) {
+              setExecutionLog(data);
+            } else if (eventType === "parsed_actions") {
+              setParsedActions(data);
+            } else if (eventType === "done") {
+              if (data.execution_log?.length > 0) {
+                setExecutionLog(data.execution_log);
+                queryClient.invalidateQueries({ queryKey: ["order-supplement-stats"] });
+                queryClient.invalidateQueries({ queryKey: ["order-supplement-history"] });
+              }
+              if (data.parsed_actions) setParsedActions(data.parsed_actions);
+            } else if (eventType === "error") {
+              toast({ title: t("admin.orderSupplementPage.error"), description: data.message, variant: "destructive" });
+            }
+          } catch { /* skip bad data */ }
+        }
       }
-      setMessages((prev) => [...prev, { role: "assistant", content: data.message }]);
-      if (data.parsed_actions) setParsedActions(data.parsed_actions);
-      // Handle execution log from AI direct writes
-      if (data.execution_log && data.execution_log.length > 0) {
-        setExecutionLog((prev) => [...prev, ...data.execution_log]);
-        // Refresh stats when actions are executed
-        queryClient.invalidateQueries({ queryKey: ["order-supplement-stats"] });
-        queryClient.invalidateQueries({ queryKey: ["order-supplement-history"] });
-      }
-    },
-    onError: (error) => {
-      toast({ title: t("admin.orderSupplementPage.error"), description: error.message, variant: "destructive" });
-    },
-  });
+    } catch (error) {
+      toast({ title: t("admin.orderSupplementPage.error"), description: (error as Error).message, variant: "destructive" });
+      // Remove empty placeholder if no content was streamed
+      setMessages((prev) => {
+        if (prev.length > 0 && prev[prev.length - 1].role === "assistant" && !prev[prev.length - 1].content) {
+          return prev.slice(0, -1);
+        }
+        return prev;
+      });
+    } finally {
+      setIsStreaming(false);
+      setStreamingStatus("");
+    }
+  }, [activeSessionId, toast, t]);
 
   const handleSend = useCallback(async () => {
     const msg = inputValue.trim();
-    if ((!msg && !pendingImage) || sendMessage.isPending || uploadingImage) return;
+    if ((!msg && !pendingImage) || isStreaming || uploadingImage) return;
 
     let imageUrl: string | undefined;
 
@@ -280,8 +350,8 @@ export default function AdminOrderSupplementPage() {
     setPendingImage(null);
 
     const finalMsg = msg || "请分析这张转账截图，提取付款信息。";
-    sendMessage.mutate({ msg: finalMsg, imageUrl });
-  }, [inputValue, pendingImage, sendMessage, uploadingImage]);
+    sendMessageStream(finalMsg, imageUrl);
+  }, [inputValue, pendingImage, isStreaming, uploadingImage, sendMessageStream]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -466,10 +536,19 @@ export default function AdminOrderSupplementPage() {
                     </div>
                   ))}
 
-                  {(sendMessage.isPending || uploadingImage) && (
+                  {uploadingImage && (
                     <div className="flex justify-start">
-                      <div className="bg-muted rounded-2xl rounded-bl-md px-3 py-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                      <div className="bg-muted rounded-2xl rounded-bl-md px-2.5 py-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>{t("admin.orderSupplementPage.uploading") || "上传中..."}</span>
+                      </div>
+                    </div>
+                  )}
+                  {isStreaming && streamingStatus && !messages[messages.length - 1]?.content && (
+                    <div className="flex justify-start">
+                      <div className="bg-muted rounded-2xl rounded-bl-md px-2.5 py-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>{streamingStatus === "thinking" ? "思考中..." : streamingStatus.startsWith("tools") ? "查询数据..." : "生成回复..."}</span>
                       </div>
                     </div>
                   )}
@@ -619,7 +698,7 @@ export default function AdminOrderSupplementPage() {
                   variant="ghost" size="icon"
                   className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 text-muted-foreground"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={sendMessage.isPending || uploadingImage}
+                  disabled={isStreaming || uploadingImage}
                 >
                   <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
@@ -629,16 +708,16 @@ export default function AdminOrderSupplementPage() {
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder={t("admin.orderSupplementPage.inputPlaceholder")}
-                  disabled={sendMessage.isPending || uploadingImage}
+                  disabled={isStreaming || uploadingImage}
                   className="flex-1 h-8 sm:h-10 text-[13px] sm:text-sm rounded-full bg-muted/50 border-0 focus-visible:ring-1"
                 />
                 <Button
                   onClick={handleSend}
-                  disabled={(!inputValue.trim() && !pendingImage) || sendMessage.isPending || uploadingImage}
+                  disabled={(!inputValue.trim() && !pendingImage) || isStreaming || uploadingImage}
                   size="icon"
                   className="h-8 w-8 sm:h-9 sm:w-9 rounded-full shrink-0"
                 >
-                  {(sendMessage.isPending || uploadingImage) ? (
+                  {(isStreaming || uploadingImage) ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <Send className="w-4 h-4" />
