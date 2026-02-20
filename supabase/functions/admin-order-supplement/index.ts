@@ -836,8 +836,15 @@ async function handleSaveToMemory(supabase: SupabaseClient, args: { category: st
 
 // ============ execute_db_write handler ============
 // deno-lint-ignore no-explicit-any
-async function handleExecuteDbWrite(supabase: SupabaseClient, args: { action: string; params: any; confirmed?: boolean }, sessionId: string) {
-  const { action, params, confirmed } = args;
+async function handleExecuteDbWrite(supabase: SupabaseClient, args: any, sessionId: string) {
+  // GPT sometimes puts params at top level instead of nested - handle both formats
+  const action = args.action;
+  const confirmed = args.confirmed;
+  // deno-lint-ignore no-explicit-any
+  const params: any = args.params || (() => {
+    const { action: _a, confirmed: _c, ...rest } = args;
+    return Object.keys(rest).length > 0 ? rest : {};
+  })();
   // deno-lint-ignore no-explicit-any
   const log: { action: string; success: boolean; details: string; data?: any } = { action, success: false, details: "" };
 

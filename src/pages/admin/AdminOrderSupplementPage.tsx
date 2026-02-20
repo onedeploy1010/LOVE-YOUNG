@@ -157,41 +157,49 @@ export default function AdminOrderSupplementPage() {
     },
   });
 
-  // Compress image before upload (max 1200px, 0.7 quality)
-  const compressImage = (file: File): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
-        const maxSize = 1200;
-        let { width, height } = img;
-        if (width > maxSize || height > maxSize) {
-          const ratio = Math.min(maxSize / width, maxSize / height);
-          width = Math.round(width * ratio);
-          height = Math.round(height * ratio);
-        }
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d")!;
-        ctx.drawImage(img, 0, 0, width, height);
-        canvas.toBlob(
-          (blob) => (blob ? resolve(blob) : reject(new Error("Compression failed"))),
-          "image/jpeg",
-          0.7
-        );
-      };
-      img.onerror = () => reject(new Error("Failed to load image"));
-      img.src = URL.createObjectURL(file);
-    });
-  };
-
-  // Upload image to storage (with compression)
+  // Upload image to storage (with optional compression)
   const uploadImageToStorage = async (file: File): Promise<string> => {
-    const compressed = await compressImage(file);
-    const path = `receipts/supplement-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.jpg`;
+    let uploadData: Blob | File = file;
+    let contentType = file.type || "image/jpeg";
+    let ext = file.name.split(".").pop() || "jpg";
+
+    // Try to compress, but fall back to original if compression fails
+    try {
+      const compressed = await new Promise<Blob>((resolve, reject) => {
+        const img = new Image();
+        const blobUrl = URL.createObjectURL(file);
+        img.onload = () => {
+          URL.revokeObjectURL(blobUrl);
+          const maxSize = 1200;
+          let { width, height } = img;
+          if (width > maxSize || height > maxSize) {
+            const ratio = Math.min(maxSize / width, maxSize / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))),
+            "image/jpeg", 0.7
+          );
+        };
+        img.onerror = () => { URL.revokeObjectURL(blobUrl); reject(new Error("img load failed")); };
+        img.src = blobUrl;
+      });
+      uploadData = compressed;
+      contentType = "image/jpeg";
+      ext = "jpg";
+    } catch {
+      // Use original file if compression fails
+    }
+
+    const path = `receipts/supplement-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
     const { error: uploadError } = await supabase.storage
       .from("purchase-docs")
-      .upload(path, compressed, { contentType: "image/jpeg" });
+      .upload(path, uploadData, { contentType });
     if (uploadError) throw uploadError;
     const { data: { publicUrl } } = supabase.storage
       .from("purchase-docs")
