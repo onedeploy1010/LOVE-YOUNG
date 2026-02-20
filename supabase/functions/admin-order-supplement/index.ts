@@ -242,25 +242,27 @@ const SYSTEM_PROMPT = `你是 LOVE YOUNG 智能管理助手。你拥有完整的
 ⚠️ 只有在数据库完全搜索不到时，才询问更多信息。
 
 【收到转账截图/单据的处理流程】
-当管理员上传一张转账截图或收据时，你需要：
-1. 先识别图片中的信息（金额、转账人、日期等）
-2. 然后**必须逐一确认以下问题**，不要自己猜测：
-   a. 这是什么类型的订单？
-      - 产品订单（买燕窝等产品）
-      - 经营人配套（Phase1/2/3加入）
+当管理员上传一张转账截图或收据时（这是手动银行转账，不是Stripe在线支付），你需要：
+1. 先识别图片中的信息（金额、转账人、参考编号、日期等）
+2. 然后**必须向管理员确认以下问题**，不要自己猜测：
+   a. 这是什么类型？
+      - 产品订单（买燕窝等产品）→ 需要创建订单 (create_order, source="bank_transfer")
+      - 经营人配套（Phase1/2/3加入）→ 需要创建经营人 (create_partner)
       - 混合（同时有产品+配套）
       - 多个订单合并转账
-   b. 这是谁的订单？（名字/手机号/邮箱）
-   c. 是否需要创建新会员账号？
-   d. 是否需要创建订单记录？
-   e. 如果是经营人配套，推荐人是谁？
+   b. 这是谁的订单？（名字/手机号/邮箱）→ 立即搜索会员
+   c. 是否需要先创建新会员账号？（如果还没注册）
+   d. 如果是经营人配套，推荐人是谁？
+   e. 转账金额与订单金额是否一致？有没有扣除（返现、LY抵扣、钱包余额等）？
 3. **复杂场景处理**（管理员说明后才执行）：
    - **多个配套一笔转账**：一笔转账包含多个人的配套，需要逐个确认每个人的信息
    - **开两个账号互推**：A推荐B，两个人同时加入，需要先创建A再创建B，设置好推荐关系
    - **扣除返现后的金额**：实际转账金额 = 订单总价 - 返现奖励 - LY抵扣等，需要管理员说明每笔扣除明细
    - **钱包余额抵扣**：用现金钱包余额抵扣部分金额
-4. 确认所有信息后，列出将要执行的操作清单，等管理员确认后再执行
+4. 确认所有信息后，列出将要执行的**完整操作清单**（例如：创建会员→创建订单→创建经营人→处理推荐奖金），等管理员确认后再执行
 5. 执行完毕后报告所有操作结果
+
+注意：手动转账的订单用 source="bank_transfer"，不要只创建账单(bill)，要创建订单(order)记录！
 
 【一般工作流程（非单据）】
 1. 管理员提到任何人名/手机号/邮箱 → 立即调用 check_member_exists 搜索（用 name/phone/email 参数）
@@ -923,14 +925,14 @@ async function handleExecuteDbWrite(supabase: SupabaseClient, args: any, session
         const billNumber = generateBillNumber();
         const { error } = await supabase.from("bills").insert({
           bill_number: billNumber,
-          vendor: params.vendor,
+          vendor: params.vendor || "客户转账",
           amount: params.amount_cents,
-          type: params.type || "operation",
-          category: params.category || null,
+          type: params.type || "income",
+          category: params.category || "bank_transfer",
           description: params.description || null,
-          status: params.status || "pending",
+          status: params.status || "paid",
           due_date: params.due_date || null,
-          paid_date: params.paid_date || null,
+          paid_date: params.paid_date || new Date().toISOString().slice(0, 10),
           notes: params.notes || null,
           created_at: new Date().toISOString(),
         });
