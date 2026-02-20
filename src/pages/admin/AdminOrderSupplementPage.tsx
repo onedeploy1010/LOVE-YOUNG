@@ -237,29 +237,27 @@ export default function AdminOrderSupplementPage() {
         const { done, value } = await reader.read();
         if (done) break;
         buf += decoder.decode(value, { stream: true });
-        const lines = buf.split("\n");
-        buf = lines.pop() || "";
 
-        for (const line of lines) {
-          if (line.startsWith("event: ")) {
-            const eventType = line.slice(7).trim();
-            // Next line should be data:
-            const dataIdx = lines.indexOf(line) + 1;
-            if (dataIdx < lines.length && lines[dataIdx].startsWith("data: ")) {
-              // handled below
+        // SSE messages are separated by double newline
+        const messages_raw = buf.split("\n\n");
+        // Last element may be incomplete — keep it in buffer
+        buf = messages_raw.pop() || "";
+
+        for (const rawMsg of messages_raw) {
+          if (!rawMsg.trim()) continue;
+          let eventType = "message";
+          let dataStr = "";
+          for (const line of rawMsg.split("\n")) {
+            if (line.startsWith("event: ")) {
+              eventType = line.slice(7).trim();
+            } else if (line.startsWith("data: ")) {
+              dataStr += line.slice(6);
             }
-            continue;
           }
-          if (!line.startsWith("data: ")) continue;
+          if (!dataStr) continue;
 
           try {
-            const data = JSON.parse(line.slice(6));
-            // Find the event type from the previous line
-            const lineIdx = lines.indexOf(line);
-            let eventType = "unknown";
-            if (lineIdx > 0 && lines[lineIdx - 1].startsWith("event: ")) {
-              eventType = lines[lineIdx - 1].slice(7).trim();
-            }
+            const data = JSON.parse(dataStr);
 
             if (eventType === "meta" && data.session_id) {
               if (!activeSessionId) setActiveSessionId(data.session_id);
@@ -290,7 +288,7 @@ export default function AdminOrderSupplementPage() {
             } else if (eventType === "error") {
               toast({ title: t("admin.orderSupplementPage.error"), description: data.message, variant: "destructive" });
             }
-          } catch { /* skip bad data */ }
+          } catch { /* skip bad JSON */ }
         }
       }
     } catch (error) {
