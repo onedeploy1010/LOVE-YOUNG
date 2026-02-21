@@ -193,18 +193,19 @@ export default function AdminOrderSupplementPage() {
 
   // Send message with SSE streaming
   const sendMessageStream = useCallback(async (msg: string, imageUrl?: string) => {
-    const { data: { session: authSession } } = await supabase.auth.getSession();
-    const token = authSession?.access_token;
-    if (!token) throw new Error("Not authenticated");
-
     setIsStreaming(true);
     setStreamingStatus("thinking");
-
-    // Add empty assistant message placeholder for streaming
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
     try {
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      const token = authSession?.access_token;
+      if (!token) throw new Error("未登录，请刷新页面重新登录");
+
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://vpzmhglfwomgrashheol.supabase.co";
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
+
       const res = await fetch(
         `${supabaseUrl}/functions/v1/admin-order-supplement`,
         {
@@ -218,12 +219,36 @@ export default function AdminOrderSupplementPage() {
             message: msg,
             image_url: imageUrl || undefined,
           }),
+          signal: controller.signal,
         }
       );
 
+      clearTimeout(timeoutId);
+
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `HTTP ${res.status}`);
+        const errText = await res.text().catch(() => "");
+        let errMsg = `HTTP ${res.status}`;
+        try { errMsg = JSON.parse(errText).error || errMsg; } catch { /* use default */ }
+        throw new Error(errMsg);
+      }
+
+      // Try to detect if response is JSON (non-streaming fallback) or SSE
+      const contentType = res.headers.get("content-type") || "";
+
+      if (!contentType.includes("text/event-stream")) {
+        // Non-streaming response — parse as JSON
+        const data = await res.json();
+        if (data.reply) {
+          setMessages((prev) => {
+            const updated = [...prev];
+            if (updated.length > 0 && updated[updated.length - 1].role === "assistant") {
+              updated[updated.length - 1] = { ...updated[updated.length - 1], content: data.reply };
+            }
+            return updated;
+          });
+        }
+        if (data.session_id && !activeSessionId) setActiveSessionId(data.session_id);
+        return;
       }
 
       if (!res.body) throw new Error("No stream body");
@@ -232,15 +257,16 @@ export default function AdminOrderSupplementPage() {
       const decoder = new TextDecoder();
       let buf = "";
       let fullText = "";
+      let gotAnyData = false;
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+        gotAnyData = true;
         buf += decoder.decode(value, { stream: true });
 
         // SSE messages are separated by double newline
         const messages_raw = buf.split("\n\n");
-        // Last element may be incomplete — keep it in buffer
         buf = messages_raw.pop() || "";
 
         for (const rawMsg of messages_raw) {
@@ -291,9 +317,48 @@ export default function AdminOrderSupplementPage() {
           } catch { /* skip bad JSON */ }
         }
       }
+
+      // Process remaining buffer
+      if (buf.trim()) {
+        const rawMsg = buf;
+        let eventType = "message";
+        let dataStr = "";
+        for (const line of rawMsg.split("\n")) {
+          if (line.startsWith("event: ")) eventType = line.slice(7).trim();
+          else if (line.startsWith("data: ")) dataStr += line.slice(6);
+        }
+        if (dataStr) {
+          try {
+            const data = JSON.parse(dataStr);
+            if (eventType === "token" && data.content) {
+              fullText += data.content;
+              setMessages((prev) => {
+                const updated = [...prev];
+                if (updated.length > 0 && updated[updated.length - 1].role === "assistant") {
+                  updated[updated.length - 1] = { ...updated[updated.length - 1], content: fullText };
+                }
+                return updated;
+              });
+            }
+          } catch { /* skip */ }
+        }
+      }
+
+      // If stream ended with no text content, show error
+      if (!fullText && gotAnyData) {
+        setMessages((prev) => {
+          const updated = [...prev];
+          if (updated.length > 0 && updated[updated.length - 1].role === "assistant" && !updated[updated.length - 1].content) {
+            updated[updated.length - 1] = { ...updated[updated.length - 1], content: "⚠️ AI处理完毕但未生成回复文本，请重试。" };
+          }
+          return updated;
+        });
+      }
     } catch (error) {
-      toast({ title: t("admin.orderSupplementPage.error"), description: (error as Error).message, variant: "destructive" });
-      // Remove empty placeholder if no content was streamed
+      const errMsg = (error as Error).name === "AbortError"
+        ? "请求超时（90秒），请重试"
+        : (error as Error).message;
+      toast({ title: t("admin.orderSupplementPage.error"), description: errMsg, variant: "destructive" });
       setMessages((prev) => {
         if (prev.length > 0 && prev[prev.length - 1].role === "assistant" && !prev[prev.length - 1].content) {
           return prev.slice(0, -1);

@@ -1344,12 +1344,14 @@ async function handleExecuteDbWrite(supabase: SupabaseClient, args: any, session
 
 // ============ Main Handler ============
 serve(async (req) => {
+  console.log(`[AI] Request received: ${req.method} ${req.url}`);
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   try {
     const { session_id, message, image_url } = await req.json();
+    console.log(`[AI] Parsed request: session=${session_id || "new"}, msg=${(message || "").slice(0, 50)}, hasImage=${!!image_url}`);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
